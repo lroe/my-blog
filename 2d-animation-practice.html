@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2d animation practice — Jeevan Kumar</title>
+  <link rel="icon" href="cool.jpg" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .back-link {
+      display: inline-block;
+      margin-bottom: 2rem;
+      color: #7d9b76;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .video-container {
+      display: flex;
+      justify-content: space-around;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .video-container video {
+      width: 48%;
+      max-width: 400px;
+      border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div id="image-overlay">
+    <img src="" alt="Expanded image">
+  </div>
+  <script src="script.js"></script>
+
+  <header>
+    <h1>Jeevan Kumar</h1>
+  </header>
+
+  <div class="container">
+    <a href="index.html" class="back-link">← Back to Blog</a>
+
+    <article class="post">
+      <h2>2d animation practice</h2>
+      <span class="post-date">October 29, 2025</span>
+
+      <div class="post-content">
+        <p>Today, I practiced some 2D animation. Here are a couple of my attempts, side-by-side.</p>
+
+        <div class="video-container">
+          <video src="videos/anim1.mp4" controls autoplay loop muted></video>
+          <video src="videos/anim2.mp4" controls autoplay loop muted></video>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p>Blog by Jeevan</p>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>
