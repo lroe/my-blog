@@ -21,6 +21,28 @@
       border-radius: 6px;
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
     }
+
+    .post img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile view: smaller images */
+@media (max-width: 768px) {
+  .post img {
+    max-width: 400px;
+  }
+}
+
+/* Desktop view: larger images */
+@media (min-width: 769px) {
+  .post img {
+    max-width: 800px;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -79,7 +101,7 @@ Now, a movie may contain music, storytelling inspired by books, and 3D models ta
   <div class="post-content">
     <p>Ever since I installed Airtel Wi-Fi, my dad has been looping the <em>Mahabharatam</em> (2013) series every day. Whenever I pass by, someone’s always doing <em>tapas</em> ... and one day, I saw Arjuna doing it too.</p>
 
-    <img src="images/Arjuna.webp" alt="Arjuna from Mahabharat 2013" style="max-width:400px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.15); margin: 1rem 0;">
+    <img src="images/Arjuna.webp" alt="Arjuna from Mahabharat 2013" style="max-width:300px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.15); margin: 1rem 0;">
 
     <p>Curious, I looked it up ...</p>
   </div>
@@ -123,7 +145,7 @@ Now, a movie may contain music, storytelling inspired by books, and 3D models ta
 
     <p>For example, we can decide exactly how the flow of water appears inside the cup. In the photo of coffee shown below, the flow of liquid in surface might look circular, but in Blender, we can shape it however we like. That freedom to define every detail is superb.</p>
 
-    <img src="images/tea2.png" alt="Cartoony teacup render" style="max-width:400px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.15); margin: 1rem 0;">
+    <img src="images/tea2.png" alt="Cartoony teacup render" style="max-width:300px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.15); margin: 1rem 0;">
 
     <p>Even something like controlling shadows is entirely up to us. If we want to place an object under the shadow of another without it casting a shadow in return, we can do that too. In Blender, every element can be shaped and managed precisely the way we imagine.</p>
   </div>
