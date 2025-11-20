@@ -1,49 +1,27 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>2d animation practice — Jeevan Kumar</title>
-  <link rel="icon" href="cool.jpg" type="image/x-icon">
+  <link rel="icon" href="cool.png" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
-  <style>
-    .back-link {
-      display: inline-block;
-      margin-bottom: 2rem;
-      color: #7d9b76;
-      text-decoration: none;
-      font-size: 0.95rem;
-    }
-    .back-link:hover {
-      text-decoration: underline;
-    }
-    .video-container {
-      display: flex;
-      justify-content: space-around;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-    .video-container video {
-      width: 48%;
-      max-width: 400px;
-      border-radius: 6px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    }
-  </style>
 </head>
+
 <body>
-  <div id="image-overlay">
-    <img src="" alt="Expanded image">
-  </div>
-  <script src="script.js"></script>
 
   <header>
-    <h1>Jeevan Kumar</h1>
+    <div class="header-content">
+      <img src="jeevan.jpeg" alt="Jeevan Kumar" class="profile-image">
+      <h1>Jeevan Kumar</h1>
+      <p class="tagline">"I have noticed that worrying is like praying for what you don't want to happen." - Robert
+        Downey Jr</p>
+    </div>
   </header>
 
   <div class="container">
-    <a href="index.html" class="back-link">← Back to Blog</a>
+    <a href="index.html" class="read-more" style="margin-bottom: 20px;">← Back to Blog</a>
 
     <article class="post">
       <h2>2d animation practice</h2>
@@ -62,7 +40,14 @@
 
   <footer>
     <p>Blog by Jeevan</p>
+    <p>Contact: <a href="mailto:bettercalljeevan@gmail.com">bettercalljeevan@gmail.com</a></p>
   </footer>
+
+  <div id="image-overlay">
+    <img src="" alt="Fullscreen preview">
+  </div>
+
   <script src="script.js"></script>
 </body>
+
 </html>

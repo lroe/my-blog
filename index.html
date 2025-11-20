@@ -1,185 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jeevan Kumar</title>
   <link rel="icon" href="cool.png" type="image/x-icon">
-
   <link rel="stylesheet" href="style.css">
-  <style>
-    
-    .video-container {
-      display: flex;
-      justify-content: space-around;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-    .video-container video {
-      width: 48%;
-      max-width: 400px;
-      border-radius: 6px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .post img {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
-/* Mobile view: smaller images */
-@media (max-width: 768px) {
-  .post img {
-    max-width: 400px;
-  }
-}
-
-/* Desktop view: larger images */
-@media (min-width: 769px) {
-  .post img {
-    max-width: 800px;
-  }
-}
-
-  </style>
 </head>
+
 <body>
 
-<header style="display:flex; align-items:center; gap:15px;">
-  <div>
-    <img src="jeevan.jpeg" alt="Jeevan Kumar"
-         style="width:130px; height:130px; object-fit:contain; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.3); display:block;">
-    <figcaption style="text-align:center; font-style:italic; margin-top:6px;">Me 😉</figcaption>
-  </div>
-  
-  <div>
-    <h1>Jeevan Kumar</h1>
-    <p>"I have noticed that worrying is like praying for what you don’t want to happen." - Robert Downey Jr</p>
-  </div>
-</header>
-
-
+  <header id="home-header">
+    <div class="header-content">
+      <img src="jeevan3.png" alt="Jeevan Kumar" class="profile-image">
+      <h1>Jeevan Kumar</h1>
+      <p class="tagline">"I have noticed that worrying is like praying for what you don't want to happen." - Robert
+        Downey Jr</p>
+    </div>
+  </header>
 
   <div class="container">
-  	<!-- NEW POST -->
-
 
     <article class="post">
-  <h2>
-    <a href="movies-games-music-books.html" target="_blank" style="color: inherit; text-decoration: none;">
-      Movies, Games , Music & Books
-    </a>
-  </h2>
-  <span class="post-date">November 10, 2025</span>
-
-  <div class="post-content">
-    <img src="images/cubeman.png" alt="Cube Man" style="max-width:400px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.15); margin: 1rem 0;">
-    <p>Movies, Games, Music, Books... these are all different mediums of expressing experiences.
-
-Now, a movie may contain music, storytelling inspired by books, and 3D models taken from games ... but does that make movies something “greater” than music or games?</p>
-
-    
-
-    
-  </div>
-
-  <a href="movies-games-music-books.html" target="_blank" class="read-more">Read more →</a>
-</article>
-
-
+      <h2><a href="should-we-make-art.html" target="_blank">Should we make art when AI can do it ?</a></h2>
+      <span class="post-date">November 20, 2025</span>
+      <div class="post-content">
+        <img src="images/painter.png" alt="Art and AI">
+        <p>(Here art refers to anything such as, making a video, doing a standup, painting something...creating
+          something.)</p>
+        <a href="should-we-make-art.html" target="_blank" class="read-more">Read more →</a>
+      </div>
+    </article>
 
     <article class="post">
-  <h2>
-    <a href="arjuna.html" target="_blank" style="color: inherit; text-decoration: none;">
-      Why Arjuna Did Tapas
-    </a>
-  </h2>
-  <span class="post-date">November 7, 2025</span>
+      <h2><a href="should-we-learn-coding.html" target="_blank">Should we learn coding if AI can do it better than
+          you?</a></h2>
+      <span class="post-date">November 20, 2025</span>
+      <div class="post-content">
+        <img src="images/tony.png" alt="Scene from Spider-Man: Homecoming">
+        <p>Lets travel back to the time when a machine that can perform maths accurately and faster than any human was
+          invented. Yes, I am speaking about the calculator.</p>
+        <a href="should-we-learn-coding.html" target="_blank" class="read-more">Read more →</a>
+      </div>
+    </article>
 
-  <div class="post-content">
-    <p>Ever since I installed Airtel Wi-Fi, my dad has been looping the <em>Mahabharatam</em> (2013) series every day. Whenever I pass by, someone’s always doing <em>tapas</em> ... and one day, I saw Arjuna doing it too.</p>
+    <article class="post">
+      <h2><a href="movies-games-music-books.html" target="_blank">Movies, Games, Music & Books</a></h2>
+      <span class="post-date">November 10, 2025</span>
+      <div class="post-content">
+        <img src="images/cubeman.png" alt="Cube Man">
+        <p>Movies, Games, Music, Books... these are all different mediums of expressing experiences.</p>
+        <p>Now, a movie may contain music, storytelling inspired by books, and 3D models taken from games ... but does
+          that make movies something "greater" than music or games?</p>
+        <a href="movies-games-music-books.html" target="_blank" class="read-more">Read more →</a>
+      </div>
+    </article>
 
-    <img src="images/Arjuna.webp" alt="Arjuna from Mahabharat 2013" style="max-width:300px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.15); margin: 1rem 0;">
+    <article class="post">
+      <h2><a href="arjuna.html" target="_blank">Why Arjuna Did Tapas</a></h2>
+      <span class="post-date">November 7, 2025</span>
+      <div class="post-content">
+        <p>Ever since I installed Airtel Wi-Fi, my dad has been looping the <em>Mahabharatam</em> (2013) series every
+          day. Whenever I pass by, someone's always doing <em>tapas</em> ... and one day, I saw Arjuna doing it too.</p>
+        <img src="images/Arjuna.webp" alt="Arjuna from Mahabharat 2013">
+        <p>Curious, I looked it up ...</p>
+        <a href="arjuna.html" target="_blank" class="read-more">Read more →</a>
+      </div>
+    </article>
 
-    <p>Curious, I looked it up ...</p>
-  </div>
-
-  <a href="arjuna.html" target="_blank" class="read-more">Read more →</a>
-</article>
-
-
-<article class="post">
-  <h2>
-    <a href="2d-animation-practice.html" target="_blank" style="color: inherit; text-decoration: none;">
-      2d animation practice
-    </a>
-  </h2>
-  <span class="post-date">October 29, 2025</span>
-
-  <div class="post-content">
+    <article class="post">
+      <h2><a href="2d-animation-practice.html" target="_blank">2D Animation Practice</a></h2>
+      <span class="post-date">October 29, 2025</span>
+      <div class="post-content">
         <p>Today, I practiced some 2D animation. Here are a couple of my attempts, side-by-side.</p>
-
         <div class="video-container">
           <video src="videos/anim1.mp4" controls autoplay loop muted></video>
           <video src="videos/anim2.mp4" controls autoplay loop muted></video>
         </div>
-      </div>  <a href="2d-animation-practice.html" target="_blank" class="read-more">Read more →</a>
-</article>
+        <a href="2d-animation-practice.html" target="_blank" class="read-more">Read more →</a>
+      </div>
+    </article>
 
-
-
-<article class="post">
-  <h2>
-    <a href="cartoony-cup.html" target="_blank" style="color: inherit; text-decoration: none;">
-      Cartoony Teacup
-    </a>
-  </h2>
-  <span class="post-date">October 26, 2025</span>
-
-  <div class="post-content">
-    <p>Today I learned how to model a cartoony-style rendering of a tea cup. I discovered a lot about shading, the process of giving color, texture, and material properties to a 3D model. What I love about Blender is that every part of the art creation process is in our control.
-
-.</p>
-
-    <p>For example, we can decide exactly how the flow of water appears inside the cup. In the photo of coffee shown below, the flow of liquid in surface might look circular, but in Blender, we can shape it however we like. That freedom to define every detail is superb.</p>
-
-    <img src="images/tea2.png" alt="Cartoony teacup render" style="max-width:300px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.15); margin: 1rem 0;">
-
-    <p>Even something like controlling shadows is entirely up to us. If we want to place an object under the shadow of another without it casting a shadow in return, we can do that too. In Blender, every element can be shaped and managed precisely the way we imagine.</p>
-  </div>
-  <a href="cartoony-cup.html" target="_blank" class="read-more">Read more →</a>
-</article>
-
-
-
-<article class="post">
-
-
-  <h2><a href="hardware-limits.html" target="_blank" style="color: inherit; text-decoration: none;">Hardware Limits</a></h2>
-  <span class="post-date">October 23, 2025</span>
-  <div class="post-content">
-    <p>I tried to build a realistic 3D brick wall, but my laptop hit its hardware limits — only 8GB RAM and an integrated GPU. Tomorrow, I’m upgrading it to 24GB and hoping for a small performance boost. For now, I’ll stick to simpler animations and focus on creativity.</p>
-  </div>
-
-  <div class="post-images">
-    <figure>
-      <img src="images/brickwall2.png" alt="Improved brick wall render">
-      <figcaption>My attempt at a more realistic brick wall.</figcaption>
-    </figure>
-
-  </div>
-  <a href="hardware-limits.html" target="_blank" class="read-more">Read more →</a>
-</article>
-
-
-    <!-- LATEST POST -->
     <article class="post">
-      <h2><a href="roadmap.html" target="_blank">Work to do — Roadmap</a></h2>
+      <h2><a href="cartoony-cup.html" target="_blank">Cartoony Teacup</a></h2>
+      <span class="post-date">October 26, 2025</span>
+      <div class="post-content">
+        <p>Today I learned how to model a cartoony-style rendering of a tea cup. I discovered a lot about shading, the
+          process of giving color, texture, and material properties to a 3D model. What I love about Blender is that
+          every part of the art creation process is in our control.</p>
+        <p>For example, we can decide exactly how the flow of water appears inside the cup. In the photo of coffee shown
+          below, the flow of liquid in surface might look circular, but in Blender, we can shape it however we like.
+          That freedom to define every detail is superb.</p>
+        <img src="images/tea2.png" alt="Cartoony teacup render">
+        <p>Even something like controlling shadows is entirely up to us. If we want to place an object under the shadow
+          of another without it casting a shadow in return, we can do that too. In Blender, every element can be shaped
+          and managed precisely the way we imagine.</p>
+        <a href="cartoony-cup.html" target="_blank" class="read-more">Read more →</a>
+      </div>
+    </article>
+
+
+
+    <article class="post">
+      <h2><a href="hardware-limits.html" target="_blank">Hardware Limits</a></h2>
+      <span class="post-date">October 23, 2025</span>
+      <div class="post-content">
+        <p>I tried to build a realistic 3D brick wall, but my laptop hit its hardware limits , only 8GB RAM and an
+          integrated GPU. Tomorrow, I'm upgrading it to 24GB and hoping for a small performance boost. For now, I'll
+          stick to simpler animations and focus on creativity.</p>
+        <div class="post-images">
+          <figure>
+            <img src="images/brickwall2.png" alt="Improved brick wall render">
+            <figcaption>My attempt at a more realistic brick wall.</figcaption>
+          </figure>
+        </div>
+        <a href="hardware-limits.html" target="_blank" class="read-more">Read more →</a>
+      </div>
+    </article>
+
+    <article class="post">
+      <h2><a href="roadmap.html" target="_blank">Work to do : Roadmap</a></h2>
       <span class="post-date">October 22, 2025</span>
       <div class="post-content">
-        <p>To build better interactive simulated environments, I’m setting milestone projects to master computer graphics.</p>
+        <p>To build better interactive simulated environments, I'm setting milestone projects to master computer
+          graphics.</p>
         <ol>
           <li>Build an isometric 3D room</li>
           <li>Model a character</li>
@@ -191,102 +136,90 @@ Now, a movie may contain music, storytelling inspired by books, and 3D models ta
       </div>
     </article>
 
-    <!-- POST 4 -->
     <article class="post">
       <h2><a href="first-animation.html" target="_blank">First Animation</a></h2>
       <span class="post-date">October 13, 2025</span>
       <div class="post-content">
-        <p>I made my first 3D animation — a simple crawling spider hand. Seeing it move felt like magic.</p>
-      </div>
-      <div class="post-images">
-        <figure>
-          <a href="first-animation.html" target="_blank">
-            <img src="images/spider.gif" alt="First Blender Animation" style="max-width:400px;">
-          </a>
-          <figcaption>My first animation.</figcaption>
-        </figure>
+        <p>I made my first 3D animation yayyyyy</p>
+        <div class="post-images">
+          <figure>
+            <img src="images/spider.gif" alt="First Blender Animation">
+            <figcaption>walking spider hand</figcaption>
+          </figure>
+        </div>
       </div>
     </article>
 
-    <!-- POST 3 -->
     <article class="post">
       <h2><a href="first-3d-model.html" target="_blank">My First 3D Model</a></h2>
       <span class="post-date">October 12, 2025</span>
       <div class="post-content">
-        <p>Made my first 3D model in Blender — the classic donut 🍩. A rite of passage for every 3D artist.</p>
-      </div>
-      <div class="post-images">
-        <figure>
-          <a href="first-3d-model.html" target="_blank">
-            <img src="images/donut.png" alt="First Blender Donut" style="max-width:300px;">
-          </a>
-          <figcaption>The Blender Donut.</figcaption>
-        </figure>
+        <p>Made my very first 3D model in Blender :)</p>
+        <div class="post-images">
+          <figure>
+            <img src="images/donut.png" alt="First Blender Donut">
+            <figcaption>The Blender Donut.</figcaption>
+          </figure>
+        </div>
       </div>
     </article>
 
-    <!-- POST 2 -->
     <article class="post">
       <h2><a href="new-beginnings.html" target="_blank">New Beginnings</a></h2>
       <span class="post-date">June 26, 2025</span>
       <div class="post-content">
-        <p>On my birthday, I decided to start an edtech startup — combining AI, storytelling, and games to reinvent learning.</p>
+        <p>On my birthday, I decided to start an edtech startup — combining AI, storytelling, and games to reinvent
+          learning.</p>
         <p>Visit <a href="https://www.guidee.me" target="_blank">guidee.me</a> (under development).</p>
       </div>
     </article>
 
-    <!-- POST 1 -->
     <article class="post">
       <h2><a href="post-one.html" target="_blank">Post One</a></h2>
       <span class="post-date">May 24, 2025</span>
       <div class="post-content">
-        <p>I began learning pencil drawing using <em>"Drawing on the Right Side of the Brain"</em>. In just 10 days, the improvement was amazing.</p>
+        <p>I began learning pencil drawing using <em>"Drawing on the Right Side of the Brain"</em>. In just 10 days, the
+          improvement was amazing.</p>
+        <div class="post-images">
+          <figure>
+            <img src="images/img1.jpeg" alt="Drawing progress 1">
+            <figcaption>Day 1 – My first attempt.</figcaption>
+          </figure>
+          <figure>
+            <img src="images/img4.jpeg" alt="Drawing progress 4">
+            <figcaption>Day 10 – Redrawn version.</figcaption>
+          </figure>
+        </div>
         <a href="post-one.html" target="_blank" class="read-more">Read more →</a>
-      </div>
-      <div class="post-images">
-        <figure>
-          <a href="post-one.html" target="_blank">
-            <img src="images/img1.jpeg" alt="Drawing progress 1" style="max-width:300px;">
-          </a>
-          <figcaption>Day 1 – My first attempt.</figcaption>
-        </figure>
-        <figure>
-          <a href="post-one.html" target="_blank">
-            <img src="images/img4.jpeg" alt="Drawing progress 4" style="max-width:300px;">
-          </a>
-          <figcaption>Day 10 – Redrawn version.</figcaption>
-        </figure>
       </div>
     </article>
 
   </div>
 
-    <footer>
+  <footer>
     <p>Blog by Jeevan</p>
-    <p>Contact: <a href="mailto:bettercalljeevan@gmail.com" style="color: #a8c69f; text-decoration: italic;">bettercalljeevan@gmail.com</a></p>
+    <p>Contact: <a href="mailto:bettercalljeevan@gmail.com">bettercalljeevan@gmail.com</a></p>
   </footer>
 
   <div id="image-overlay">
-  <img src="" alt="Fullscreen preview">
-</div>
+    <img src="" alt="Fullscreen preview">
+  </div>
 
-<script>
-  // When any image is clicked
-  document.querySelectorAll('.post img').forEach(img => {
-    img.addEventListener('click', () => {
-      const overlay = document.getElementById('image-overlay');
-      const overlayImg = overlay.querySelector('img');
-      overlayImg.src = img.src;
-      overlay.classList.add('active');
+  <script>
+    document.querySelectorAll('.post-content img, .post-images img').forEach(img => {
+      img.addEventListener('click', () => {
+        const overlay = document.getElementById('image-overlay');
+        const overlayImg = overlay.querySelector('img');
+        overlayImg.src = img.src;
+        overlay.classList.add('active');
+      });
     });
-  });
 
-  // Close overlay when clicked anywhere
-  document.getElementById('image-overlay').addEventListener('click', () => {
-    document.getElementById('image-overlay').classList.remove('active');
-  });
-</script>
-
+    document.getElementById('image-overlay').addEventListener('click', () => {
+      document.getElementById('image-overlay').classList.remove('active');
+    });
+  </script>
 
 </body>
+
 </html>

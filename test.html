@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Blog</title>
+    
+    <!-- Tailwind CSS (CDN for instant setup) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts: Libre Baskerville (Serif) and Inter (Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Custom Configurations -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Libre Baskerville', 'serif'],
+                    },
+                    colors: {
+                        'off-black': '#111111',
+                        'smoke': '#FDFDFD',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #ffffff;
+            color: #111111;
+        }
+        /* Smooth minimalist selection color */
+        ::selection {
+            background: #eee;
+        }
+    </style>
+</head>
+<body class="antialiased flex flex-col min-h-screen">
+
+    <!-- NAVIGATION -->
+    <nav class="w-full border-b border-gray-100 py-4 sticky top-0 bg-white/95 backdrop-blur-sm z-50">
+        <div class="max-w-2xl mx-auto px-6 flex justify-between items-center">
+            <!-- Logo / Brand -->
+            <a href="#" class="font-bold tracking-tight text-lg font-sans">
+                The Monograph
+            </a>
+
+            <!-- Right Side Actions -->
+            <div class="flex items-center gap-6">
+                <a href="#" class="hidden sm:block text-sm text-gray-500 hover:text-black transition-colors">Sign in</a>
+                <button class="bg-off-black text-white text-sm font-medium px-4 py-2 rounded-full hover:bg-gray-800 transition-all">
+                    Subscribe
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow">
+        <div class="max-w-2xl mx-auto px-6">
+            
+            <!-- HERO SECTION -->
+            <header class="py-20 text-center border-b border-gray-100">
+                <div class="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-6 overflow-hidden">
+                    <!-- Placeholder for Profile Pic -->
+                    <img src="https://api.dicebear.com/9.x/notionists/svg?seed=Felix" alt="Author" class="w-full h-full object-cover grayscale opacity-80">
+                </div>
+                <h1 class="font-serif text-4xl font-bold mb-4 text-off-black">The Monograph</h1>
+                <p class="text-gray-500 text-lg font-light leading-relaxed max-w-md mx-auto">
+                    Notes on design, minimalism, and the art of living simply. A weekly newsletter by Felix.
+                </p>
+                
+                <!-- Subscribe Input -->
+                <div class="mt-8 flex justify-center">
+                    <div class="flex w-full max-w-sm border border-gray-200 rounded-full p-1 focus-within:border-gray-400 transition-colors">
+                        <input type="email" placeholder="Type your email..." class="w-full px-4 py-2 outline-none bg-transparent text-sm placeholder-gray-400">
+                        <button class="bg-off-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-all">
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+                <p class="mt-3 text-xs text-gray-400">Join 4,000+ subscribers</p>
+            </header>
+
+            <!-- FILTER TABS -->
+            <div class="flex gap-6 py-6 border-b border-gray-100 text-sm font-medium">
+                <a href="#" class="text-off-black border-b-2 border-off-black pb-6 -mb-[25px]">New</a>
+                <a href="#" class="text-gray-400 hover:text-gray-600 transition-colors">Top</a>
+                <a href="#" class="text-gray-400 hover:text-gray-600 transition-colors">Archive</a>
+            </div>
+
+            <!-- POST LIST -->
+            <div class="py-8 space-y-12">
+
+                <!-- Article 1 -->
+                <article class="group cursor-pointer">
+                    <div class="flex justify-between items-baseline text-xs font-sans uppercase tracking-wide text-gray-400 mb-2">
+                        <span>Philosophy</span>
+                        <span>Oct 24</span>
+                    </div>
+                    <h2 class="font-serif text-2xl font-bold leading-tight mb-3 group-hover:underline decoration-1 underline-offset-4 decoration-gray-300">
+                        Why we need more silence in a noisy world
+                    </h2>
+                    <p class="text-gray-600 font-serif leading-7 mb-4 line-clamp-2">
+                        The modern internet is a cacophony of notifications, pop-ups, and urgent demands for your attention. Here is the case for digital silence.
+                    </p>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            <span>12</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            <span>48</span>
+                        </div>
+                    </div>
+                </article>
+
+                <hr class="border-gray-100">
+
+                <!-- Article 2 -->
+                <article class="group cursor-pointer">
+                    <div class="flex justify-between items-baseline text-xs font-sans uppercase tracking-wide text-gray-400 mb-2">
+                        <span>Design</span>
+                        <span>Oct 18</span>
+                    </div>
+                    <h2 class="font-serif text-2xl font-bold leading-tight mb-3 group-hover:underline decoration-1 underline-offset-4 decoration-gray-300">
+                        The aesthetic of empty spaces
+                    </h2>
+                    <p class="text-gray-600 font-serif leading-7 mb-4 line-clamp-2">
+                        Japanese aesthetics have long understood "Ma" (negative space). How can we apply this ancient concept to modern UI design to reduce cognitive load?
+                    </p>
+                    
+                    <!-- Optional Image Preview -->
+                    <div class="w-full h-48 bg-gray-100 rounded-md mb-4 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?q=80&w=2000&auto=format&fit=crop" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+                    </div>
+
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            <span>4</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            <span>22</span>
+                        </div>
+                    </div>
+                </article>
+
+                <hr class="border-gray-100">
+
+                <!-- Article 3 -->
+                <article class="group cursor-pointer">
+                    <div class="flex justify-between items-baseline text-xs font-sans uppercase tracking-wide text-gray-400 mb-2">
+                        <span>Personal</span>
+                        <span>Oct 02</span>
+                    </div>
+                    <h2 class="font-serif text-2xl font-bold leading-tight mb-3 group-hover:underline decoration-1 underline-offset-4 decoration-gray-300">
+                        Leaving the city
+                    </h2>
+                    <p class="text-gray-600 font-serif leading-7 mb-4 line-clamp-2">
+                        I packed up my apartment in New York and moved to a cabin in Vermont. Here is what I learned about isolation and creativity in the first month.
+                    </p>
+                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                            <span>31</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                            <span>104</span>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+            <!-- PAGINATION -->
+            <div class="py-10 flex justify-center">
+                <button class="text-sm font-medium text-gray-500 hover:text-black transition-colors">
+                    Load more
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="py-12 text-center border-t border-gray-100 mt-auto">
+        <div class="max-w-2xl mx-auto px-6 flex flex-col items-center gap-4">
+            <p class="text-xs text-gray-400 font-sans">&copy; 2023 The Monograph. All rights reserved.</p>
+            <div class="flex gap-4">
+                <a href="#" class="text-gray-400 hover:text-black text-xs">Twitter</a>
+                <a href="#" class="text-gray-400 hover:text-black text-xs">Instagram</a>
+                <a href="#" class="text-gray-400 hover:text-black text-xs">RSS</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
