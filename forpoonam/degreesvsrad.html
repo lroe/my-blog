@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Origins: The Radian</title>
+
+    <!-- 1. CONFIGURE AND LOAD MATHJAX -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent-deg: #ff9f43;
+            /* Orange -> Degrees */
+            --accent-rad: #00d2d3;
+            /* Cyan -> Arc/Radian */
+            --accent-radius: #ff4757;
+            /* Red -> The Physical Radius */
+            --border: #2c313a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 400px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        h1 span {
+            color: var(--accent-rad);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-rad);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.7;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Highlight Classes */
+        .hl-deg {
+            color: var(--accent-deg);
+            font-weight: bold;
+        }
+
+        .hl-rad {
+            color: var(--accent-rad);
+            font-weight: bold;
+        }
+
+        .hl-r {
+            color: var(--accent-radius);
+            font-weight: bold;
+        }
+
+        .hl-pi {
+            color: #feca57;
+            font-weight: bold;
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.2em;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #131519;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent-rad);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+
+        /* DATA READOUT */
+        #data-readout {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-box {
+            text-align: center;
+            width: 48%;
+        }
+
+        .data-val {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .data-lbl {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: 1px solid #3d4450;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #333;
+        }
+
+        .nav-btn.next {
+            background: var(--accent-rad);
+            color: #000;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: #00b8b9;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        /* Floating Tooltip */
+        #tooltip {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 5px;
+            color: #aaa;
+            font-size: 12px;
+            pointer-events: none;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Math <span>Origins</span></h1>
+            <div class="subtitle">Unit 2: The Language of Rotation</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <label>Rotation Control</label>
+            <input type="range" id="slider-angle" min="0" max="360" value="0" step="0.5">
+            <div style="font-size: 10px; color:#555; display:flex; justify-content:space-between; margin-top:5px;">
+                <span>0&deg;</span>
+                <span>360&deg;</span>
+            </div>
+
+            <div id="data-readout">
+                <div class="data-box">
+                    <div class="data-val" id="val-deg" style="color: var(--accent-deg);">0&deg;</div>
+                    <div class="data-lbl">Degrees</div>
+                </div>
+                <div class="data-box">
+                    <div class="data-val" id="val-rad" style="color: var(--accent-rad);">0.00</div>
+                    <div class="data-lbl">Radians</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main>
+        <div id="tooltip">Radius (r) = 1 Unit</div>
+        <canvas id="simCanvas"></canvas>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE ENGINE
+        // ==========================================
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let angleDeg = 0;
+        let radius = 200;
+        let centerX, centerY;
+        const PI = Math.PI;
+
+        // Resize handling
+        function resize() {
+            const sidebarWidth = 400; // Match CSS
+            canvas.width = window.innerWidth - sidebarWidth;
+            canvas.height = window.innerHeight;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            radius = Math.min(canvas.width, canvas.height) * 0.32;
+            draw();
+        }
+        window.addEventListener('resize', resize);
+
+        // Core Drawing Function
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const rad = angleDeg * (PI / 180);
+
+            // 1. Draw Grid Lines (Subtle)
+            drawGrid();
+
+            // 2. Draw The Base Circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, PI * 2);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 3. Draw Radian Ticks (The "Natural" Ruler)
+            for (let i = 1; i <= 6; i++) {
+                drawRadianTick(i, i + " rad", false);
+            }
+
+            // Draw PI ticks (The "Holy" Numbers)
+            drawRadianTick(PI, "π", true);
+            drawRadianTick(2 * PI, "2π", true);
+
+            // 4. Draw The Static Radius (Visual Reference)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + radius, centerY);
+            ctx.strokeStyle = '#ff4757'; // Red
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Label 'r'
+            ctx.fillStyle = '#ff4757';
+            ctx.font = "bold 14px monospace";
+            ctx.fillText("r", centerX + radius / 2, centerY + 15);
+
+            // 5. Draw The Active Angle
+            const pX = centerX + Math.cos(-rad) * radius; // Invert Y for canvas
+            const pY = centerY + Math.sin(-rad) * radius;
+
+            // The Arm
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // The Point
+            ctx.beginPath();
+            ctx.arc(pX, pY, 6, 0, PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // 6. Draw The Arc (The Wrapped Radius)
+            if (rad > 0) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, -rad, true); // Counter-clockwise
+                ctx.strokeStyle = '#00d2d3';
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+
+                // Glow effect
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00d2d3';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            // 7. Dynamic Measurement Line
+            if (Math.abs(rad - 1) < 0.1) {
+                ctx.fillStyle = "#00d2d3";
+                ctx.font = "bold 14px monospace";
+                ctx.fillText("Arc Length ≈ Radius", centerX + 20, centerY - radius - 20);
+            }
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, centerY); ctx.lineTo(canvas.width, centerY); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(centerX, 0); ctx.lineTo(centerX, canvas.height); ctx.stroke();
+        }
+
+        function drawRadianTick(radValue, label, isSpecial) {
+            const angle = -radValue;
+            const rInner = isSpecial ? radius - 15 : radius - 8;
+            const rOuter = isSpecial ? radius + 15 : radius + 8;
+
+            const x1 = centerX + Math.cos(angle) * rInner;
+            const y1 = centerY + Math.sin(angle) * rInner;
+            const x2 = centerX + Math.cos(angle) * rOuter;
+            const y2 = centerY + Math.sin(angle) * rOuter;
+
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = isSpecial ? '#feca57' : '#555';
+            ctx.lineWidth = isSpecial ? 3 : 1;
+            ctx.stroke();
+
+            // Label
+            const labelR = radius + 35;
+            const lx = centerX + Math.cos(angle) * labelR;
+            const ly = centerY + Math.sin(angle) * labelR;
+
+            ctx.fillStyle = isSpecial ? '#feca57' : '#555';
+            ctx.font = isSpecial ? "bold 16px serif" : "11px monospace";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(label, lx, ly);
+        }
+
+        // Input Handling
+        const slider = document.getElementById('slider-angle');
+        slider.addEventListener('input', (e) => {
+            angleDeg = parseFloat(e.target.value);
+            updateData();
+            draw();
+            checkLessonProgress();
+        });
+
+        function updateData() {
+            const rad = angleDeg * (Math.PI / 180);
+            document.getElementById('val-deg').innerText = angleDeg.toFixed(1) + "°";
+            document.getElementById('val-rad').innerText = rad.toFixed(2);
+        }
+
+        // ==========================================
+        // PART 2: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentLesson = 0;
+
+        const lessons = [
+            {
+                title: "The Tyranny of Degrees",
+                content: `
+                Welcome to the circle. 
+                <br><br>
+                Look at the slider controls. We measure circles in <span class="hl-deg">Degrees</span> (0 to 360). 
+                <br><br>
+                But ask yourself: <strong>Why 360?</strong>
+                <br><br>
+                It is an arbitrary number chosen by ancient astronomers because 360 divides easily. It has nothing to do with the actual shape of a circle. 
+                <br><br>
+                Math needs a ruler that fits the geometry.
+            `,
+                check: () => true
+            },
+            {
+                title: "The Natural Unit",
+                content: `
+                Look at the <span class="hl-r">Red Dashed Line</span>. That is the <strong>Radius (r)</strong>. It defines the circle's size.
+                <br><br>
+                To create a "Natural Angle," imagine peeling that Red Line off and wrapping it onto the outside of the circle.
+                <br><br>
+                <strong>Task:</strong> Drag the slider until the <span class="hl-rad">Cyan Arc</span> looks exactly the same length as the <span class="hl-r">Radius</span>.
+                <br><br>
+                (Hint: The Radian counter should read roughly <strong>1.00</strong>).
+            `,
+                check: () => {
+                    const r = angleDeg * (Math.PI / 180);
+                    return (r > 0.95 && r < 1.05);
+                }
+            },
+            {
+                title: "Defining the Radian",
+                content: `
+                You just found it.
+                <br><br>
+                <strong>1 Radian</strong> is simply the angle created when the arc length equals the radius length.
+                <br><br>
+                It happens at approx <strong>57.3&deg;</strong>.
+                <br><br>
+                Because this unit is based on the circle's own body part (the radius), it creates beautiful math formulas.
+                <br><br>
+                <strong>Task:</strong> Keep dragging. Find the tick mark for <strong>2</strong> Radians, then <strong>3</strong> Radians.
+            `,
+                check: () => {
+                    const r = angleDeg * (Math.PI / 180);
+                    return (r > 2.9 && r < 3.1);
+                }
+            },
+            {
+                title: "The Pi Connection",
+                content: `
+                You are now near <strong>3 Radians</strong>. 
+                <br><br>
+                Look at the circle. You are almost at the halfway point (180&deg;), but not quite. There is a tiny gap left.
+                <br><br>
+                You need exactly <strong>0.14159...</strong> more radius to close that gap.
+                <br><br>
+                $3 + 0.14159... = 3.14159...$
+                <br><br>
+                <strong>Task:</strong> Move the slider to <strong>180&deg;</strong>.
+            `,
+                check: () => Math.abs(angleDeg - 180) <= 5
+            },
+            {
+                title: "The Code of the Circle",
+                content: `
+                At 180&deg;, the Radian value is <span class="hl-pi">3.14 (π)</span>.
+                <br><br>
+                This is what $\\pi$ actually is. It's the number of Radii it takes to wrap halfway around a circle.
+                <br><br>
+                Therefore:
+                <br>
+                <!-- NOTICE: Double backslashes (\\\\) are required for LaTeX in JS strings -->
+                $180^\\circ = \\pi \\text{ radians}$<br>
+                $360^\\circ = 2\\pi \\text{ radians}$
+                <br><br>
+                When you see $\\pi$ in a formula, it's not magic. It's just a count of radii.
+                <br><br>
+                <strong>Task:</strong> Complete the circle. Move the slider all the way to <strong>360&deg;</strong>.
+            `,
+                check: () => angleDeg > 355
+            }
+        ];
+
+        function loadLesson(index) {
+            currentLesson = index;
+            const l = lessons[index];
+
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = `
+            <div class="chapter-title">${l.title}</div>
+            <div class="story-text">${l.content}</div>
+        `;
+
+            // 2. TELL MATHJAX TO RENDER THE NEW CONTENT
+            if (window.MathJax) {
+                MathJax.typesetPromise([contentDiv]).then(() => {
+                    // Rendering finished
+                }).catch((err) => console.log('MathJax error:', err));
+            }
+
+            checkLessonProgress();
+        }
+
+        function checkLessonProgress() {
+            const btn = document.getElementById('btn-next');
+            const l = lessons[currentLesson];
+
+            if (currentLesson === lessons.length - 1) {
+                btn.innerHTML = "Next Chapter &rarr;";
+                btn.disabled = true;
+                if (l.check()) {
+                    btn.disabled = false;
+                    btn.onclick = () => window.location.href = '2.html';
+                }
+                return;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+                btn.onclick = nextLesson;
+            }
+
+            if (l.check()) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 0) {
+                loadLesson(currentLesson - 1);
+            }
+        }
+
+        // Initialize
+        resize();
+        loadLesson(0);
+
+    </script>
+</body>
+
+</html>

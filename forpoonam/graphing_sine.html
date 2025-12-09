@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Architect's Circle: Time Domain</title>
+    <style>
+        /* --- THEME & LAYOUT (Preserved) --- */
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            /* Orange/Gold -> SINE */
+            --accent-sec: #00d2d3;
+            /* Cyan -> COSINE */
+            --border: #2c313a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .hl-sin {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .hl-time {
+            color: #a29bfe;
+            font-weight: bold;
+        }
+
+        /* Fact Box Style */
+        .fact-box {
+            background: rgba(0, 210, 211, 0.1);
+            /* Cyan tint */
+            border-left: 3px solid var(--accent-sec);
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #131519;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+
+        /* DATA READOUT */
+        #data-readout {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-box {
+            text-align: center;
+            width: 48%;
+        }
+
+        .data-val {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .data-lbl {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: 1px solid #3d4450;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #333;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: #ffb773;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Math <span>Origins</span></h1>
+            <div class="subtitle">Unit 2: Unrolling the Circle</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <label>Time / Angle (&theta;)</label>
+            <!-- Range increased to 720 to show 2 cycles -->
+            <input type="range" id="slider-angle" min="0" max="720" value="0" step="1">
+            <div style="font-size: 10px; color:#555; display:flex; justify-content:space-between; margin-top:5px;">
+                <span>0&deg;</span>
+                <span>720&deg; (2 Cycles)</span>
+            </div>
+
+            <div id="data-readout">
+                <div class="data-box">
+                    <div class="data-val" id="val-angle" style="color: #a29bfe;">0&deg;</div>
+                    <div class="data-lbl">Angle (X-Axis)</div>
+                </div>
+                <div class="data-box">
+                    <div class="data-val" id="val-sin" style="color: var(--accent);">0.000</div>
+                    <div class="data-lbl">Sine (Height)</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <canvas id="simCanvas"></canvas>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE ENGINE (Canvas API)
+        // ==========================================
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let angleDeg = 0;
+        let circleRadius = 100;
+        let circleX, circleY;
+        let graphX, graphY, graphWidth;
+
+        // Resize handling
+        function resize() {
+            const sidebarWidth = 420;
+            canvas.width = window.innerWidth - sidebarWidth;
+            canvas.height = window.innerHeight;
+
+            // Layout: Circle on left (25%), Graph on right (65%)
+            circleRadius = Math.min(canvas.width, canvas.height) * 0.15;
+            circleX = canvas.width * 0.2;
+            circleY = canvas.height / 2;
+
+            graphX = canvas.width * 0.45;
+            graphY = canvas.height / 2;
+            graphWidth = canvas.width * 0.5;
+
+            draw();
+        }
+        window.addEventListener('resize', resize);
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const rad = angleDeg * (Math.PI / 180);
+
+            // 1. Calculate Point Position on Circle
+            // Canvas Y is inverted, so y = -Math.sin
+            const px = circleX + Math.cos(rad) * circleRadius;
+            const py = circleY - Math.sin(rad) * circleRadius;
+
+            // --- DRAW CIRCLE SECTION ---
+            drawGrid();
+
+            // Circle Outline
+            ctx.beginPath();
+            ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Radius Line
+            ctx.beginPath();
+            ctx.moveTo(circleX, circleY);
+            ctx.lineTo(px, py);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // The "Sine" Height on Circle (Orange)
+            ctx.beginPath();
+            ctx.moveTo(px, circleY);
+            ctx.lineTo(px, py);
+            ctx.strokeStyle = '#ff9f43';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // The Point on Circle
+            ctx.beginPath();
+            ctx.arc(px, py, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // --- DRAW CONNECTOR ---
+            // Dashed line connecting Circle Height to Graph Height
+            // Calculate where the current point is on the graph X-axis
+            // Map 0-720 degrees to 0-graphWidth
+            const currentGraphX = graphX + (angleDeg / 720) * graphWidth;
+
+            ctx.beginPath();
+            ctx.moveTo(px, py);
+            ctx.lineTo(currentGraphX, py);
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = 'rgba(255, 159, 67, 0.4)'; // Faint orange
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // --- DRAW WAVE GRAPH ---
+
+            // Draw Axis
+            ctx.beginPath();
+            ctx.moveTo(graphX, graphY);
+            ctx.lineTo(graphX + graphWidth, graphY);
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw Sine Curve History
+            ctx.beginPath();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#ff9f43'; // Orange
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff9f43';
+
+            // We draw the wave from 0 degrees up to current angleDeg
+            // Resolution: Draw every 2 degrees for smoothness
+            for (let a = 0; a <= angleDeg; a += 2) {
+                const r = a * (Math.PI / 180);
+                const gx = graphX + (a / 720) * graphWidth;
+                const gy = graphY - Math.sin(r) * circleRadius;
+
+                if (a === 0) ctx.moveTo(gx, gy);
+                else ctx.lineTo(gx, gy);
+            }
+            // Ensure we draw exactly to the current point
+            ctx.lineTo(currentGraphX, py);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Draw "Leading Edge" Point on Graph
+            ctx.beginPath();
+            ctx.arc(currentGraphX, py, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff9f43';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Label Axes
+            ctx.font = "12px monospace";
+            ctx.fillStyle = "#666";
+            ctx.fillText("0°", graphX, graphY + 20);
+            ctx.fillText("360°", graphX + (graphWidth / 2), graphY + 20);
+            ctx.fillText("720°", graphX + graphWidth, graphY + 20);
+        }
+
+        function drawGrid() {
+            // Subtle background grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+
+            // Horizontal center line
+            ctx.beginPath();
+            ctx.moveTo(0, circleY);
+            ctx.lineTo(canvas.width, circleY);
+            ctx.stroke();
+        }
+
+        // Input Handling
+        const slider = document.getElementById('slider-angle');
+        slider.addEventListener('input', (e) => {
+            angleDeg = parseFloat(e.target.value);
+            updateData();
+            draw();
+            checkLessonProgress();
+        });
+
+        function updateData() {
+            const rad = angleDeg * (Math.PI / 180);
+            let s = Math.sin(rad);
+            if (Math.abs(s) < 0.001) s = 0;
+
+            document.getElementById('val-angle').innerText = Math.round(angleDeg) + "°";
+            document.getElementById('val-sin').innerText = s.toFixed(3);
+        }
+
+        // ==========================================
+        // PART 2: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentLesson = 0;
+
+        const lessons = [
+            {
+                title: "Unrolling the Circle",
+                content: `
+                In the last unit, we looked at the circle. Now, we are going to translate that circle into a <strong>Graph</strong>.
+                <br><br>
+                On the left, we have our familiar Unit Circle.
+                <br><br>
+                On the right, we have a timeline. The horizontal axis isn't distance—it represents <strong>Angle (or Time)</strong>.
+                <br><br>
+                <span class='hl-sin'>Action:</span> Drag the slider slowly. Watch how the height of the point on the circle is projected sideways onto the graph.
+            `,
+                check: () => angleDeg > 20
+            },
+            {
+                title: "Tracing the Wave",
+                content: `
+                This curve is the <strong>Sine Wave</strong>. It is simply a history of "how high" the circle's point was at every specific angle.
+                <br><br>
+                Move the slider to <strong>90&deg;</strong>.
+                <br><br>
+                Notice the circle point is at the very top. Consequently, the wave reaches its highest peak.
+            `,
+                check: () => Math.abs(angleDeg - 90) < 10
+            },
+            {
+                title: "The Cycle (Period)",
+                content: `
+                Continue dragging past <strong>360&deg;</strong>.
+                <br><br>
+                At 360&deg;, the circle has completed one full rotation. The wave hits the center line again.
+                <br><br>
+                Everything after this is just a repeat. This is why Sine Waves are called <strong>Periodic Functions</strong>. They repeat the same pattern forever, just like a wheel spinning.
+            `,
+                check: () => angleDeg > 370
+            },
+            {
+                title: "Frequency & Amplitude",
+                content: `
+                In this graph:
+                <br><br>
+                1. <strong>Amplitude</strong> is how tall the wave gets (determined by the circle's radius).
+                <br><br>
+                2. <strong>Frequency</strong> is how fast the wave repeats. If you drag the slider quickly, you are simulating a higher frequency!
+                <br><br>
+                Try filling the entire graph by dragging all the way to <strong>720&deg;</strong> (two full cycles).
+            `,
+                check: () => angleDeg > 710
+            },
+            {
+                title: "Conclusion",
+                content: `
+                You have successfully graphed time!
+                <br><br>
+                This simple conversion—from rotation to a wave—is the foundation of modern civilization. It describes how Alternating Current (AC) electricity powers your home, how WiFi signals travel, and how music reaches your ears.
+                <br><br>
+                It is nature's way of smoothing out change.
+                
+                <div class="fact-box">
+                    <strong style="color: var(--accent-sec);">FUN FACT:</strong><br>
+                    <strong>Fourier's Discovery</strong>
+                    <br><br>
+                    In 1807, Joseph Fourier discovered a mind-bending truth: <em>Any</em> repeating wave—no matter how messy, jagged, or complex—can be built by adding together simple Sine Waves.
+                    <br><br>
+                    Your voice, a guitar chord, or a digital image are just piles of sine waves hidden in math!
+                </div>
+            `,
+                check: () => true
+            }
+        ];
+
+        function loadLesson(index) {
+            currentLesson = index;
+            const l = lessons[index];
+
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = `
+            <div class="chapter-title">${l.title}</div>
+            <div class="story-text">${l.content}</div>
+        `;
+
+            checkLessonProgress();
+        }
+
+        function checkLessonProgress() {
+            const btn = document.getElementById('btn-next');
+            const l = lessons[currentLesson];
+
+            if (currentLesson === lessons.length - 1) {
+                btn.innerHTML = "Next Chapter &rarr;";
+                btn.disabled = false;
+                btn.onclick = () => window.location.href = 'visualizing_harmony_interesting.html';
+                return;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+            }
+
+            if (l.check()) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 0) {
+                loadLesson(currentLesson - 1);
+            }
+        }
+
+        // Initialize
+        resize();
+        loadLesson(0);
+
+    </script>
+</body>
+
+</html>

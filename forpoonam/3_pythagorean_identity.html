@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Architect's Circle: First Principles</title>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            /* Orange/Gold -> SINE */
+            --accent-sec: #00d2d3;
+            /* Cyan -> COSINE */
+            --hypot: #ff7675;
+            /* Redish -> HYPOTENUSE */
+            --border: #2c313a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Highlighting */
+        .hl-sin {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .hl-cos {
+            color: var(--accent-sec);
+            font-weight: bold;
+        }
+
+        .hl-hyp {
+            color: var(--hypot);
+            font-weight: bold;
+        }
+
+        /* Fact Box Style */
+        .fact-box {
+            background: rgba(255, 159, 67, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #131519;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 10px;
+        }
+
+        label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        #angle-display {
+            font-family: 'Courier New', monospace;
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-bottom: 15px;
+        }
+
+        /* Checkbox styling */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        .checkbox-container input {
+            margin-right: 10px;
+            accent-color: var(--accent);
+        }
+
+        /* DATA READOUT */
+        #data-readout {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-group {
+            text-align: center;
+        }
+
+        .data-val {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .data-lbl {
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .operator {
+            color: #555;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: 1px solid #3d4450;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #333;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: #ffb773;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Math <span>Origins</span></h1>
+            <div class="subtitle">Unit 2: The Pythagorean Identity</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <div class="control-header">
+                <label>Angle (&theta;)</label>
+                <span id="angle-display">30.0&deg;</span>
+            </div>
+            <input type="range" id="slider-angle" min="0" max="360" value="30" step="0.1">
+
+            <label class="checkbox-container">
+                <input type="checkbox" id="check-show-squares"> Show Literal Squares
+            </label>
+
+            <!-- THE FORMULA READOUT -->
+            <div id="data-readout">
+                <div class="data-group">
+                    <div class="data-val" id="val-cos-sq" style="color: var(--accent-sec);">0.750</div>
+                    <div class="data-lbl">x²</div>
+                </div>
+                <div class="operator">+</div>
+                <div class="data-group">
+                    <div class="data-val" id="val-sin-sq" style="color: var(--accent);">0.250</div>
+                    <div class="data-lbl">y²</div>
+                </div>
+                <div class="operator">=</div>
+                <div class="data-group">
+                    <div class="data-val" id="val-total" style="color: #fff;">1.000</div>
+                    <div class="data-lbl">Radius²</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <canvas id="simCanvas"></canvas>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE ENGINE
+        // ==========================================
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let angleDeg = 30;
+        let radius = 180;
+        let centerX, centerY;
+        let showSquares = false;
+
+        function resize() {
+            const sidebarWidth = 420;
+            canvas.width = window.innerWidth - sidebarWidth;
+            canvas.height = window.innerHeight;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            radius = Math.min(canvas.width, canvas.height) * 0.25;
+            draw();
+        }
+        window.addEventListener('resize', resize);
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const rad = angleDeg * (Math.PI / 180);
+            const mathX = Math.cos(rad);
+            const mathY = Math.sin(rad);
+
+            const pX = centerX + (mathX * radius);
+            const pY = centerY - (mathY * radius);
+
+            drawGrid();
+
+            // 1. Draw The Unit Circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 2. Draw Squares (Visual Proof)
+            if (showSquares) {
+                drawVisualSquares(mathX, mathY, pX, pY);
+            }
+
+            // 3. Draw The Triangle
+
+            // Base (X)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, centerY);
+            ctx.strokeStyle = '#00d2d3';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Height (Y)
+            ctx.beginPath();
+            ctx.moveTo(pX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#ff9f43';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Radius (Hypotenuse)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#ff7675';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Right Angle Marker
+            const markSize = 10;
+            const xDir = mathX >= 0 ? -1 : 1;
+            const yDir = mathY >= 0 ? -1 : 1;
+
+            ctx.beginPath();
+            ctx.moveTo(pX + (markSize * xDir), centerY);
+            ctx.lineTo(pX + (markSize * xDir), centerY + (markSize * yDir));
+            ctx.lineTo(pX, centerY + (markSize * yDir));
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // 4. Point
+            ctx.beginPath();
+            ctx.arc(pX, pY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // 5. Labels
+            ctx.font = "bold 14px monospace";
+
+            // Label X
+            ctx.fillStyle = "#00d2d3";
+            ctx.textAlign = "center";
+            ctx.fillText("x", centerX + (mathX * radius) / 2, centerY + (mathY >= 0 ? 20 : -10));
+
+            // Label Y
+            ctx.fillStyle = "#ff9f43";
+            ctx.textAlign = "left";
+            ctx.fillText("y", pX + (mathX >= 0 ? 10 : -25), centerY - (mathY * radius) / 2);
+
+            // Label 1
+            ctx.fillStyle = "#ff7675";
+            ctx.textAlign = "center";
+            const midX = (centerX + pX) / 2;
+            const midY = (centerY + pY) / 2;
+            const dirX = mathX;
+            const dirY = mathY;
+            ctx.fillText("1", midX - (dirY * 15), midY - (dirX * 15));
+        }
+
+        function drawVisualSquares(mathX, mathY, pX, pY) {
+            ctx.globalAlpha = 0.2;
+
+            // Cosine Square (on bottom leg)
+            const cosLen = Math.abs(mathX * radius);
+            const cosH = (mathY >= 0) ? cosLen : -cosLen;
+            ctx.fillStyle = '#00d2d3';
+            ctx.fillRect(centerX, centerY, mathX * radius, cosH);
+
+            // Sine Square (on vertical leg)
+            const sinLen = Math.abs(mathY * radius);
+            const sinW = (mathX >= 0) ? sinLen : -sinLen;
+            ctx.fillStyle = '#ff9f43';
+            ctx.fillRect(pX, centerY, sinW, -(mathY * radius));
+
+            ctx.globalAlpha = 1.0;
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+        }
+
+        // Input Handling
+        const slider = document.getElementById('slider-angle');
+        const angleDisplay = document.getElementById('angle-display');
+        const checkSquares = document.getElementById('check-show-squares');
+
+        slider.addEventListener('input', (e) => {
+            angleDeg = parseFloat(e.target.value);
+            updateData();
+            draw();
+            checkLessonProgress();
+        });
+
+        checkSquares.addEventListener('change', (e) => {
+            showSquares = e.target.checked;
+            draw();
+        });
+
+        function updateData() {
+            // Update precise label
+            angleDisplay.innerText = angleDeg.toFixed(1) + "°";
+
+            const rad = angleDeg * (Math.PI / 180);
+            let c = Math.cos(rad);
+            let s = Math.sin(rad);
+
+            let cSq = c * c;
+            let sSq = s * s;
+            let sum = cSq + sSq;
+
+            document.getElementById('val-cos-sq').innerText = cSq.toFixed(3);
+            document.getElementById('val-sin-sq').innerText = sSq.toFixed(3);
+            document.getElementById('val-total').innerText = sum.toFixed(3);
+        }
+
+        // ==========================================
+        // PART 2: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentLesson = 0;
+
+        const lessons = [
+            {
+                title: "Coordinate Geometry",
+                content: `
+                Let's start from scratch. Forget trigonometry for a moment.
+                <br><br>
+                Look at the white point on the circle. In a 2D plane, its position is defined by two numbers:
+                <br><br>
+                1. <span class="hl-cos">x</span>: The horizontal distance from the center.<br>
+                2. <span class="hl-sin">y</span>: The vertical distance from the center.
+                <br><br>
+                Together, these lines form a right-angled triangle.
+            `,
+                check: () => true
+            },
+            {
+                title: "The Constant Radius",
+                content: `
+                This is a <strong>Unit Circle</strong>, meaning the radius is exactly <span class="hl-hyp">1</span>.
+                <br><br>
+                As you move the slider, <span class="hl-cos">x</span> changes and <span class="hl-sin">y</span> changes.
+                <br><br>
+                But the diagonal line (the distance from the center to the point) <strong>always stays 1</strong>.
+            `,
+                check: () => true
+            },
+            {
+                title: "Pythagoras' Theorem",
+                content: `
+                Since we have a right-angled triangle with sides <span class="hl-cos">x</span> and <span class="hl-sin">y</span>, and a hypotenuse of <span class="hl-hyp">1</span>, Pythagoras' theorem applies perfectly:
+                <br><br>
+                <center><strong>side² + side² = hypotenuse²</strong></center>
+                <br>
+                Which means:
+                <br>
+                <center><strong>x² + y² = 1²</strong></center>
+                <br>
+                (And 1² is just 1).
+            `,
+                check: () => true
+            },
+            {
+                title: "Substitution",
+                content: `
+                Now we bring trigonometry back.
+                <br><br>
+                We defined <strong>Cosine</strong> as the x-coordinate, and <strong>Sine</strong> as the y-coordinate.
+                <br><br>
+                If we simply swap the names in our equation ($x^2 + y^2 = 1$):
+                <br><br>
+                <strong style="font-size:18px; color:#fff; border:1px solid #555; padding:5px; display:inline-block">cos²(&theta;) + sin²(&theta;) = 1</strong>
+                <br><br>
+                This is the Pythagorean Identity. It is just the distance formula in disguise.
+            `,
+                check: () => true
+            },
+            {
+                // === MODIFIED SECTION: LESSON 5 ===
+                title: "Verification",
+                content: `
+                Let's prove it experimentally.
+                <br><br>
+                Watch the readout panel below the slider. No matter where you move, the result is 1.000.
+                <br><br>
+                To unlock the final chapter, set the angle to <strong>anywhere between 40° and 50°</strong>.
+                <br><br>
+                Notice how <span class="hl-cos">x²</span> and <span class="hl-sin">y²</span> shift balance, but their sum remains constant.
+            `,
+                check: () => {
+                    // The next button only enables if angle is between 40 and 50
+                    return angleDeg >= 40 && angleDeg <= 50;
+                }
+            },
+            {
+                title: "Conclusion",
+                content: `
+                You have derived the most important identity in trigonometry from first principles.
+                <br><br>
+                It works because the "Triangle" and the "Circle" are actually the same thing viewed in different ways. The Identity ensures that as the triangle changes shape, it stays tethered to the circle's path.
+                
+                <div class="fact-box">
+                    <strong style="color: var(--accent);">FUN FACT:</strong><br>
+                    Garfield the Cat proved this!
+                    <br><br>
+                    In 1876, <strong>James Garfield</strong> (who would later become the 20th US President) published a unique proof of the Pythagorean Theorem using a trapezoid, while he was a sitting member of Congress.
+                </div>
+            `,
+                check: () => true
+            }
+        ];
+
+        function loadLesson(index) {
+            currentLesson = index;
+            const l = lessons[index];
+
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = `
+            <div class="chapter-title">${l.title}</div>
+            <div class="story-text">${l.content}</div>
+        `;
+
+            checkLessonProgress();
+        }
+
+        function checkLessonProgress() {
+            const btn = document.getElementById('btn-next');
+            const l = lessons[currentLesson];
+
+            if (currentLesson === lessons.length - 1) {
+                btn.innerHTML = "Next Chapter &rarr;";
+                btn.disabled = false;
+                btn.onclick = () => window.location.href = 'graphing_sine.html';
+                return;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+            }
+
+            if (l.check()) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 0) {
+                loadLesson(currentLesson - 1);
+            }
+        }
+
+        // Initialize
+        resize();
+        updateData();
+        loadLesson(0);
+
+    </script>
+</body>
+
+</html>

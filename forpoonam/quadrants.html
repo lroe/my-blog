@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Architect's Circle: The Four Quadrants</title>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            /* Sine/Orange */
+            --accent-sec: #00d2d3;
+            /* Cosine/Cyan */
+            --pos: #2ecc71;
+            /* Positive Green */
+            --neg: #e74c3c;
+            /* Negative Red */
+            --border: #2c313a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        h1 span {
+            color: var(--accent-sec);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-sec);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Dynamic Highlighting for Text */
+        .hl-x {
+            color: var(--accent-sec);
+            font-weight: bold;
+        }
+
+        .hl-y {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .hl-pos {
+            color: var(--pos);
+            font-weight: bold;
+        }
+
+        .hl-neg {
+            color: var(--neg);
+            font-weight: bold;
+        }
+
+        /* Fact Box Style */
+        .fact-box {
+            background: rgba(0, 210, 211, 0.1);
+            border-left: 3px solid var(--accent-sec);
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #131519;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent-sec);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+
+        /* DATA READOUT */
+        #data-readout {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-box {
+            text-align: center;
+            width: 48%;
+        }
+
+        .data-val {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .data-lbl {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: 1px solid #3d4450;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #333;
+        }
+
+        .nav-btn.next {
+            background: var(--accent-sec);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: #00b8b9;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        /* QUADRANT LABELS OVERLAY */
+        #quad-status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid #444;
+            font-family: monospace;
+            font-size: 16px;
+            color: #fff;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Math <span>Origins</span></h1>
+            <div class="subtitle">Unit 2: The Four Quadrants</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <label>Angle (&theta;)</label>
+            <input type="range" id="slider-angle" min="0" max="360" value="45" step="0.5">
+            <div style="font-size: 10px; color:#555; display:flex; justify-content:space-between; margin-top:5px;">
+                <span>0&deg;</span>
+                <span>360&deg;</span>
+            </div>
+
+            <div id="data-readout">
+                <div class="data-box">
+                    <div class="data-val" id="val-cos" style="color: var(--accent-sec);">+0.707</div>
+                    <div class="data-lbl">X (Cosine)</div>
+                </div>
+                <div class="data-box">
+                    <div class="data-val" id="val-sin" style="color: var(--accent);">+0.707</div>
+                    <div class="data-lbl">Y (Sine)</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <canvas id="simCanvas"></canvas>
+        <div id="quad-status">Current: Quadrant I</div>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE ENGINE
+        // ==========================================
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const quadStatus = document.getElementById('quad-status');
+
+        let angleDeg = 45;
+        let radius = 200;
+        let centerX, centerY;
+
+        function resize() {
+            const sidebarWidth = 420;
+            canvas.width = window.innerWidth - sidebarWidth;
+            canvas.height = window.innerHeight;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            radius = Math.min(canvas.width, canvas.height) * 0.35;
+            draw();
+        }
+        window.addEventListener('resize', resize);
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Math coordinates
+            const rad = angleDeg * (Math.PI / 180);
+            // Note: Canvas Y is inverted. 
+            // Math X = cos(t), Math Y = sin(t)
+            // Canvas X = center + cos(t)*r
+            // Canvas Y = center - sin(t)*r
+            const mathX = Math.cos(rad);
+            const mathY = Math.sin(rad);
+
+            const pX = centerX + (mathX * radius);
+            const pY = centerY - (mathY * radius);
+
+            // 0. Draw Quadrant Background Highlights
+            highlightQuadrant(mathX, mathY);
+
+            // 1. Draw Grid (Axes)
+            drawGrid();
+
+            // 2. Draw Roman Numerals for Quadrants
+            drawRomanNumerals();
+
+            // 3. Draw The Unit Circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 4. Draw Components
+
+            // COSINE LINE (X component)
+            // From (0,0) to (x,0)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, centerY);
+            ctx.strokeStyle = '#00d2d3'; // Cyan
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // SINE LINE (Y component)
+            // From (x,0) to (x,y)
+            ctx.beginPath();
+            ctx.moveTo(pX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#ff9f43'; // Orange
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // RADIUS
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#ffffff';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // 5. Draw Angle Arc
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, -rad, true);
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // 6. Draw The Point
+            ctx.beginPath();
+            ctx.arc(pX, pY, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // 7. Dynamic Labels on Canvas
+            ctx.font = "bold 14px monospace";
+
+            // Label X
+            ctx.fillStyle = "#00d2d3";
+            ctx.textAlign = "center";
+            ctx.fillText(mathX > 0 ? "+X" : "-X", pX, centerY + (mathY > 0 ? 20 : -10));
+
+            // Label Y
+            ctx.fillStyle = "#ff9f43";
+            ctx.textAlign = "left";
+            ctx.fillText(mathY > 0 ? "+Y" : "-Y", pX + 10, centerY - (mathY * radius) / 2);
+
+            // Update Text Overlay
+            updateOverlay(angleDeg);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+
+            // X Axis
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+
+            // Y Axis
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+
+            // Origin Dot
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#666';
+            ctx.fill();
+        }
+
+        function drawRomanNumerals() {
+            ctx.fillStyle = "#22252b";
+            ctx.font = "bold 150px serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            // Q1 (Top Right)
+            ctx.fillText("I", centerX + radius / 2, centerY - radius / 2);
+            // Q2 (Top Left)
+            ctx.fillText("II", centerX - radius / 2, centerY - radius / 2);
+            // Q3 (Bottom Left)
+            ctx.fillText("III", centerX - radius / 2, centerY + radius / 2);
+            // Q4 (Bottom Right)
+            ctx.fillText("IV", centerX + radius / 2, centerY + radius / 2);
+        }
+
+        function highlightQuadrant(x, y) {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
+            // Determine quadrant based on Math X/Y signs
+            // Q1: x+, y+
+            if (x >= 0 && y >= 0) ctx.fillRect(centerX, 0, canvas.width / 2, centerY);
+            // Q2: x-, y+
+            if (x < 0 && y >= 0) ctx.fillRect(0, 0, centerX, centerY);
+            // Q3: x-, y-
+            if (x < 0 && y < 0) ctx.fillRect(0, centerY, centerX, canvas.height / 2);
+            // Q4: x+, y-
+            if (x >= 0 && y < 0) ctx.fillRect(centerX, centerY, canvas.width / 2, canvas.height / 2);
+        }
+
+        function updateOverlay(angle) {
+            let q = "I";
+            if (angle > 90 && angle <= 180) q = "II";
+            else if (angle > 180 && angle <= 270) q = "III";
+            else if (angle > 270 && angle <= 360) q = "IV";
+
+            quadStatus.innerText = `Current: Quadrant ${q}`;
+        }
+
+        // Input Handling
+        const slider = document.getElementById('slider-angle');
+        slider.addEventListener('input', (e) => {
+            angleDeg = parseFloat(e.target.value);
+            updateData();
+            draw();
+            checkLessonProgress();
+        });
+
+        function updateData() {
+            const rad = angleDeg * (Math.PI / 180);
+            let c = Math.cos(rad);
+            let s = Math.sin(rad);
+
+            if (Math.abs(c) < 0.001) c = 0;
+            if (Math.abs(s) < 0.001) s = 0;
+
+            const cosEl = document.getElementById('val-cos');
+            const sinEl = document.getElementById('val-sin');
+
+            cosEl.innerText = (c >= 0 ? "+" : "") + c.toFixed(3);
+            sinEl.innerText = (s >= 0 ? "+" : "") + s.toFixed(3);
+
+            // Color coding
+            cosEl.style.color = c >= 0 ? "var(--pos)" : "var(--neg)";
+            sinEl.style.color = s >= 0 ? "var(--pos)" : "var(--neg)";
+        }
+
+        // ==========================================
+        // PART 2: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentLesson = 0;
+
+        const lessons = [
+            {
+                title: "First Principles: Location",
+                content: `
+                Before we calculate, we must locate.
+                <br><br>
+                This is the Cartesian Plane. It divides space into four rooms, or <strong>Quadrants</strong>, based on two simple questions:
+                <br><br>
+                1. Are we <span class="hl-x">Right or Left</span> of center?<br>
+                2. Are we <span class="hl-y">Above or Below</span> center?
+                <br><br>
+                Drag the slider. Watch how the point crosses the borders.
+            `,
+                check: () => true
+            },
+            {
+                title: "Quadrant I: The Positive Realm",
+                content: `
+                <strong>Move the slider to Quadrant I (0&deg; to 90&deg;).</strong>
+                <br><br>
+                In this region, everything is safe and positive.
+                <br><br>
+                The Point is to the <span class="hl-pos">Right (+)</span>.<br>
+                The Point is <span class="hl-pos">Above (+)</span> the horizon.
+                <br><br>
+                Therefore, Cosine (X) is <span class="hl-pos">Positive</span>, and Sine (Y) is <span class="hl-pos">Positive</span>.
+            `,
+                check: () => angleDeg > 0 && angleDeg < 90
+            },
+            {
+                title: "Quadrant II: The Reflection",
+                content: `
+                <strong>Rotate into Quadrant II (90&deg; to 180&deg;).</strong>
+                <br><br>
+                Notice what changed. We are still Upstairs (Y is positive), but we have crossed the hallway to the Left.
+                <br><br>
+                In geometry, "Left" means <span class="hl-neg">Negative</span>.
+                <br><br>
+                This is why Cosine (X) turns <span class="hl-neg">Negative</span> here, while Sine (Y) remains <span class="hl-pos">Positive</span>.
+            `,
+                check: () => angleDeg > 90 && angleDeg < 180
+            },
+            {
+                title: "Quadrant III: The Depths",
+                content: `
+                <strong>Enter Quadrant III (180&deg; to 270&deg;).</strong>
+                <br><br>
+                We are now "downstairs" and to the "left."
+                <br><br>
+                1. <span class="hl-x">Cosine</span> is Left (<span class="hl-neg">Negative</span>).<br>
+                2. <span class="hl-y">Sine</span> is Down (<span class="hl-neg">Negative</span>).
+                <br><br>
+                If you ever wondered why Tangent (Slope) is positive here: A negative X divided by a negative Y makes a positive slope!
+            `,
+                check: () => angleDeg > 180 && angleDeg < 270
+            },
+            {
+                title: "Quadrant IV: The Return",
+                content: `
+                <strong>Finally, move to Quadrant IV (270&deg; to 360&deg;).</strong>
+                <br><br>
+                We have returned to the Right side of the graph, so <span class="hl-x">Cosine</span> becomes <span class="hl-pos">Positive</span> again.
+                <br><br>
+                However, we are still in the basement. <span class="hl-y">Sine</span> remains <span class="hl-neg">Negative</span>.
+                <br><br>
+                Look at the graph: The Cyan line points Right, but the Orange line hangs Down.
+            `,
+                check: () => angleDeg > 270 && angleDeg < 360
+            },
+            {
+                title: "Conclusion",
+                content: `
+                Trigonometry is not just about triangles; it is about <strong>Orientation</strong>.
+                <br><br>
+                The sign (+/-) isn't random. It tells you <em>where you are</em>.
+                <br><br>
+                <ul>
+                <li><strong>Cos (X)</strong> tracks Left/Right.</li>
+                <li><strong>Sin (Y)</strong> tracks Up/Down.</li>
+                </ul>
+
+                <div class="fact-box">
+                    <strong style="color: var(--accent-sec);">FUN FACT:</strong><br>
+                    The grid system (Cartesian Plane) was invented by <strong>René Descartes</strong> in 1637.
+                    <br><br>
+                    Legend says he was lying in bed watching a fly crawl on the ceiling. He realized he could describe the fly's exact location using just two numbers: its distance from the two adjacent walls.
+                </div>
+            `,
+                check: () => true
+            }
+        ];
+
+        function loadLesson(index) {
+            currentLesson = index;
+            const l = lessons[index];
+
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = `
+            <div class="chapter-title">${l.title}</div>
+            <div class="story-text">${l.content}</div>
+        `;
+
+            checkLessonProgress();
+        }
+
+        function checkLessonProgress() {
+            const btn = document.getElementById('btn-next');
+            const l = lessons[currentLesson];
+
+            if (currentLesson === lessons.length - 1) {
+                btn.innerHTML = "Next Chapter &rarr;";
+                btn.disabled = false;
+                btn.onclick = () => window.location.href = 'degreesvsrad.html';
+                return;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+            }
+
+            if (l.check()) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 0) {
+                loadLesson(currentLesson - 1);
+            }
+        }
+
+        // Initialize
+        resize();
+        updateData();
+        loadLesson(0);
+
+    </script>
+</body>
+
+</html>

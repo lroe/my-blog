@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Architect's Circle: Tangent</title>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            /* Orange/Gold -> SINE */
+            --accent-sec: #00d2d3;
+            /* Cyan -> COSINE */
+            --accent-tan: #e056fd;
+            /* Magenta -> TANGENT */
+            --border: #2c313a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-tan);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Dynamic Highlighting for Text */
+        .hl-sin {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .hl-cos {
+            color: var(--accent-sec);
+            font-weight: bold;
+        }
+
+        .hl-tan {
+            color: var(--accent-tan);
+            font-weight: bold;
+        }
+
+        .hl-rad {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* Fact Box Style */
+        .fact-box {
+            background: rgba(224, 86, 253, 0.1);
+            border-left: 3px solid var(--accent-tan);
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #131519;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent-tan);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+
+        /* DATA READOUT */
+        #data-readout {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-box {
+            text-align: center;
+            width: 32%;
+        }
+
+        .data-val {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .data-lbl {
+            font-size: 9px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: 1px solid #3d4450;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #333;
+        }
+
+        .nav-btn.next {
+            background: var(--accent-tan);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: #e982ff;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Math <span>Origins</span></h1>
+            <div class="subtitle">Unit 2: The Tangent Line</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <label>Angle (&theta;)</label>
+            <input type="range" id="slider-angle" min="0" max="360" value="45" step="0.1">
+            <div style="font-size: 10px; color:#555; display:flex; justify-content:space-between; margin-top:5px;">
+                <span>0&deg;</span>
+                <span>360&deg;</span>
+            </div>
+
+            <div id="data-readout">
+                <div class="data-box">
+                    <div class="data-val" id="val-sin" style="color: var(--accent);">0.707</div>
+                    <div class="data-lbl">Sine</div>
+                </div>
+                <div class="data-box">
+                    <div class="data-val" id="val-cos" style="color: var(--accent-sec);">0.707</div>
+                    <div class="data-lbl">Cosine</div>
+                </div>
+                <div class="data-box">
+                    <div class="data-val" id="val-tan" style="color: var(--accent-tan);">1.000</div>
+                    <div class="data-lbl">Tangent</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <canvas id="simCanvas"></canvas>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE ENGINE
+        // ==========================================
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let angleDeg = 45;
+        let radius = 180; // Slightly smaller to fit the tangent line
+        let centerX, centerY;
+
+        // Resize handling
+        function resize() {
+            const sidebarWidth = 420;
+            canvas.width = window.innerWidth - sidebarWidth;
+            canvas.height = window.innerHeight;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            // Adjust radius dynamically
+            radius = Math.min(canvas.width, canvas.height) * 0.30;
+            draw();
+        }
+        window.addEventListener('resize', resize);
+
+        // Core Drawing Function
+        function draw() {
+            // Clear background
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const rad = angleDeg * (Math.PI / 180);
+            const x = Math.cos(rad);
+            const y = Math.sin(rad);
+            const tanVal = Math.tan(rad);
+
+            // Canvas coords for circle point
+            const pX = centerX + (x * radius);
+            const pY = centerY - (y * radius);
+
+            // 1. Draw Grid
+            drawGrid();
+
+            // 2. Draw The Tangent Line (The Geometric Construction)
+            // Tangent represents the height of the triangle when the Base = 1 (Radius)
+            // It is drawn touching the circle at (1, 0) - or (centerX + radius, centerY)
+
+            // We only draw tangent if it's within reasonable view (avoid infinity)
+            if (Math.abs(tanVal) < 15) {
+
+                // The Extension Line (Hypotenuse extended)
+                // Draws from Center to the tip of the tangent line
+                const tanTipY = centerY - (tanVal * radius);
+                const tanOriginX = centerX + radius;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+
+                // If angle is in Q2 or Q3 (90-270), the extension goes backwards through origin
+                // But mathematically, Tangent is usually visualized on the right side asymptote x=1
+                // So we draw a line from center to the vertical line at x=radius
+                ctx.lineTo(tanOriginX, tanTipY);
+
+                ctx.strokeStyle = '#444';
+                ctx.setLineDash([5, 5]); // Dashed
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // The Actual Tangent Vector
+                ctx.beginPath();
+                ctx.moveTo(tanOriginX, centerY); // Start at (1,0)
+                ctx.lineTo(tanOriginX, tanTipY); // Go up/down to match slope
+                ctx.strokeStyle = '#e056fd'; // Magenta
+                ctx.lineWidth = 4;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#e056fd';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Tangent Label
+                ctx.fillStyle = "#e056fd";
+                ctx.textAlign = "left";
+                ctx.font = "bold 14px monospace";
+                // Clamp label position so it doesn't leave screen
+                let labelY = tanTipY;
+                if (labelY < 20) labelY = 20;
+                if (labelY > canvas.height - 20) labelY = canvas.height - 20;
+                ctx.fillText("tan(θ)", tanOriginX + 10, labelY);
+            }
+
+            // 3. Draw The Unit Circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 4. Standard Components (Sin/Cos/Radius)
+
+            // Cosine
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, centerY);
+            ctx.strokeStyle = '#00d2d3';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Sine
+            ctx.beginPath();
+            ctx.moveTo(pX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#ff9f43';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Radius
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 5. Angle Arc
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, -rad, true);
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // 6. Point
+            ctx.beginPath();
+            ctx.arc(pX, pY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+        }
+
+        // Input Handling
+        const slider = document.getElementById('slider-angle');
+        slider.addEventListener('input', (e) => {
+            angleDeg = parseFloat(e.target.value);
+            updateData();
+            draw();
+            checkLessonProgress();
+        });
+
+        function updateData() {
+            const rad = angleDeg * (Math.PI / 180);
+            let c = Math.cos(rad);
+            let s = Math.sin(rad);
+            let t = Math.tan(rad);
+
+            // Clean numbers
+            if (Math.abs(c) < 0.001) c = 0;
+            if (Math.abs(s) < 0.001) s = 0;
+
+            let tDisplay = t.toFixed(3);
+            if (Math.abs(t) > 100) tDisplay = "∞"; // Infinity check
+
+            document.getElementById('val-cos').innerText = c.toFixed(3);
+            document.getElementById('val-sin').innerText = s.toFixed(3);
+            document.getElementById('val-tan').innerText = tDisplay;
+        }
+
+        // ==========================================
+        // PART 2: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentLesson = 0;
+
+        const lessons = [
+            {
+                title: "Introducing Tangent",
+                content: `
+                You know Sine (height) and Cosine (width). Now meet the third sibling: <span class="hl-tan">Tangent</span>.
+                <br><br>
+                Mathematically, Tangent is the ratio of Sine to Cosine:
+                <br><br>
+                <center><span class="hl-tan">tan</span> = <span class="hl-sin">sin</span> / <span class="hl-cos">cos</span></center>
+                <br>
+                But what does that look like geometrically?
+                <br><br>
+                <strong style="color:var(--accent-tan)">Move the slider</strong> to see the Magenta line appear on the right side of the circle.
+            `,
+                check: () => true
+            },
+            {
+                title: "Touching the Circle",
+                content: `
+                Look at the magenta line. It stands vertically, exactly touching the edge of the circle.
+                <br><br>
+                The word "Tangent" comes from the Latin <em>tangere</em>, meaning <strong>"to touch"</strong>.
+                <br><br>
+                To find the Tangent length, we draw a line from the center (0,0), through our point on the circle, until it hits that vertical wall.
+                <br><br>
+                Set the angle to roughly <strong>45&deg;</strong>.
+                <br><br>
+                At 45&deg;, Sine and Cosine are equal. Therefore, Sine / Cosine = 1. Look at the data readout—Tangent is exactly 1.0.
+            `,
+                check: () => Math.abs(angleDeg - 45) < 5
+            },
+            {
+                title: "The Slope",
+                content: `
+                Tangent represents the <strong>Slope</strong> of the radius.
+                <br><br>
+                Think of it as <em>Rise over Run</em>.
+                <br>
+                Since on the Unit Circle, the "Run" (radius) reaches the edge (1), the Tangent line shows purely the "Rise".
+                <br><br>
+                Try moving the angle very close to <strong>0&deg;</strong>. The slope is flat. The Tangent is tiny.
+                <br><br>
+                Now move it up towards <strong>80&deg;</strong>. The slope gets steep, and the Tangent line shoots up rapidly.
+            `,
+                check: () => angleDeg > 75 && angleDeg < 89
+            },
+            {
+                title: "The Danger Zone",
+                content: `
+                What happens at exactly <strong>90&deg;</strong>?
+                <br><br>
+                At 90&deg;, the radius points straight up. It is parallel to the Tangent line. They never meet.
+                <br><br>
+                Mathematically:
+                <br>
+                <span class="hl-sin">sin(90) = 1</span><br>
+                <span class="hl-cos">cos(90) = 0</span>
+                <br><br>
+                Dividing by zero is impossible. The Tangent becomes <strong>undefined</strong> (or infinite).
+                <br><br>
+                <small>Try carefully moving the slider to 90&deg; and watch the Tangent value display "∞".</small>
+            `,
+                check: () => Math.abs(angleDeg - 90) < 2
+            },
+            {
+                title: "Conclusion",
+                content: `
+                You have now mastered the visual triad of trigonometry.
+                <br><br>
+                1. <span class="hl-cos">Cosine</span> is the x-coordinate.<br>
+                2. <span class="hl-sin">Sine</span> is the y-coordinate.<br>
+                3. <span class="hl-tan">Tangent</span> is the slope (y/x).
+                <br><br>
+                These three lines describe every possible triangle and rotation in our universe.
+                
+                <div class="fact-box">
+                    <strong style="color: var(--accent-tan);">FUN FACT:</strong><br>
+                    Why are they called "Tangent" and "Secant"?
+                    <br><br>
+                    In geometry, a line that touches a circle at one point is a <strong>Tangent</strong>. A line that cuts through a circle at two points (like a sword) is a <strong>Secant</strong> (from Latin <em>secare</em>, to cut). 
+                    <br><br>
+                    Trigonometry is literally just describing how lines cut or touch circles!
+                </div>
+            `,
+                check: () => true
+            }
+        ];
+
+        function loadLesson(index) {
+            currentLesson = index;
+            const l = lessons[index];
+
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = `
+            <div class="chapter-title">${l.title}</div>
+            <div class="story-text">${l.content}</div>
+        `;
+
+            checkLessonProgress();
+        }
+
+        function checkLessonProgress() {
+            const btn = document.getElementById('btn-next');
+            const l = lessons[currentLesson];
+
+            if (currentLesson === lessons.length - 1) {
+                btn.innerHTML = "Next Chapter &rarr;";
+                btn.disabled = false;
+                btn.onclick = () => window.location.href = '3_pythagorean_identity.html';
+                return;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+            }
+
+            if (l.check()) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 0) {
+                loadLesson(currentLesson - 1);
+            }
+        }
+
+        // Initialize
+        resize();
+        loadLesson(0);
+
+    </script>
+</body>
+
+</html>

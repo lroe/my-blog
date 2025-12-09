@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Architect's Circle: Trigonometry</title>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            /* Orange/Gold -> SINE */
+            --accent-sec: #00d2d3;
+            /* Cyan -> COSINE */
+            --border: #2c313a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Dynamic Highlighting for Text */
+        .hl-sin {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .hl-cos {
+            color: var(--accent-sec);
+            font-weight: bold;
+        }
+
+        .hl-rad {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* Fact Box Style */
+        .fact-box {
+            background: rgba(255, 159, 67, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #131519;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+
+        /* DATA READOUT */
+        #data-readout {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-box {
+            text-align: center;
+            width: 48%;
+        }
+
+        .data-val {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .data-lbl {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: 1px solid #3d4450;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #333;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: #ffb773;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Math <span>Origins</span></h1>
+            <div class="subtitle">Unit 1: The Circle & The Triangle</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <label>Angle (&theta;)</label>
+            <input type="range" id="slider-angle" min="0" max="360" value="45" step="0.1">
+            <div style="font-size: 10px; color:#555; display:flex; justify-content:space-between; margin-top:5px;">
+                <span>0&deg;</span>
+                <span>360&deg;</span>
+            </div>
+
+            <div id="data-readout">
+                <div class="data-box">
+                    <div class="data-val" id="val-cos" style="color: var(--accent-sec);">0.707</div>
+                    <div class="data-lbl">Cosine (X)</div>
+                </div>
+                <div class="data-box">
+                    <div class="data-val" id="val-sin" style="color: var(--accent);">0.707</div>
+                    <div class="data-lbl">Sine (Y)</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <canvas id="simCanvas"></canvas>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE ENGINE (Canvas API)
+        // ==========================================
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let angleDeg = 45;
+        let radius = 200; // Visual radius in pixels
+        let centerX, centerY;
+
+        // Resize handling
+        function resize() {
+            const sidebarWidth = 420;
+            canvas.width = window.innerWidth - sidebarWidth;
+            canvas.height = window.innerHeight;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            radius = Math.min(canvas.width, canvas.height) * 0.35;
+            draw();
+        }
+        window.addEventListener('resize', resize);
+
+        // Core Drawing Function
+        function draw() {
+            // Clear background
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Math coordinates
+            const rad = angleDeg * (Math.PI / 180);
+            const x = Math.cos(rad);
+            const y = Math.sin(rad); // In math, up is positive. In canvas, down is positive.
+
+            // Canvas coordinates for the point
+            // NOTE: We invert Y for canvas drawing so Up is "Math Up"
+            const pX = centerX + (x * radius);
+            const pY = centerY - (y * radius);
+
+            // 1. Draw Grid
+            drawGrid();
+
+            // 2. Draw The Unit Circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 3. Draw The "Triangle" Components
+
+            // COSINE LINE (Horizontal / Base)
+            // From (0,0) to (x,0)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, centerY);
+            ctx.strokeStyle = '#00d2d3'; // Cyan
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#00d2d3';
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // SINE LINE (Vertical / Height)
+            // From (x,0) to (x,y)
+            ctx.beginPath();
+            ctx.moveTo(pX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#ff9f43'; // Orange
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#ff9f43';
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // RADIUS (Hypotenuse)
+            // From (0,0) to (x,y)
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(pX, pY);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 4. Draw Angle Arc
+            const arcSize = 40;
+            ctx.beginPath();
+            // Canvas arc angles: 0 is right, goes clockwise. We want counter-clockwise for math.
+            // Start at 0, go to -rad (because canvas Y is inverted)
+            ctx.arc(centerX, centerY, arcSize, 0, -rad, true);
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Label theta
+            ctx.fillStyle = "#aaa";
+            ctx.font = "14px Courier New";
+            ctx.fillText("θ", centerX + 50, centerY - 15);
+
+            // 5. Draw The Point
+            ctx.beginPath();
+            ctx.arc(pX, pY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // 6. Dynamic Labels
+            ctx.font = "bold 16px monospace";
+
+            // Label Cosine
+            ctx.fillStyle = "#00d2d3";
+            ctx.textAlign = "center";
+            // Place text below axis if Y is positive (point is up), above if Y is negative
+            const cosLabelY = centerY + (y >= 0 ? 25 : -15);
+            ctx.fillText("cos(θ)", centerX + (x * radius) / 2, cosLabelY);
+
+            // Label Sine
+            ctx.fillStyle = "#ff9f43";
+            ctx.textAlign = "left";
+            ctx.fillText("sin(θ)", pX + 10, centerY - (y * radius) / 2);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+
+            // X Axis
+            ctx.beginPath();
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.stroke();
+
+            // Y Axis
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.stroke();
+        }
+
+        // Input Handling
+        const slider = document.getElementById('slider-angle');
+        slider.addEventListener('input', (e) => {
+            angleDeg = parseFloat(e.target.value);
+            updateData();
+            draw();
+            checkLessonProgress();
+        });
+
+        function updateData() {
+            const rad = angleDeg * (Math.PI / 180);
+            // Fix precision issues (e.g., cos(90) should be 0, not 6.12e-17)
+            let c = Math.cos(rad);
+            let s = Math.sin(rad);
+
+            if (Math.abs(c) < 0.0001) c = 0;
+            if (Math.abs(s) < 0.0001) s = 0;
+
+            document.getElementById('val-cos').innerText = c.toFixed(3);
+            document.getElementById('val-sin').innerText = s.toFixed(3);
+        }
+
+        // ==========================================
+        // PART 2: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentLesson = 0;
+
+        const lessons = [
+            {
+                title: "The Radius",
+                content: `
+                To understand Sine and Cosine, forget about complex formulas for a moment.
+                <br><br>
+                Look at the white line. This is a radius of length <strong>1</strong>.
+                It is tethered to the center (0,0).
+                <br><br>
+                As you move the slider, the tip of the radius traces a <strong>Unit Circle</strong>.
+                <br><br>
+                <span class='hl-rad'>Interaction:</span> Drag the slider. Notice that no matter the angle, the white line's length never changes. It is our constant.
+            `,
+                check: () => true // Always allows next
+            },
+            {
+                title: "First Principles: X and Y",
+                content: `
+                Any point on a 2D plane is defined by two numbers: <br>
+                1. How far <strong>Right/Left</strong> it is (x).<br>
+                2. How far <strong>Up/Down</strong> it is (y).
+                <br><br>
+                In Trigonometry, we just gave these fancy names:
+                <br><br>
+                <span class="hl-cos">Cosine</span> = The Horizontal Distance (x)<br>
+                <span class="hl-sin">Sine</span> = The Vertical Distance (y)
+                <br><br>
+                That is the entire definition.
+            `,
+                check: () => true
+            },
+            {
+                title: "Cosine: The Shadow",
+                content: `
+                Set the angle to roughly <strong>0&deg;</strong>.
+                <br><br>
+                The radius is laying flat on the ground. The <span class="hl-cos">Cyan Line (Cosine)</span> is at its maximum length (1.0).
+                <br><br>
+                Now move the angle to <strong>90&deg;</strong> (straight up).
+                <br><br>
+                Notice the <span class="hl-cos">Cyan Line</span> disappears. Why? Because a vertical pole casts no horizontal shadow. At 90&deg;, the change in X is zero.
+            `,
+                check: () => {
+                    // Require user to visit near 0 and near 90
+                    return (angleDeg < 5 || angleDeg > 355) || (Math.abs(angleDeg - 90) < 5);
+                }
+            },
+            {
+                title: "Sine: The Height",
+                content: `
+                Now look at the <span class="hl-sin">Orange Line (Sine)</span>.
+                <br><br>
+                Sine measures the <strong>Change in Y</strong> (Height).
+                <br><br>
+                1. At <strong>0&deg;</strong>, the height is zero. The point is on the floor.<br>
+                2. At <strong>90&deg;</strong>, the height is maximum (1.0).
+                <br><br>
+                Move the slider to roughly <strong>45&deg;</strong>. Notice how the Orange and Cyan lines are equal length? That's because at 45&deg;, x and y are the same.
+            `,
+                check: () => Math.abs(angleDeg - 45) < 5
+            },
+            {
+                title: "The Wave Connection",
+                content: `
+                Why do we draw Sine and Cosine as waves?
+                <br><br>
+                Imagine recording the <span class="hl-sin">Orange Line's height</span> over time as the circle spins.
+                <br><br>
+                It starts at 0, grows to 1, falls to 0, drops to -1, and returns to 0.
+                <br><br>
+                If you plot that "Up/Down" movement on a graph, you get the famous wave shape. The circle is just the wave looking at it from the front!
+            `,
+                check: () => true
+            },
+            {
+                title: "Conclusion",
+                content: `
+                You have visualized the link between the Circle and the Triangle.
+                <br><br>
+                Trigonometry is simply the <strong>art of translation</strong>: it converts circular motion (rotation) into linear coordinates (horizontal and vertical).
+                
+                <div class="fact-box">
+                    <strong style="color: var(--accent);">HISTORICAL FUN FACT:</strong><br>
+                    The word <em>Sine</em> is a mistranslation!
+                    <br><br>
+                    Ancient Indian mathematicians called the half-chord "jiva." Arabic scholars translated this to "jiba" (written <em>jb</em>).
+                    <br><br>
+                    Latin translators later confused this for "jaib" (meaning "pocket" or "fold"), which in Latin is <strong>Sinus</strong>.
+                </div>
+            `,
+                check: () => true
+            }
+        ];
+
+        function loadLesson(index) {
+            currentLesson = index;
+            const l = lessons[index];
+
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = `
+            <div class="chapter-title">${l.title}</div>
+            <div class="story-text">${l.content}</div>
+        `;
+
+            checkLessonProgress();
+        }
+
+        function checkLessonProgress() {
+            const btn = document.getElementById('btn-next');
+            const l = lessons[currentLesson];
+
+            if (currentLesson === lessons.length - 1) {
+                btn.innerHTML = "Next Chapter &rarr;";
+                btn.disabled = false;
+                btn.onclick = () => window.location.href = 'quadrants.html';
+                return;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+            }
+
+            if (l.check()) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 0) {
+                loadLesson(currentLesson - 1);
+            }
+        }
+
+        // Initialize
+        resize();
+        loadLesson(0);
+
+    </script>
+</body>
+
+</html>

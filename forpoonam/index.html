@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Origins: Trigonometry</title>
+    <style>
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            --accent-sec: #00d2d3;
+            --border: #2c313a;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            background: linear-gradient(45deg, var(--accent), var(--accent-sec));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #8892b0;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .chapter-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .chapter-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            transition: transform 0.2s, border-color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-sec);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .chapter-num {
+            font-size: 24px;
+            font-weight: bold;
+            color: #555;
+            margin-right: 25px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .chapter-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 20px;
+        }
+
+        .chapter-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #8892b0;
+        }
+
+        .start-btn {
+            display: block;
+            width: 200px;
+            margin: 50px auto 0;
+            padding: 15px;
+            background: var(--accent);
+            color: #151515;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 30px;
+            transition: 0.3s;
+        }
+
+        .start-btn:hover {
+            background: #ffb773;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 159, 67, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Math Origins</h1>
+            <div class="subtitle">An Interactive Journey into Trigonometry</div>
+        </header>
+
+        <div class="chapter-list">
+            <a href="1.html" class="chapter-card">
+                <div class="chapter-num">01</div>
+                <div class="chapter-info">
+                    <h3>The Circle & The Triangle</h3>
+                    <p>Discover the geometric connection between rotation and linear coordinates.</p>
+                </div>
+            </a>
+
+            <a href="quadrants.html" class="chapter-card">
+                <div class="chapter-num">02</div>
+                <div class="chapter-info">
+                    <h3>The Four Quadrants</h3>
+                    <p>Understand the Cartesian plane and the signs of Sine and Cosine.</p>
+                </div>
+            </a>
+
+            <a href="degreesvsrad.html" class="chapter-card">
+                <div class="chapter-num">03</div>
+                <div class="chapter-info">
+                    <h3>The Radian</h3>
+                    <p>Why 360 degrees is arbitrary and what the "natural" unit of angle really is.</p>
+                </div>
+            </a>
+
+            <a href="2.html" class="chapter-card">
+                <div class="chapter-num">04</div>
+                <div class="chapter-info">
+                    <h3>Tangent</h3>
+                    <p>The geometric meaning of the tangent line and its relationship to slope.</p>
+                </div>
+            </a>
+
+            <a href="3_pythagorean_identity.html" class="chapter-card">
+                <div class="chapter-num">05</div>
+                <div class="chapter-info">
+                    <h3>The Pythagorean Identity</h3>
+                    <p>Deriving the fundamental equation sin² + cos² = 1 from first principles.</p>
+                </div>
+            </a>
+
+            <a href="graphing_sine.html" class="chapter-card">
+                <div class="chapter-num">06</div>
+                <div class="chapter-info">
+                    <h3>Time Domain</h3>
+                    <p>Unrolling the circle to visualize the Sine Wave over time.</p>
+                </div>
+            </a>
+
+            <a href="visualizing_harmony_interesting.html" class="chapter-card">
+                <div class="chapter-num">07</div>
+                <div class="chapter-info">
+                    <h3>Harmony</h3>
+                    <p>Visualizing musical intervals and complex ratios with Lissajous figures.</p>
+                </div>
+            </a>
+        </div>
+
+        <a href="1.html" class="start-btn">Start Journey</a>
+    </div>
+
+</body>
+
+</html>

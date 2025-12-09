@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Architect's Circle: Harmony</title>
+    <style>
+        /* --- THEME & LAYOUT (UNCHANGED) --- */
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            /* Orange/Gold -> Y Axis */
+            --accent-sec: #00d2d3;
+            /* Cyan -> X Axis */
+            --border: #2c313a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        h1 span {
+            color: var(--accent-sec);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent-sec);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Dynamic Highlighting for Text */
+        .hl-sin {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* Y - Orange */
+        .hl-cos {
+            color: var(--accent-sec);
+            font-weight: bold;
+        }
+
+        /* X - Cyan */
+        .hl-rad {
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* Fact Box Style */
+        .fact-box {
+            background: rgba(0, 210, 211, 0.1);
+            border-left: 3px solid var(--accent-sec);
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #ddd;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #131519;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            margin-top: 15px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent-sec);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-bottom: 5px;
+        }
+
+        /* DATA READOUT */
+        #data-readout {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-box {
+            text-align: center;
+            width: 30%;
+        }
+
+        .data-val {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .data-lbl {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: 1px solid #3d4450;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #333;
+        }
+
+        .nav-btn.next {
+            background: var(--accent-sec);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: #71fbfd;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Visualizing <span>Harmony</span></h1>
+            <div class="subtitle">Unit 2: Lissajous Figures</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <label>X Frequency (Cosine)</label>
+            <input type="range" id="slider-freqX" min="1" max="10" value="1" step="1">
+
+            <label>Y Frequency (Sine)</label>
+            <input type="range" id="slider-freqY" min="1" max="10" value="1" step="1">
+
+            <label>Phase Shift (Delay)</label>
+            <input type="range" id="slider-phase" min="0" max="360" value="90" step="1">
+
+            <div id="data-readout">
+                <div class="data-box">
+                    <div class="data-val" id="val-fx" style="color: var(--accent-sec);">1</div>
+                    <div class="data-lbl">Freq X</div>
+                </div>
+                <div class="data-box">
+                    <div class="data-val" id="val-fy" style="color: var(--accent);">1</div>
+                    <div class="data-lbl">Freq Y</div>
+                </div>
+                <div class="data-box">
+                    <div class="data-val" id="val-ph" style="color: #fff;">90&deg;</div>
+                    <div class="data-lbl">Phase</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <canvas id="simCanvas"></canvas>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE ENGINE
+        // ==========================================
+
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let freqX = 1;
+        let freqY = 1;
+        let phaseDeg = 90;
+
+        let time = 0; // For animation
+        let centerX, centerY, size;
+
+        // Resize handling
+        function resize() {
+            const sidebarWidth = 420;
+            canvas.width = window.innerWidth - sidebarWidth;
+            canvas.height = window.innerHeight;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+            size = Math.min(canvas.width, canvas.height) * 0.35;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Animation Loop
+        function animate() {
+            draw();
+            // Time moves forward slowly to show the "drawing" process
+            time += 0.02;
+            requestAnimationFrame(animate);
+        }
+
+        function draw() {
+            // Clear background
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const phaseRad = phaseDeg * (Math.PI / 180);
+
+            // 1. Calculate the current "Instant" Point
+            // We use the same 'time' variable, but scaled by frequency
+            // Logic: x is controlled by one circle, y by another
+            const xAngle = time * freqX + phaseRad;
+            const yAngle = time * freqY;
+
+            const currentX = Math.cos(xAngle) * size;
+            const currentY = Math.sin(yAngle) * size;
+
+            const pixelX = centerX + currentX;
+            const pixelY = centerY - currentY; // Invert Y for canvas
+
+            // 2. Draw "Source" Oscillators (The Ghost Circles)
+            // These show where the coordinates are coming from
+
+            // Source X (Top Circle - controls Horizontal)
+            const srcX_cx = centerX;
+            const srcX_cy = centerY - size - 60;
+            const srcX_r = 40;
+
+            ctx.beginPath();
+            ctx.arc(srcX_cx + currentX, srcX_cy, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#00d2d3"; // Cyan
+            ctx.fill();
+
+            // Dashed line dropping down
+            ctx.beginPath();
+            ctx.moveTo(srcX_cx + currentX, srcX_cy);
+            ctx.lineTo(pixelX, pixelY);
+            ctx.strokeStyle = "rgba(0, 210, 211, 0.3)";
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+
+            // Source Y (Left Circle - controls Vertical)
+            const srcY_cx = centerX - size - 60;
+            const srcY_cy = centerY;
+
+            ctx.beginPath();
+            ctx.arc(srcY_cx, srcY_cy - currentY, 5, 0, Math.PI * 2);
+            ctx.fillStyle = "#ff9f43"; // Orange
+            ctx.fill();
+
+            // Dashed line moving right
+            ctx.beginPath();
+            ctx.moveTo(srcY_cx, srcY_cy - currentY);
+            ctx.lineTo(pixelX, pixelY);
+            ctx.strokeStyle = "rgba(255, 159, 67, 0.3)";
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset dash
+
+            // 3. Draw The Full Path (Lissajous Curve)
+            ctx.beginPath();
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#ffffff";
+            ctx.strokeStyle = "#fff";
+
+            // To draw the full loop, we iterate from 0 to 2*PI (scaled by LCM of freqs)
+            // Simple hack: Draw enough resolution to close the loop
+            const resolution = 500;
+            const loops = 10; // Draw enough to cover complex ratios
+
+            for (let i = 0; i <= resolution * loops; i++) {
+                const t = (i / resolution) * Math.PI * 2;
+
+                // The formula for the Shape
+                const px = centerX + Math.cos(t * freqX + phaseRad) * size;
+                const py = centerY - Math.sin(t * freqY) * size;
+
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // 4. Draw the Leading Point (The "Pen")
+            ctx.beginPath();
+            ctx.arc(pixelX, pixelY, 8, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+
+            // 5. Labels
+            ctx.font = "12px monospace";
+            ctx.fillStyle = "#00d2d3";
+            ctx.fillText("X-SOURCE", srcX_cx - 30, srcX_cy - 15);
+            ctx.fillStyle = "#ff9f43";
+            ctx.fillText("Y-SOURCE", srcY_cx - 30, srcY_cy - 15);
+        }
+
+
+        // Input Handling
+        document.getElementById('slider-freqX').addEventListener('input', (e) => {
+            freqX = parseInt(e.target.value);
+            document.getElementById('val-fx').innerText = freqX;
+            checkLessonProgress();
+        });
+
+        document.getElementById('slider-freqY').addEventListener('input', (e) => {
+            freqY = parseInt(e.target.value);
+            document.getElementById('val-fy').innerText = freqY;
+            checkLessonProgress();
+        });
+
+        document.getElementById('slider-phase').addEventListener('input', (e) => {
+            phaseDeg = parseInt(e.target.value);
+            document.getElementById('val-ph').innerText = phaseDeg + "°";
+            checkLessonProgress();
+        });
+
+        // ==========================================
+        // PART 2: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentLesson = 0;
+
+        const lessons = [
+            {
+                title: "Independent Motions",
+                content: `
+                In the real world, forces often act independently.
+                <br><br>
+                Here, we have separated the Circle.
+                <br><br>
+                1. The <span class="hl-cos">Cyan Point</span> controls the Left/Right motion (Cosine).<br>
+                2. The <span class="hl-sin">Orange Point</span> controls the Up/Down motion (Sine).
+                <br><br>
+                When they move at the <strong>same speed</strong> (Freq 1), they combine to form a perfect circle.
+            `,
+                check: () => freqX === 1 && freqY === 1
+            },
+            {
+                title: "Frequency & Ratio",
+                content: `
+                What happens if the <span class="hl-cos">X-Source</span> moves twice as fast as the <span class="hl-sin">Y-Source</span>?
+                <br><br>
+                Set <strong>Freq X</strong> to <strong>2</strong>.<br>
+                Keep <strong>Freq Y</strong> at <strong>1</strong>.
+                <br><br>
+                You have created a "Parabola" shape (folded back on itself). The point hits the left/right walls twice for every one time it hits the top/bottom.
+            `,
+                check: () => freqX === 2 && freqY === 1
+            },
+            {
+                title: "The Musical Connection",
+                content: `
+                These shapes are visual representations of <strong>Musical Intervals</strong>.
+                <br><br>
+                Set <strong>Freq X to 3</strong> and <strong>Freq Y to 2</strong>.
+                <br><br>
+                This 3:2 ratio is what musicians call a "Perfect Fifth". It is one of the most consonant (pleasant) sounds in music.
+                <br><br>
+                Notice how the knot is complex, but symmetrical and stable?
+            `,
+                check: () => freqX === 3 && freqY === 2
+            },
+            {
+                title: "Phase Shift",
+                content: `
+                Sometimes two waves have the same frequency, but they don't start at the same time. This is <strong>Phase</strong>.
+                <br><br>
+                1. Set <strong>Freq X</strong> and <strong>Freq Y</strong> both back to <strong>1</strong>.
+                2. Slowly drag the <strong>Phase Slider</strong>.
+                <br><br>
+                At 0&deg; difference, it's a straight line. At 90&deg;, it's a circle.
+                <br><br>
+                This is how noise-canceling headphones work: they play a sound with the exact opposite phase to cancel out the noise.
+            `,
+                check: () => freqX === 1 && freqY === 1 && (phaseDeg < 10 || phaseDeg > 170)
+            },
+            {
+                title: "Chaos and Dissonance",
+                content: `
+                Try setting high, mismatched numbers.
+                <br><br>
+                Example: <strong>Freq X = 5</strong>, <strong>Freq Y = 4</strong>.
+                <br><br>
+                The more complex the ratio, the more "dissonant" (clashing) the musical interval would sound.
+                <br><br>
+                These curves are called <strong>Lissajous Figures</strong>. They are used in electronics to analyze signal frequencies.
+                
+                <div class="fact-box">
+                    <strong style="color: var(--accent-sec);">FUN FACT:</strong><br>
+                    The logo for the Australian Broadcasting Corporation (ABC) is a Lissajous curve with a 1:3 frequency ratio!
+                </div>
+            `,
+                check: () => true
+            }
+        ];
+
+        function loadLesson(index) {
+            currentLesson = index;
+            const l = lessons[index];
+
+            const contentDiv = document.getElementById('chapter-content');
+            contentDiv.innerHTML = `
+            <div class="chapter-title">${l.title}</div>
+            <div class="story-text">${l.content}</div>
+        `;
+
+            checkLessonProgress();
+        }
+
+        function checkLessonProgress() {
+            const btn = document.getElementById('btn-next');
+            const l = lessons[currentLesson];
+
+            if (currentLesson === lessons.length - 1) {
+                btn.innerHTML = "Back to Home";
+                btn.disabled = false;
+                btn.onclick = () => window.location.href = 'index.html';
+                return;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+            }
+
+            if (l.check()) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+        }
+
+        function nextLesson() {
+            if (currentLesson < lessons.length - 1) {
+                loadLesson(currentLesson + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentLesson > 0) {
+                loadLesson(currentLesson - 1);
+            }
+        }
+
+        // Start
+        loadLesson(0);
+        animate();
+
+    </script>
+</body>
+
+</html>
