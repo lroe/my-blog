@@ -1,0 +1,818 @@
+<!-- START OF FILE point_vs_plane_v3.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Electrostatics: Point vs Plane</title>
+    <!-- Load Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Load OrbitControls -->
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #101010;
+            --panel: #1a1a1a;
+            --text: #e0e0e0;
+            --accent: #ff9f43;
+            /* Orange */
+            --accent-hover: #ffb773;
+            --border: #333;
+            --pos: #ff5252;
+            /* Red */
+            --neg: #74b9ff;
+            /* Blue */
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 400px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--accent);
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #888;
+            margin-top: 5px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* STORY CONTENT */
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.7;
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .story-text em {
+            color: var(--accent);
+            font-style: normal;
+        }
+
+        /* FORMULA BOX */
+        .formula-box {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            border-left: 3px solid var(--accent);
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Georgia', serif;
+            font-size: 20px;
+            color: #fff;
+            text-align: center;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .fraction>span {
+            display: block;
+            padding: 0 5px;
+        }
+
+        .fraction span.bottom {
+            border-top: 1px solid #aaa;
+        }
+
+        /* DEFINITION BOX */
+        .definition-box {
+            background: #252525;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #ddd;
+            border: 1px solid #333;
+        }
+
+        .definition-title {
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #181818;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 20px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            filter: grayscale(1);
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+        }
+
+        /* PULSE ANIMATION */
+        @keyframes pulse-orange {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 159, 67, 0.7);
+                transform: scale(1);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(255, 159, 67, 0);
+                transform: scale(1.02);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 159, 67, 0);
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulse-orange 2s infinite;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+        }
+
+        .nav-btn.next:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+            animation: none;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #444;
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: #151515;
+            overflow: hidden;
+            cursor: move;
+        }
+
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #666;
+            font-size: 12px;
+            pointer-events: none;
+            user-select: none;
+            font-family: monospace;
+        }
+
+        /* Toggle Switch */
+        .mode-toggle {
+            display: flex;
+            background: #333;
+            padding: 3px;
+            border-radius: 6px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: transparent;
+            color: #999;
+            border: none;
+            padding: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .mode-btn.selected {
+            background: var(--accent);
+            color: #151515;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Electrostatics</h1>
+            <div class="subtitle">Geometry of Field Lines</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+
+            <!-- Hidden by default, shown in later chapters -->
+            <div class="control-row" id="ctrl-mode">
+                <label><span>Source Geometry</span></label>
+                <div class="mode-toggle">
+                    <div id="btn-mode-point" class="mode-btn selected">Point Source</div>
+                    <div id="btn-mode-plane" class="mode-btn">Plane Source</div>
+                </div>
+            </div>
+
+            <div class="control-row" id="ctrl-dist">
+                <label><span>Distance (r)</span><span id="val-dist">Near</span></label>
+                <input type="range" id="slider-dist" min="3" max="15" value="4" step="0.1">
+            </div>
+
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div id="instructions">Left Click: Rotate | Right Click: Pan | Scroll: Zoom</div>
+    </main>
+
+    <script>
+        // ==========================================
+        // 3D ENGINE
+        // ==========================================
+
+        const state = {
+            mode: 'point', // 'point' or 'plane'
+            distance: 4.0,
+            showFieldLines: true
+        };
+
+        // Scene Setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x101010);
+
+        // Add subtle fog for depth
+        scene.fog = new THREE.Fog(0x101010, 50, 150);
+
+        const sidebarWidth = 400;
+        const d = 20;
+        const aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+
+        // Orthographic camera for clean technical look
+        const camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+        camera.position.set(30, 25, 30);
+        camera.lookAt(0, 5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.target.set(0, 5, 0);
+
+        // --- MATERIALS ---
+        const metalMat = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            metalness: 0.9,
+            roughness: 0.2
+        });
+
+        const plasticMat = new THREE.MeshStandardMaterial({
+            color: 0xdddddd,
+            roughness: 0.8
+        });
+
+        const orangeMat = new THREE.MeshStandardMaterial({
+            color: 0xff9f43,
+            emissive: 0xaa4400,
+            emissiveIntensity: 0.2
+        });
+
+        const testChargeMat = new THREE.MeshStandardMaterial({ color: 0xff5252, roughness: 0.4 });
+        const stringMat = new THREE.MeshBasicMaterial({ color: 0xeeeeee });
+
+        // --- OBJECTS ---
+
+        const worldGroup = new THREE.Group();
+        scene.add(worldGroup);
+
+        // 1. VAN DE GRAAFF (Point Source)
+        const vdgGroup = new THREE.Group();
+        worldGroup.add(vdgGroup);
+
+        // Sphere (Dome)
+        const vdgSphere = new THREE.Mesh(new THREE.SphereGeometry(2, 64, 64), metalMat);
+        vdgSphere.position.y = 8;
+        vdgSphere.castShadow = true;
+        vdgGroup.add(vdgSphere);
+
+        // Column
+        const vdgCol = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 8, 32), plasticMat);
+        vdgCol.position.y = 4;
+        vdgCol.castShadow = true;
+        vdgGroup.add(vdgCol);
+
+        // Base
+        const vdgBase = new THREE.Mesh(new THREE.BoxGeometry(4, 1, 4), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+        vdgBase.position.y = 0.5;
+        vdgBase.receiveShadow = true;
+        vdgGroup.add(vdgBase);
+
+        // 2. INFINITE PLANE
+        const planeGroup = new THREE.Group();
+        // Visual Grid
+        const gridHelper = new THREE.GridHelper(50, 50, 0xff9f43, 0x442200);
+        gridHelper.rotation.x = Math.PI / 2;
+        gridHelper.position.set(0, 8, 0); // Center at same height as sphere
+        planeGroup.add(gridHelper);
+
+        // Semi-transparent fill
+        const planeMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(50, 50),
+            new THREE.MeshBasicMaterial({ color: 0xff9f43, transparent: true, opacity: 0.1, side: THREE.DoubleSide })
+        );
+        planeMesh.rotation.x = 0;
+        planeMesh.position.set(0, 8, 0);
+        planeGroup.add(planeMesh);
+
+        planeGroup.visible = false;
+        worldGroup.add(planeGroup);
+
+        // 3. TEST CHARGE ASSEMBLY (Balloon & Thread)
+        const testGroup = new THREE.Group();
+        worldGroup.add(testGroup);
+
+        // The Balloon (Test Charge)
+        const balloon = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), testChargeMat);
+        balloon.castShadow = true;
+        testGroup.add(balloon);
+
+        // The Knot (Small circle/cylinder at bottom)
+        const knot = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.1, 0.05, 0.15, 12),
+            testChargeMat
+        );
+        knot.position.y = -0.5;
+        testGroup.add(knot);
+
+        // The Thread (Curved line hanging down)
+        // Creating a slight curve to make it look like a string
+        const curvePath = new THREE.CatmullRomCurve3([
+            new THREE.Vector3(0, -0.6, 0),         // Connect to knot
+            new THREE.Vector3(0.05, -1.5, 0.1),    // Slight sway
+            new THREE.Vector3(-0.05, -3.0, 0.3),   // Hanging down
+            new THREE.Vector3(0, -4.5, 0.5)        // End of string
+        ]);
+
+        const stringGeo = new THREE.TubeGeometry(curvePath, 20, 0.015, 8, false);
+        const stringMesh = new THREE.Mesh(stringGeo, stringMat);
+        testGroup.add(stringMesh);
+
+        // The Force Vector (Arrow)
+        const forceArrow = new THREE.ArrowHelper(
+            new THREE.Vector3(0, 0, 1), // dir
+            new THREE.Vector3(0, 0, 0), // origin (center of balloon)
+            1, // length
+            0xffffff, // color
+            0.6, 0.4 // head dims
+        );
+        testGroup.add(forceArrow);
+
+        // 4. DISTANCE MEASURE LINE (Dashed)
+        // Connects Source Center to Test Charge Center
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)]);
+        const lineMat = new THREE.LineDashedMaterial({
+            color: 0x666666,
+            dashSize: 0.5,
+            gapSize: 0.2,
+        });
+        const distanceLine = new THREE.Line(lineGeo, lineMat);
+        distanceLine.geometry.attributes.position.needsUpdate = true;
+        scene.add(distanceLine);
+
+
+        // 5. FIELD LINES VISUALIZATION
+        const fieldLinesGroup = new THREE.Group();
+        scene.add(fieldLinesGroup);
+
+        // Point Source Arrows
+        const pointArrows = [];
+        const createPointField = () => {
+            // Generate points on a sphere
+            const count = 40;
+            const goldenRatio = (1 + Math.sqrt(5)) / 2;
+
+            for (let i = 0; i < count; i++) {
+                const theta = 2 * Math.PI * i / goldenRatio;
+                const phi = Math.acos(1 - 2 * (i + 0.5) / count);
+
+                const x = Math.cos(theta) * Math.sin(phi);
+                const y = Math.cos(phi);
+                const z = Math.sin(theta) * Math.sin(phi);
+
+                const dir = new THREE.Vector3(x, y, z).normalize();
+                const origin = new THREE.Vector3(0, 8, 0); // VDG Center
+
+                const arrow = new THREE.ArrowHelper(dir, origin, 4, 0xff9f43, 0.4, 0.2);
+                arrow.line.material.transparent = true;
+                arrow.line.material.opacity = 0.2;
+                arrow.cone.material.transparent = true;
+                arrow.cone.material.opacity = 0.2;
+                pointArrows.push(arrow);
+                fieldLinesGroup.add(arrow);
+            }
+        };
+        createPointField();
+
+        // Plane Source Arrows
+        const planeArrows = [];
+        const createPlaneField = () => {
+            const spacing = 3;
+            for (let x = -9; x <= 9; x += spacing) {
+                for (let y = -9; y <= 9; y += spacing) {
+                    const origin = new THREE.Vector3(x, 8 + y, 0);
+                    const dir = new THREE.Vector3(0, 0, 1);
+                    const arrow = new THREE.ArrowHelper(dir, origin, 4, 0xff9f43, 0.4, 0.2);
+                    arrow.line.material.transparent = true;
+                    arrow.line.material.opacity = 0.2;
+                    arrow.cone.material.transparent = true;
+                    arrow.cone.material.opacity = 0.2;
+                    arrow.visible = false;
+                    planeArrows.push(arrow);
+                    fieldLinesGroup.add(arrow);
+                }
+            }
+        };
+        createPlaneField();
+
+        // --- LIGHTING ---
+        // Added brighter Ambient Light as requested
+        const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+        scene.add(ambient);
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1);
+        keyLight.position.set(10, 20, 20);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 1024;
+        keyLight.shadow.mapSize.height = 1024;
+        scene.add(keyLight);
+
+        const rimLight = new THREE.DirectionalLight(0x4444ff, 0.5);
+        rimLight.position.set(-10, 10, -10);
+        scene.add(rimLight);
+
+
+        // ==========================================
+        // LOGIC LOOP
+        // ==========================================
+
+        function updateSim() {
+            const zPos = state.distance;
+            const sourceHeight = 8; // Center of VDG Sphere
+
+            // 1. Move Test Charge Group
+            // The Balloon is at (0,0,0) inside the group, so we move the group.
+            testGroup.position.set(0, sourceHeight, zPos);
+
+            // 2. Update Distance Line
+            // From (0, 8, 0) to (0, 8, zPos)
+            const positions = distanceLine.geometry.attributes.position.array;
+            // Point 0 (Source)
+            positions[0] = 0; positions[1] = sourceHeight; positions[2] = 0;
+            // Point 1 (Charge)
+            positions[3] = 0; positions[4] = sourceHeight; positions[5] = zPos;
+            distanceLine.geometry.attributes.position.needsUpdate = true;
+            distanceLine.computeLineDistances(); // Update dashes
+
+            // 3. Switch Geometry & Physics
+            if (state.mode === 'point') {
+                vdgGroup.visible = true;
+                planeGroup.visible = false;
+
+                pointArrows.forEach(a => a.visible = state.showFieldLines);
+                planeArrows.forEach(a => a.visible = false);
+
+                // Force Logic: 1/r^2
+                // Calibration: at r=3 (surface approx), F is max.
+                const r = zPos;
+                let fMag = 40 / (r * r);
+                fMag = Math.min(Math.max(fMag, 0.2), 5); // Clamp visual length
+
+                forceArrow.setLength(fMag, 0.6, 0.4);
+            }
+            else {
+                vdgGroup.visible = false;
+                planeGroup.visible = true;
+
+                pointArrows.forEach(a => a.visible = false);
+                planeArrows.forEach(a => a.visible = state.showFieldLines);
+
+                // Force Logic: Constant
+                const fMag = 2.5;
+                forceArrow.setLength(fMag, 0.6, 0.4);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // ==========================================
+        // STORY ENGINE
+        // ==========================================
+
+        const lessons = [
+            {
+                title: "1. The Point Source",
+                text: `
+                <div class="definition-box">
+                    <span class="definition-title">Scenario A: Van de Graaff</span>
+                    <div class="legend-item"><span class="legend-dot" style="background:#ddd"></span> Metal Sphere (Source)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:#ff5252"></span> Test Charge (Balloon)</div>
+                </div>
+                We have a charged metal sphere. The electric field lines radiate outward in all directions, like 3D spokes on a wheel.<br><br>
+                Notice how the field lines (orange arrows) <strong>spread out</strong> as they get further from the sphere center.`,
+                setup: () => {
+                    state.mode = 'point';
+                    state.showFieldLines = true;
+                    state.distance = 4;
+                    document.getElementById('slider-dist').value = 4;
+                    document.getElementById('ctrl-dist').classList.add('active');
+                    document.getElementById('ctrl-mode').classList.remove('active');
+                    document.getElementById('btn-mode-point').classList.add('selected');
+                    document.getElementById('btn-mode-plane').classList.remove('selected');
+                    updateSim();
+                },
+                check: () => true
+            },
+            {
+                title: "2. The Inverse Square Law",
+                text: `Move the slider below to pull the balloon away.<br><br>
+                Imagine a bubble surrounding the source. As the bubble grows, its surface area increases by <strong>r<sup>2</sup></strong>.<br><br>
+                Since the same amount of "field" spreads over a larger area, the strength weakens rapidly.
+                <div class="formula-box">F &propto; <div class="fraction"><span>1</span><span class="bottom">r<sup>2</sup></span></div></div>
+                Observe the White Force Arrow shrink dramatically as you move away.`,
+                setup: () => {
+                    document.getElementById('slider-dist').classList.add('pulse');
+                },
+                check: () => state.distance > 10
+            },
+            {
+                title: "3. The Infinite Plane",
+                text: `Now, let's change the geometry to an <strong>Infinite Charged Plane</strong>.<br><br>
+                Because the plane goes on forever in all directions (up, down, left, right), the field lines have nowhere to spread sideways. They must point straight out.<br><br>
+                The field lines become <strong>Parallel</strong>.`,
+                setup: () => {
+                    document.getElementById('slider-dist').classList.remove('pulse');
+                    state.mode = 'plane';
+                    state.distance = 4;
+                    document.getElementById('slider-dist').value = 4;
+
+                    document.getElementById('btn-mode-point').classList.remove('selected');
+                    document.getElementById('btn-mode-plane').classList.add('selected');
+
+                    updateSim();
+                },
+                check: () => true
+            },
+            {
+                title: "4. Constant Force",
+                text: `Since the field lines are parallel, they never spread out. The density of lines (field strength) remains exactly the same, no matter how far you go.<br><br>
+                <div class="formula-box">F = Constant</div>
+                Move the slider. The White Force Arrow stays the <strong>same size</strong>!`,
+                setup: () => {
+                    document.getElementById('slider-dist').classList.add('pulse');
+                },
+                check: () => state.distance > 10
+            },
+            {
+                title: "Conclusion",
+                text: `<strong>Point Source:</strong> Field spreads spherically. Force drops by <span style="font-family:serif">1/r<sup>2</sup></span>.<br>
+                <strong>Plane Source:</strong> Field has no sideways spread. Force is constant.<br><br>
+                Use the toggle buttons below to switch geometries and compare the behavior of the Force Vector.`,
+                setup: () => {
+                    document.getElementById('slider-dist').classList.remove('pulse');
+                    document.getElementById('ctrl-mode').classList.add('active');
+                    document.getElementById('slider-dist').value = 8;
+                    state.distance = 8;
+                    updateSim();
+                },
+                check: () => true
+            }
+        ];
+
+        let currentChapter = 0;
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+
+            // UI Updates
+            document.querySelector('header .subtitle').innerText = `Concept ${idx + 1} / ${lessons.length}`;
+            document.getElementById('chapter-content').innerHTML = `<div class="chapter-title">${l.title}</div><div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+            if (idx === lessons.length - 1) btn.innerText = "Done";
+            else btn.innerText = "Next \u2192";
+
+            btn.disabled = !l.check();
+            if (!l.check()) btn.classList.remove('pulse');
+            else btn.classList.add('pulse');
+
+            l.setup();
+        }
+
+        function checkAdvance() {
+            if (lessons[currentChapter].check()) {
+                const btn = document.getElementById('btn-next');
+                btn.disabled = false;
+                btn.classList.add('pulse');
+            }
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                window.top.location.href = '/theapplefalls/lesson/hollow_sphere';
+            }
+        }
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+
+        // DOM Listeners
+        document.getElementById('slider-dist').addEventListener('input', (e) => {
+            state.distance = parseFloat(e.target.value);
+            document.getElementById('val-dist').innerText = state.distance < 5 ? "Near" : (state.distance > 10 ? "Far" : "Mid");
+            updateSim();
+            checkAdvance();
+        });
+
+        document.getElementById('btn-mode-point').addEventListener('click', () => {
+            state.mode = 'point';
+            document.getElementById('btn-mode-point').classList.add('selected');
+            document.getElementById('btn-mode-plane').classList.remove('selected');
+            updateSim();
+        });
+        document.getElementById('btn-mode-plane').addEventListener('click', () => {
+            state.mode = 'plane';
+            document.getElementById('btn-mode-point').classList.remove('selected');
+            document.getElementById('btn-mode-plane').classList.add('selected');
+            updateSim();
+        });
+
+        // Resize
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -d * newAspect; camera.right = d * newAspect;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+
+        // Start
+        loadLesson(0);
+
+    </script>
+</body>
+
+</html>

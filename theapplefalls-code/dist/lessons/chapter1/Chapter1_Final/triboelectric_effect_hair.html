@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Triboelectricity: The Static Spark</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* --- THEME & LAYOUT (Identical to previous) --- */
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* Orange */
+            --accent-hover: #e58e3c;
+            --border: #333;
+            --electron: #00d2d3;
+            /* Cyan */
+            --proton: #ff6b6b;
+            /* Red */
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 450px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 26px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 16px;
+            color: #ccc;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .instruction-inline {
+            color: var(--accent);
+            font-weight: bold;
+            border-bottom: 1px dotted var(--accent);
+        }
+
+        .example-box {
+            background: #252525;
+            padding: 15px;
+            border-left: 2px solid #555;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #181818;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 20px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            filter: grayscale(1);
+            position: relative;
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+            color: #000;
+        }
+
+        .nav-btn.next:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: #151515;
+            overflow: hidden;
+        }
+
+        /* Stats Overlay */
+        #stats-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .stat-line {
+            display: flex;
+            justify-content: space-between;
+            width: 180px;
+            margin-bottom: 5px;
+        }
+
+        .val-elec {
+            color: var(--electron);
+        }
+
+        .val-prot {
+            color: var(--proton);
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Triboelectric Effect</h1>
+            <div class="subtitle">Friction & Charge Transfer</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <!-- 1. Grab Comb -->
+            <div class="control-row" id="ctrl-tool">
+                <label>Action 1: Preparation</label>
+                <button id="btn-tool" onclick="equipComb()">Pick Up Plastic Comb</button>
+            </div>
+
+            <!-- 2. Slider -->
+            <div class="control-row" id="ctrl-rub">
+                <label>Action 2: Apply Friction</label>
+                <input type="range" id="slider-rub" min="0" max="100" value="0" step="0.5">
+            </div>
+
+            <!-- Reset -->
+            <div class="control-row" id="ctrl-reset"
+                style="margin-top:10px; border-top:1px solid #333; padding-top:15px;">
+                <label>System Control</label>
+                <button onclick="resetSim()">Discharge & Reset</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Continue &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <!-- Stats Overlay Removed -->
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: ISOMETRIC 3D ENGINE
+        // ==========================================
+
+        const state = {
+            combActive: false,
+            frictionLevel: 0, // 0 to 100
+            chargeTransferred: 0, // Number of electrons moved
+            maxCharge: 80 // Max electrons to move
+        };
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x151515);
+
+        // ISOMETRIC CAMERA
+        const sidebarWidth = 450;
+        const aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const d = 18;
+        const camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+
+        // Isometric Look
+        camera.position.set(20, 20, 20);
+        camera.lookAt(0, -2, 0); // Look slightly down
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffaa, 0.8);
+        dirLight.position.set(10, 20, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // Grid Floor
+        const grid = new THREE.GridHelper(50, 50, 0x333333, 0x111111);
+        grid.position.y = -8;
+        scene.add(grid);
+
+        // --- CHARACTER MODEL ---
+        const charGroup = new THREE.Group();
+        scene.add(charGroup);
+
+        // Head
+        const headGeo = new THREE.IcosahedronGeometry(3.5, 1);
+        const headMat = new THREE.MeshLambertMaterial({ color: 0xffccaa }); // Skin tone
+        const head = new THREE.Mesh(headGeo, headMat);
+        charGroup.add(head);
+
+        // Shoulders (Context)
+        const bodyGeo = new THREE.CylinderGeometry(5, 7, 6, 8);
+        const bodyMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = -6;
+        charGroup.add(body);
+
+        // --- HAIR SYSTEM ---
+        const hairStrands = [];
+        const hairCount = 90;
+        const hairLength = 3.5;
+
+        // Geometry: Translate cylinder so pivot is at base (0,0,0)
+        const strandGeo = new THREE.CylinderGeometry(0.05, 0.08, hairLength, 4);
+        strandGeo.translate(0, hairLength / 2, 0);
+        const strandMat = new THREE.MeshLambertMaterial({ color: 0x5c3a21 }); // Brown hair
+
+        for (let i = 0; i < hairCount; i++) {
+            // Distribute on top hemisphere
+            const phi = Math.acos(-1 + (2 * i) / hairCount); // latitude
+            const theta = Math.sqrt(hairCount * Math.PI) * phi; // longitude
+
+            // Convert spherical to cartesian, but only top half
+            const r = 3.4; // Slightly inside head surface
+            const y = r * Math.cos(phi);
+
+            if (y > 0.5) { // Only top of head
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const z = r * Math.sin(phi) * Math.sin(theta);
+
+                const hair = new THREE.Mesh(strandGeo, strandMat.clone());
+                hair.position.set(x, y, z);
+
+                // Orient hair to face outward initially
+                const target = new THREE.Vector3(x * 2, y * 2, z * 2);
+                hair.lookAt(target);
+                hair.rotateX(Math.PI / 2); // Fix cylinder orientation
+
+                // Store initial rotation for animation
+                hair.userData = {
+                    baseQuat: hair.quaternion.clone(),
+                    normal: new THREE.Vector3(x, y, z).normalize(),
+                    hasElectron: true,
+                    electronMesh: null
+                };
+
+                charGroup.add(hair);
+                hairStrands.push(hair);
+            }
+        }
+
+        // --- ELECTRONS & PROTONS ---
+        const electronGeo = new THREE.SphereGeometry(0.15, 6, 6);
+        const electronMat = new THREE.MeshBasicMaterial({ color: 0x00d2d3 });
+        const protonMat = new THREE.MeshBasicMaterial({ color: 0xff6b6b });
+
+        // Add electrons to hair
+        hairStrands.forEach(hair => {
+            const elec = new THREE.Mesh(electronGeo, electronMat);
+            elec.position.set(0, hairLength, 0); // Tip of hair
+            hair.add(elec);
+            hair.userData.electronMesh = elec;
+
+            // Add a proton at the base (invisible core charge)
+            const prot = new THREE.Mesh(electronGeo, protonMat);
+            prot.position.set(0, 0.2, 0);
+            prot.visible = false; // Reveal later
+            hair.add(prot);
+            hair.userData.protonMesh = prot;
+        });
+
+        // --- COMB MODEL ---
+        const combGroup = new THREE.Group();
+        const combBaseGeo = new THREE.BoxGeometry(8, 1, 0.5);
+        const combMat = new THREE.MeshPhongMaterial({ color: 0xaaaaaa, shininess: 80 }); // Plastic
+        const combBase = new THREE.Mesh(combBaseGeo, combMat);
+        combGroup.add(combBase);
+
+        // Teeth
+        for (let i = -3.5; i <= 3.5; i += 0.4) {
+            const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.5, 0.5), combMat);
+            tooth.position.set(i, -1.2, 0);
+            combGroup.add(tooth);
+        }
+
+        // Comb visual location
+        combGroup.position.set(10, 8, 0); // Start away
+        combGroup.rotation.z = -Math.PI / 6;
+        scene.add(combGroup);
+
+        // Stolen Electrons Container (on the comb)
+        const stolenElectrons = [];
+
+
+        // ==========================================
+        // PART 2: PHYSICS & ANIMATION
+        // ==========================================
+
+        let time = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.05;
+
+            // 1. COMB ANIMATION (Controlled by Slider)
+            if (state.combActive) {
+                // Lerp target position based on friction slider
+                // If slider is 0: Hover above
+                // If slider > 0: Rub back and forth
+
+                const intensity = state.frictionLevel / 100;
+
+                const hoverX = 0;
+                const hoverY = 7;
+
+                // Rubbing motion
+                const rubX = Math.sin(time * 5) * 4;
+                const rubY = 5 + Math.cos(time * 10) * 0.5;
+
+                // Blend between Hover and Rub
+                const targetX = hoverX + (rubX * intensity);
+                const targetY = hoverY - (2 * intensity) + (Math.cos(time * 10) * 0.5 * intensity);
+
+                combGroup.position.lerp(new THREE.Vector3(targetX, targetY, 0), 0.1);
+                combGroup.rotation.z = -Math.PI / 6 + Math.sin(time * 5) * 0.2 * intensity;
+
+                // CHARGE TRANSFER LOGIC
+                // Only transfer if friction level is high enough and moving
+                if (state.frictionLevel > 10 && state.chargeTransferred < state.maxCharge) {
+                    // Rate of transfer proportional to friction
+                    if (Math.random() < (state.frictionLevel / 300)) {
+                        stealElectron();
+                    }
+                }
+            } else {
+                // Hide comb
+                combGroup.position.lerp(new THREE.Vector3(20, 10, 0), 0.05);
+            }
+
+            // 2. HAIR PHYSICS (Repulsion)
+            // The more charge transferred, the more the hair stands up
+            const chargeRatio = state.chargeTransferred / state.maxCharge;
+
+            hairStrands.forEach((hair, idx) => {
+                // Basic idle sway
+                const sway = Math.sin(time + idx) * 0.05;
+
+                // Repulsion Vector calculation
+                // If charged (lost electron), hair wants to align with Normal vector (stand straight up)
+                // If neutral, hair falls slightly due to gravity (simulated by rotating down)
+
+                const startQ = hair.userData.baseQuat;
+
+                // Calculate "Standing Up" Quaternion (aligned with normal)
+                // Actually, baseQuat IS the normal alignment.
+                // So we want to add "gravity" when neutral, and remove it when charged.
+
+                // Artificial Gravity rotation (droop)
+                const gravityAxis = new THREE.Vector3(1, 0, 0); // Local axis approximation
+
+                // 0 charge = lots of droop. 1 charge = 0 droop (rigid standing).
+                const droopFactor = 1.0 - (chargeRatio * 0.9);
+
+                // Apply droop manually? 
+                // Easier approach: Reset to base, then apply rotation based on state.
+                hair.quaternion.copy(startQ);
+
+                // Add sway
+                hair.rotateX(sway * 0.5);
+
+                // Gravity effect: rotate 'down' relative to head? 
+                // A simple approximation: spread outward more when charged.
+
+                // Divergence effect (Repulsion):
+                // Rotate hairs away from each other. Since they are on a sphere, 
+                // the normal is the divergence direction.
+                // Let's create a "random" messiness that straightens out into a "porcupine" shape when charged.
+
+                if (chargeRatio > 0.1) {
+                    // Jitter decreases, alignment to normal increases
+                    // Visual effect: Hair stands stiff
+                    hair.rotateZ(Math.sin(time * 10 + idx) * 0.02 * chargeRatio); // Static vibration
+                } else {
+                    // Relaxed hair
+                    hair.rotateX(0.5); // Droop down
+                }
+            });
+
+            // 3. ELECTRON UPDATE (Stolen ones)
+            stolenElectrons.forEach(elec => {
+                // Stick them to the comb relative surface
+                // We just let them ride the combGroup hierarchy, but we can jitter them
+                elec.position.y += Math.sin(time * 20) * 0.001;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        function stealElectron() {
+            // Find a hair that still has an electron
+            const availableHairs = hairStrands.filter(h => h.userData.hasElectron);
+            if (availableHairs.length === 0) return;
+
+            const victimHair = availableHairs[Math.floor(Math.random() * availableHairs.length)];
+
+            // Logic Update
+            victimHair.userData.hasElectron = false;
+            state.chargeTransferred++;
+
+            // Visual Transfer
+            const electronMesh = victimHair.userData.electronMesh;
+            const protonMesh = victimHair.userData.protonMesh;
+
+            // 1. Reveal Proton on Hair (Hair becomes positive)
+            protonMesh.visible = true;
+
+            // 2. Move Electron to Comb
+            // We detach electron from hair and attach to comb.
+            // Needs coordinate transformation
+
+            const worldPos = new THREE.Vector3();
+            electronMesh.getWorldPosition(worldPos);
+
+            victimHair.remove(electronMesh); // Remove from hair
+            combGroup.add(electronMesh);     // Add to comb
+
+            // Convert worldPos to Comb's local space
+            combGroup.worldToLocal(worldPos);
+            electronMesh.position.copy(worldPos);
+
+            // Lerp to a random spot on the comb "teeth"
+            const targetX = (Math.random() - 0.5) * 7;
+            const targetY = -0.5 - Math.random(); // On the teeth
+
+            // Animate the travel (simple GSAP-like approach manually)
+            const travelAnim = () => {
+                electronMesh.position.lerp(new THREE.Vector3(targetX, targetY, 0.25), 0.1);
+                if (electronMesh.position.distanceTo(new THREE.Vector3(targetX, targetY, 0.25)) > 0.1) {
+                    requestAnimationFrame(travelAnim);
+                }
+            };
+            travelAnim();
+
+            stolenElectrons.push(electronMesh);
+            checkAdvance();
+        }
+
+        function updateUI() {
+            // Stats removed
+        }
+
+        animate();
+
+
+        // ==========================================
+        // PART 3: STORY & LOGIC
+        // ==========================================
+
+        function equipComb() {
+            state.combActive = true;
+            document.getElementById('btn-tool').innerText = "Comb Equipped";
+            document.getElementById('btn-tool').disabled = true;
+            checkAdvance();
+        }
+
+        document.getElementById('slider-rub').addEventListener('input', (e) => {
+            state.frictionLevel = parseFloat(e.target.value);
+            checkAdvance();
+        });
+
+        function resetSim() {
+            // Reset Logic
+            state.combActive = false;
+            state.frictionLevel = 0;
+            state.chargeTransferred = 0;
+            document.getElementById('slider-rub').value = 0;
+            document.getElementById('btn-tool').disabled = false;
+            document.getElementById('btn-tool').innerText = "Pick Up Plastic Comb";
+
+            // Reset Meshes
+            stolenElectrons.forEach(e => combGroup.remove(e));
+            stolenElectrons.length = 0;
+
+            hairStrands.forEach(hair => {
+                hair.userData.hasElectron = true;
+                hair.userData.protonMesh.visible = false;
+                // Re-add electron mesh
+                const newElec = new THREE.Mesh(electronGeo, electronMat);
+                newElec.position.set(0, hairLength, 0);
+                hair.add(newElec);
+                hair.userData.electronMesh = newElec;
+            });
+
+            loadLesson(0);
+        }
+
+        // --- NARRATIVE ENGINE ---
+
+        let currentChapter = 0;
+
+        const lessons = [
+            {
+                title: "Phase 1: Neutral Harmony",
+                text: "Here we have a typical human head and a plastic comb. Initially, both materials are electrically <strong>Neutral</strong>. <br><br>The hair has an equal number of protons (positive) and electrons (negative). The net charge is zero, so the hair behaves normally, resting due to gravity.<br><br><span class='instruction-inline'>Click 'PICK UP COMB'</span> to introduce the insulator.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-tool');
+                },
+                check: () => state.combActive
+            },
+            {
+                title: "Phase 2: The Triboelectric Effect",
+                text: "When two different materials touch and rub, electrons may transfer. This is the <strong>Triboelectric Effect</strong>.<br><br>Plastic has a higher 'Electron Affinity' than human hair. It is greedy. It wants to steal electrons.<br><br><span class='instruction-inline'>Drag the Friction Slider to ~50%</span> to vigorously rub the comb against the hair.",
+                setup: () => {
+                    unlock('ctrl-rub');
+                },
+                check: () => state.frictionLevel > 40
+            },
+            {
+                title: "Phase 3: Electron Theft",
+                text: "Observe the particles! As friction increases, the plastic comb rips electrons (Cyan) off the hair strands.<br><br><strong>Conservation of Charge:</strong> The electrons aren't created; they just moved. The comb is becoming negatively charged (-), while the hair—having lost electrons—is left with a net positive charge (Red Protons).<br><br>The hair strands now <strong>repel each other</strong> because they share the same positive charge, overcoming gravity to stand up.",
+                setup: () => {
+                    document.getElementById('ctrl-reset').classList.add('active');
+                },
+                // Just need a little bit of transfer to prove the point, no hard grinding required.
+                check: () => state.chargeTransferred > 5
+            },
+            {
+                title: "Phase 4: Real World Examples",
+                text: "The Triboelectric Effect is contact-induced electrification. It happens everywhere, not just with combs.<br><br>Examples from the <strong>Triboelectric Series</strong>:<br><div class='example-box'>1. <strong>Glass (+) & Silk (-):</strong> Rubbing glass with silk makes the glass positive.<br>2. <strong>Shoes & Carpet:</strong> Rubber soles steal electrons from wool carpets.</div><br>It is all about which material has the stronger 'hunger' for electrons.",
+                setup: () => {
+                    // Informational slide
+                },
+                check: () => true
+            },
+            {
+                title: "Conclusion: The Full Circle",
+                text: "We have come full circle.<br><br>We started with Franklin's fluid, saw Thales' amber, watched Galvani's frog kick, and measured the forces with Coulomb.<br><br>Now you understand the <strong>Why</strong> behind the spark. It is all just the movement of the invisible ocean of electrons.<br><br><strong>Course Complete.</strong>",
+                setup: () => {
+                    lockAll();
+                    document.getElementById('ctrl-reset').classList.add('active');
+                },
+                check: () => true
+            }
+        ];
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+            document.querySelector('header .subtitle').innerText = `Module 1: Chapter 1 - Step ${idx + 1} of ${lessons.length}`;
+            document.getElementById('chapter-content').innerHTML =
+                `<div class="chapter-title">${l.title}</div>
+             <div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+
+            // If the check returns true immediately (informational slide), enable button
+            if (l.check()) {
+                btn.disabled = false;
+            } else {
+                btn.disabled = true;
+            }
+
+            if (idx === lessons.length - 1) {
+                btn.innerText = "Start Chapter 2";
+            } else {
+                btn.innerText = "Next →";
+                btn.style.display = 'inline-block';
+            }
+
+            l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                // Navigate to Chapter 2 (Intro to Fields) via React route
+                window.top.location.href = '/theapplefalls/lesson/intro_to_electricfeld';
+            }
+        }
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+        function checkAdvance() {
+            if (lessons[currentChapter].check()) {
+                document.getElementById('btn-next').disabled = false;
+            }
+        }
+
+        function lockAll() { document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active')); }
+        function unlock(id) { document.getElementById(id).classList.add('active'); }
+
+        // Init
+        loadLesson(0);
+
+        // Responsive
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -d * newAspect;
+            camera.right = d * newAspect;
+            camera.top = d;
+            camera.bottom = -d;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Kirchhoff's Loop Rule - The Apple Falls</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #151515;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --border: #333;
+            --up-color: #2ecc71;
+            --down-color: #e74c3c;
+            --neutral: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 400px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+        }
+
+        #narrative-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 26px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        p {
+            line-height: 1.7;
+            font-size: 15px;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+
+        strong {
+            color: var(--accent);
+        }
+
+        .formula {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 15px 0;
+            text-align: center;
+            border-left: 3px solid var(--accent);
+            font-size: 18px;
+        }
+
+        .nav-footer {
+            padding: 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background: #222;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 13px;
+            transition: all 0.2s;
+            flex: 1;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background: #333;
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #050505;
+            position: relative;
+        }
+
+        #sim-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            gap: 40px;
+        }
+
+        #circuit-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .checkpoint {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #222;
+            border: 2px solid var(--neutral);
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            z-index: 5;
+        }
+
+        .checkpoint:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            border-color: #fff;
+        }
+
+        .checkpoint.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+        }
+
+        .checkpoint.visited {
+            background: var(--neutral);
+            border-color: var(--neutral);
+        }
+
+        #staircase {
+            width: 300px;
+            height: 350px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #staircase-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #staircase-chart {
+            flex: 1;
+            position: relative;
+        }
+
+        .stair-step {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--neutral);
+            transition: all 0.4s ease;
+        }
+
+        .stair-label {
+            position: absolute;
+            right: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 11px;
+            color: #888;
+            white-space: nowrap;
+        }
+
+        #sum-display {
+            margin-top: 15px;
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        #sum-display .label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        #sum-display .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--accent);
+            margin-top: 5px;
+        }
+
+        #instruction-banner {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #888;
+            border: 1px solid var(--border);
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Chapter 9: Kirchhoff's Loop Rule</h1>
+        </header>
+
+        <div id="narrative-container">
+            <div class="slide active" id="slide-0">
+                <h2>The Energy Hike</h2>
+                <p>Imagine you're hiking a mountain trail that <strong>loops back</strong> to where you started. You
+                    might climb up a hill and descend a slope, but your net change in altitude is always
+                    <strong>zero</strong>.
+                </p>
+                <p>Electric circuits work the same way!</p>
+            </div>
+
+            <div class="slide" id="slide-1">
+                <h2>Potential Checkpoints</h2>
+                <p>Look at the circuit on the right. There are <strong>4 checkpoints</strong> labeled A, B, C, D.</p>
+                <p>Click each one in order to see how the potential changes as a charge "walks" around the loop.</p>
+            </div>
+
+            <div class="slide" id="slide-2">
+                <h2>Climbing the Battery</h2>
+                <p>When a charge passes through the battery (A → B), it <strong>gains</strong> potential energy. The EMF
+                    "lifts" it up.</p>
+                <div class="formula">\(\Delta V_{AB} = +\mathcal{E}\)</div>
+            </div>
+
+            <div class="slide" id="slide-3">
+                <h2>Descending the Resistors</h2>
+                <p>When a charge passes through a resistor, it <strong>loses</strong> potential energy. The drop equals
+                    \(IR\).</p>
+                <div class="formula">\(\Delta V = -IR\)</div>
+            </div>
+
+            <div class="slide" id="slide-4">
+                <h2>Conclusion</h2>
+                <p>After visiting all checkpoints and returning to A, the <strong>sum of all voltage changes is exactly
+                        zero</strong>:</p>
+                <div class="formula">\(\sum \Delta V = 0\)</div>
+                <p>This is Kirchhoff's Voltage Law—energy conservation for charges.</p>
+            </div>
+        </div>
+
+        <div class="nav-footer">
+            <button id="prevBtn" onclick="changeSlide(-1)" disabled>Back</button>
+            <button id="nextBtn" onclick="changeSlide(1)" class="primary">Next</button>
+        </div>
+    </aside>
+
+    <main>
+        <div id="sim-area">
+            <div id="circuit-container">
+                <canvas id="circuitCanvas" width="400" height="400"></canvas>
+                <div class="checkpoint" id="cp-A" style="left: 80px; top: 200px;" onclick="visitCheckpoint('A')">A</div>
+                <div class="checkpoint" id="cp-B" style="left: 200px; top: 60px;" onclick="visitCheckpoint('B')">B</div>
+                <div class="checkpoint" id="cp-C" style="left: 320px; top: 200px;" onclick="visitCheckpoint('C')">C
+                </div>
+                <div class="checkpoint" id="cp-D" style="left: 200px; top: 340px;" onclick="visitCheckpoint('D')">D
+                </div>
+            </div>
+
+            <div id="staircase">
+                <div id="staircase-header">Potential Staircase</div>
+                <div id="staircase-chart"></div>
+                <div id="sum-display">
+                    <div class="label">Total ΣΔV</div>
+                    <div class="value" id="sum-value">0.00V</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="instruction-banner">Click the checkpoints A → B → C → D → A to walk the loop</div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('circuitCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const EMF = 12; // Volts
+        const R1 = 4;   // Ohms (B to C)
+        const R2 = 2;   // Ohms (C to D)
+        const R3 = 2;   // Ohms (D to A)
+        const I = EMF / (R1 + R2 + R3); // Current
+
+        const checkpoints = ['A', 'B', 'C', 'D'];
+        const segmentChanges = {
+            'A': { to: 'B', dv: EMF, label: `+${EMF}V (EMF)`, color: 'var(--up-color)' },
+            'B': { to: 'C', dv: -I * R1, label: `-${(I * R1).toFixed(1)}V (R₁)`, color: 'var(--down-color)' },
+            'C': { to: 'D', dv: -I * R2, label: `-${(I * R2).toFixed(1)}V (R₂)`, color: 'var(--down-color)' },
+            'D': { to: 'A', dv: -I * R3, label: `-${(I * R3).toFixed(1)}V (R₃)`, color: 'var(--down-color)' }
+        };
+
+        let visitedOrder = [];
+        let currentPotential = 0;
+        let staircaseSteps = [];
+
+        function drawCircuit() {
+            ctx.clearRect(0, 0, 400, 400);
+
+            // Wire loop
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(80, 200);
+            ctx.lineTo(80, 60);
+            ctx.lineTo(320, 60);
+            ctx.lineTo(320, 340);
+            ctx.lineTo(80, 340);
+            ctx.lineTo(80, 200);
+            ctx.stroke();
+
+            // Battery (A to B segment)
+            ctx.fillStyle = '#111';
+            ctx.fillRect(60, 100, 40, 60);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(65, 125); ctx.lineTo(95, 125); ctx.stroke();
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(70, 135); ctx.lineTo(90, 135); ctx.stroke();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Outfit';
+            ctx.textAlign = 'center';
+            ctx.fillText(`ε=${EMF}V`, 80, 175);
+
+            // Resistor 1 (B to C)
+            drawResistor(200, 60, true, `R₁=${R1}Ω`);
+
+            // Resistor 2 (C to D)
+            drawResistor(320, 200, false, `R₂=${R2}Ω`);
+
+            // Resistor 3 (D to A)
+            drawResistor(200, 340, true, `R₃=${R3}Ω`);
+
+            // Current arrow
+            ctx.fillStyle = '#ff9f43';
+            ctx.font = '11px Outfit';
+            ctx.fillText(`I = ${I.toFixed(2)}A`, 200, 200);
+        }
+
+        function drawResistor(x, y, horizontal, label) {
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (horizontal) {
+                ctx.moveTo(x - 25, y);
+                for (let i = 0; i < 5; i++) ctx.lineTo(x - 20 + i * 10, y + (i % 2 ? 8 : -8));
+                ctx.lineTo(x + 25, y);
+            } else {
+                ctx.moveTo(x, y - 25);
+                for (let i = 0; i < 5; i++) ctx.lineTo(x + (i % 2 ? 8 : -8), y - 20 + i * 10);
+                ctx.lineTo(x, y + 25);
+            }
+            ctx.stroke();
+            ctx.fillStyle = '#888';
+            ctx.font = '10px Outfit';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x + (horizontal ? 0 : 30), y + (horizontal ? 20 : 0));
+        }
+
+        function visitCheckpoint(cp) {
+            if (visitedOrder.length === 0 && cp !== 'A') return; // Must start at A
+            if (visitedOrder.includes(cp) && !(visitedOrder.length === 4 && cp === 'A')) return;
+
+            const cpEl = document.getElementById(`cp-${cp}`);
+
+            if (visitedOrder.length === 4 && cp === 'A') {
+                // Completing the loop
+                cpEl.classList.add('active');
+                document.getElementById('sum-value').innerText = '0.00V';
+                document.getElementById('sum-value').style.color = 'var(--up-color)';
+                document.getElementById('instruction-banner').innerText = '✓ Loop complete! ΣΔV = 0';
+                return;
+            }
+
+            cpEl.classList.add('visited');
+            visitedOrder.push(cp);
+
+            const seg = segmentChanges[cp];
+            currentPotential += seg.dv;
+
+            addStaircaseStep(seg.label, currentPotential, seg.dv > 0);
+            document.getElementById('sum-value').innerText = `${currentPotential.toFixed(2)}V`;
+
+            if (visitedOrder.length === 4) {
+                document.getElementById('instruction-banner').innerText = 'Now click A again to complete the loop!';
+            }
+        }
+
+        function addStaircaseStep(label, level, isUp) {
+            const chart = document.getElementById('staircase-chart');
+            const step = document.createElement('div');
+            step.className = 'stair-step';
+
+            const maxV = EMF * 1.2;
+            const yPercent = 100 - ((level + 2) / maxV) * 100;
+            step.style.top = `${yPercent}%`;
+            step.style.background = isUp ? 'var(--up-color)' : 'var(--down-color)';
+
+            const lbl = document.createElement('span');
+            lbl.className = 'stair-label';
+            lbl.innerText = label;
+            step.appendChild(lbl);
+
+            chart.appendChild(step);
+            staircaseSteps.push(step);
+        }
+
+        // Narrative
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+
+        function changeSlide(dir) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += dir;
+            slides[currentSlide].classList.add('active');
+
+            prevBtn.disabled = currentSlide === 0;
+            if (currentSlide === slides.length - 1) {
+                nextBtn.innerText = "Finish →";
+                nextBtn.onclick = () => window.top.location.href = '/theapplefalls/lesson/6_junction_rule';
+            } else {
+                nextBtn.innerText = "Next";
+                nextBtn.onclick = () => changeSlide(1);
+            }
+        }
+
+        drawCircuit();
+    </script>
+</body>
+
+</html>

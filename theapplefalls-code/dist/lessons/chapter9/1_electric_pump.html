@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Electric Pump (EMF) - The Apple Falls</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #151515;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* The Signature Orange */
+            --accent-dim: rgba(255, 159, 67, 0.2);
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 400px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+        }
+
+        #narrative-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        p {
+            line-height: 1.8;
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+
+        strong {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* NAVIGATION */
+        .nav-footer {
+            padding: 30px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background: #222;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex: 1;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #333;
+            border-color: #555;
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button.primary:hover {
+            background: #ffb36b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--accent-dim);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* VISUALIZATION AREA */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #111 0%, #050505 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            pointer-events: none;
+            font-family: monospace;
+            color: var(--accent);
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Chapter 9: The Electric Pump</h1>
+        </header>
+
+        <div id="narrative-container">
+            <!-- Slide 1 -->
+            <div class="slide active" id="slide-0">
+                <h2>The Mystery of the Loop</h2>
+                <p>We know that charges flow from <strong>high potential</strong> to <strong>low potential</strong>
+                    through a resistor. It's like water flowing downhill.</p>
+                <p>But wait... if they only flow downhill, eventually they all end up at the bottom. The "current" would
+                    stop!</p>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide" id="slide-1">
+                <h2>The Need for a Pump</h2>
+                <p>To keep a current flowing, we need something to pick those charges back up and carry them to the top
+                    of the "hill".</p>
+                <p>Just like a boulder won't roll uphill on its own, a charge won't move against an electric field
+                    without help.</p>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide" id="slide-2">
+                <h2>Against the Field</h2>
+                <p>Inside a resistor, the <strong>Electric Field (E)</strong> points with the current. This is
+                    "downhill".</p>
+                <p>Inside a battery, the current flows <strong>against</strong> the internal electric field. Something
+                    is pushing them!</p>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide" id="slide-3">
+                <h2>EMF: Electromotive Force</h2>
+                <p>We call this "pumping" ability the <strong>EMF</strong> ($\mathcal E$).</p>
+                <p>It's not really a "force" in the Newtonian sense, but a measure of the work done per unit charge to
+                    move it across the terminals.</p>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="slide" id="slide-4">
+                <h2>Conclusion</h2>
+                <p>Where does this energy come from? In a battery, it's <strong>chemical energy</strong>. In a
+                    generator, it's <strong>mechanical work</strong>.</p>
+                <p>Watch the simulation. The orange lift represents the "Pump" (EMF) doing work to lift charges back to
+                    high potential.</p>
+            </div>
+        </div>
+
+        <div class="nav-footer">
+            <button id="prevBtn" onclick="changeSlide(-1)" disabled>Back</button>
+            <button id="nextBtn" onclick="changeSlide(1)" class="primary">Start Experiment</button>
+        </div>
+    </aside>
+
+    <main>
+        <canvas id="simCanvas"></canvas>
+        <div id="ui-overlay">
+            System Status: <span id="status-text">IDLE</span><br>
+            Energy Source: <span id="source-text">None</span>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        function resize() {
+            width = canvas.width = canvas.offsetWidth;
+            height = canvas.height = canvas.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const statusText = document.getElementById('status-text');
+        const sourceText = document.getElementById('source-text');
+
+        function changeSlide(dir) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += dir;
+            slides[currentSlide].classList.add('active');
+
+            prevBtn.disabled = currentSlide === 0;
+            if (currentSlide === slides.length - 1) {
+                nextBtn.innerText = "Next Lesson \u2192";
+                nextBtn.onclick = () => window.top.location.href = '/theapplefalls/lesson/2_chemical_battery';
+            } else {
+                nextBtn.innerText = currentSlide === 0 ? "Start Experiment" : "Next";
+                nextBtn.onclick = () => changeSlide(1);
+            }
+
+            // Update simulation state based on slide
+            if (currentSlide > 0) {
+                simState.active = true;
+                statusText.innerText = "ACTIVE";
+                statusText.style.color = "#ff9f43";
+            }
+
+            if (currentSlide >= 4) {
+                sourceText.innerText = "Chemical / Mechanical";
+            }
+        }
+
+        // Simulation Physics
+        const simState = {
+            active: false,
+            particles: [],
+            particleCount: 25,
+            gearsRotation: 0
+        };
+
+        class Particle {
+            constructor(progress) {
+                this.progress = progress; // 0 to 1
+                this.size = 3 + Math.random() * 2;
+                this.speed = 0.0015 + Math.random() * 0.001;
+                this.history = [];
+            }
+
+            update() {
+                if (!simState.active) return;
+
+                // Speed up on the hill, slow down in the return? 
+                // Let's keep it fairly steady for now to focus on the "pump" concept
+                this.progress += this.speed;
+                if (this.progress > 1) {
+                    this.progress -= 1;
+                    this.history = [];
+                }
+
+                // Trail history
+                this.history.push(this.getPosition());
+                if (this.history.length > 10) this.history.shift();
+            }
+
+            getPosition() {
+                const margin = 120;
+                const loopWidth = width - margin * 2;
+                const loopHeight = height - margin * 2;
+
+                let x, y;
+                if (this.progress < 0.25) {
+                    // LIFT SECTION (EMF)
+                    const t = this.progress / 0.25;
+                    x = margin;
+                    y = (height - margin) - t * (height - 2 * margin);
+                } else if (this.progress < 0.75) {
+                    // HILL SECTION (Resistor)
+                    const t = (this.progress - 0.25) / 0.5;
+                    x = margin + t * (width - 2 * margin);
+                    // Curve the hill slightly
+                    y = margin + Math.sin(t * Math.PI) * 20;
+                } else {
+                    // RETURN SECTION
+                    const t = (this.progress - 0.75) / 0.25;
+                    x = (width - margin) - t * (width - 2 * margin);
+                    y = height - margin;
+                }
+                return { x, y };
+            }
+
+            draw() {
+                const pos = this.getPosition();
+
+                // Draw Trail
+                if (this.history.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.history[0].x, this.history[0].y);
+                    for (let i = 1; i < this.history.length; i++) {
+                        ctx.lineTo(this.history[i].x, this.history[i].y);
+                    }
+                    ctx.strokeStyle = this.progress < 0.25 ? 'rgba(255, 159, 67, 0.3)' : 'rgba(255,255,255,0.1)';
+                    ctx.stroke();
+                }
+
+                // Draw Particle
+                if (this.progress < 0.25) {
+                    ctx.fillStyle = '#ff9f43';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ff9f43';
+                } else {
+                    ctx.fillStyle = '#fff';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = '#fff';
+                }
+
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function drawGear(x, y, radius, teeth, rotation) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            ctx.beginPath();
+            ctx.strokeStyle = '#444';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < teeth; i++) {
+                const angle = (i / teeth) * Math.PI * 2;
+                const nextAngle = ((i + 0.5) / teeth) * Math.PI * 2;
+                ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+                ctx.lineTo(Math.cos(angle) * (radius + 5), Math.sin(angle) * (radius + 5));
+                ctx.lineTo(Math.cos(nextAngle) * (radius + 5), Math.sin(nextAngle) * (radius + 5));
+                ctx.lineTo(Math.cos(nextAngle) * radius, Math.sin(nextAngle) * radius);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // Inner circle
+            ctx.beginPath();
+            ctx.arc(0, 0, radius - 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawHill(margin) {
+            const hWidth = width - 2 * margin;
+            ctx.beginPath();
+            ctx.moveTo(margin, margin + 40);
+            ctx.lineTo(margin, margin);
+
+            // Draw rocky surface
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 4;
+            for (let i = 0; i <= 20; i++) {
+                const t = i / 20;
+                const x = margin + t * hWidth;
+                const y = margin + Math.sin(t * Math.PI) * 20 + (i % 2 === 0 ? 2 : -2);
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(width - margin, margin + 40);
+
+            // Fill the hill
+            const grad = ctx.createLinearGradient(0, margin, 0, margin + 100);
+            grad.addColorStop(0, '#1a1a1a');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Courier New';
+            ctx.fillText("RESISTIVE HILL (DOWNHILL)", width / 2 - 60, margin - 40);
+
+            // E-Field Arrows on hill
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            for (let i = 1; i < 5; i++) {
+                const x = margin + (i / 5) * hWidth;
+                drawArrow(x, margin - 15, x + 30, margin - 15);
+            }
+            ctx.fillText("E-FIELD \u2192", margin + hWidth / 2 - 20, margin - 10);
+        }
+
+        function drawArrow(x1, y1, x2, y2) {
+            const headlen = 10;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+
+        function drawLift(margin) {
+            const lHeight = height - 2 * margin;
+
+            // Shaft
+            ctx.fillStyle = 'rgba(255, 159, 67, 0.05)';
+            ctx.fillRect(margin - 30, margin, 60, lHeight);
+            ctx.strokeStyle = '#ff9f4355';
+            ctx.strokeRect(margin - 30, margin, 60, lHeight);
+
+            // Gears
+            if (simState.active) simState.gearsRotation += 0.02;
+            drawGear(margin - 30, margin, 15, 8, simState.gearsRotation);
+            drawGear(margin - 30, height - margin, 15, 8, simState.gearsRotation);
+            drawGear(margin + 30, margin, 15, 8, -simState.gearsRotation);
+            drawGear(margin + 30, height - margin, 15, 8, -simState.gearsRotation);
+
+            // Labels
+            ctx.fillStyle = '#ff9f43';
+            ctx.font = 'bold 12px Courier New';
+            ctx.save();
+            ctx.translate(margin - 50, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText("MECHANICAL LIFT (EMF)", -70, 0);
+            ctx.restore();
+
+            // E-Field Arrow (Downwards inside pump)
+            ctx.strokeStyle = 'rgba(255, 159, 67, 0.2)';
+            drawArrow(margin + 15, height / 2 - 50, margin + 15, height / 2 + 50);
+            ctx.font = '10px Courier New';
+            ctx.fillStyle = 'rgba(255, 159, 67, 0.4)';
+            ctx.fillText("E-FIELD \u2193", margin + 20, height / 2);
+        }
+
+        for (let i = 0; i < simState.particleCount; i++) {
+            simState.particles.push(new Particle(i / simState.particleCount));
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, width, height);
+
+            const margin = 120;
+
+            // Draw Circuit Path (Wires)
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(margin, margin, width - 2 * margin, height - 2 * margin);
+            ctx.setLineDash([]);
+
+            drawHill(margin);
+            drawLift(margin);
+
+            // Draw Particles
+            simState.particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(drawScene);
+        }
+
+        drawScene();
+    </script>
+
+</body>
+
+</html>

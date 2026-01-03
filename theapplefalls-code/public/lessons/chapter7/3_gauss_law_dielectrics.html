@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Gauss's Law Simplified</title>
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <!-- KaTeX JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --energy: #00cec9;
+            --border: #333;
+            --gauss-surface: #feca57;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        aside {
+            width: 400px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Content Area */
+        #story-container {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--accent);
+            padding-left: 10px;
+        }
+
+        .text-content {
+            line-height: 1.6;
+            font-size: 15px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        /* Math Block Styling */
+        .math-block {
+            background: #222;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            text-align: center;
+            margin: 15px 0;
+            color: var(--energy);
+            font-size: 1.1em;
+        }
+
+        /* Controls */
+        #controls {
+            background: #111;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        /* Navigation */
+        #nav {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        /* Main Viewport */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #080808 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 7: Gauss's Law Simplified</div>
+        </header>
+        <div id="story-container"></div>
+        <div id="controls">
+            <div id="dynamic-controls"></div>
+        </div>
+        <div id="nav">
+            <button class="nav-btn" onclick="prevStep()">Back</button>
+            <button class="nav-btn next-btn" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <canvas id="simCanvas"></canvas>
+    </main>
+
+    <script>
+        // --- Configuration & State ---
+        const config = {
+            kappa: 1,
+            insertion: 1,
+            material: "Glass",
+            showGauss: false,
+            gaussPosition: 'inside' // 'inside' or 'plate'
+        };
+
+        const materials = {
+            "Vacuum": 1,
+            "Paper": 3.7,
+            "Glass": 5.0,
+        };
+
+        // --- Canvas Setup ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            const parent = document.getElementById('viewport');
+            canvas.width = parent.offsetWidth - 40;
+            canvas.height = parent.offsetHeight - 40;
+        }
+        window.addEventListener('resize', resize);
+
+        // --- Drawing Logic ---
+        function drawCapacitor(cx, cy) {
+            const w = 400; // Plate width
+            const h = 20;  // Plate thickness
+            const d = 250; // Separation distance
+
+            // 1. Draw Plates
+            ctx.fillStyle = "#555";
+            // Top Plate
+            ctx.beginPath(); ctx.roundRect(cx - w / 2, cy - d / 2, w, h, 5); ctx.fill();
+            // Bottom Plate
+            ctx.beginPath(); ctx.roundRect(cx - w / 2, cy + d / 2 - h, w, h, 5); ctx.fill();
+
+            // Plate Charges (Free Charge)
+            ctx.font = "bold 16px monospace";
+            ctx.textAlign = "center";
+            for (let i = 0; i < 10; i++) {
+                let x = (cx - w / 2) + (i + 1) * (w / 11);
+                ctx.fillStyle = "rgba(255, 94, 87, 0.9)"; // Pos
+                ctx.fillText("+", x, cy - d / 2 + 16);
+                ctx.fillStyle = "rgba(72, 219, 251, 0.9)"; // Neg
+                ctx.fillText("-", x, cy + d / 2 - h - 5);
+            }
+
+            // 2. Dielectric Slab
+            if (config.insertion > 0.01) {
+                const slabW = w * 0.9;
+                const maxSlabH = (d - 2 * h);
+                const currentSlabH = maxSlabH * config.insertion;
+
+                const slabTopY = cy - d / 2 + h;
+                const slabBottomY = slabTopY + currentSlabH;
+
+                // Color based on material
+                ctx.fillStyle = "rgba(72, 219, 251, 0.1)"; // Default blueish
+                if (config.material === "Glass") ctx.fillStyle = "rgba(162, 155, 254, 0.2)";
+
+                // Draw slab
+                ctx.fillRect(cx - slabW / 2, slabTopY, slabW, currentSlabH);
+                ctx.strokeStyle = "rgba(255,255,255,0.2)";
+                ctx.lineWidth = 1;
+                ctx.strokeRect(cx - slabW / 2, slabTopY, slabW, currentSlabH);
+
+                // Bound Charges (The charges induced on the dielectric)
+                const count = 12;
+                const step = slabW / (count + 1);
+
+                // Only draw bound charges if not Vacuum
+                if (config.kappa > 1.1) {
+                    ctx.save();
+                    // Negatives (Top surface of dielectric)
+                    ctx.fillStyle = `rgba(72, 219, 251, 0.9)`;
+                    for (let i = 1; i <= count; i++) {
+                        ctx.fillText("-", cx - slabW / 2 + i * step, slabTopY + 18);
+                    }
+
+                    // Positives (Bottom surface of dielectric)
+                    if (currentSlabH > 30) {
+                        ctx.fillStyle = `rgba(255, 94, 87, 0.9)`;
+                        for (let i = 1; i <= count; i++) {
+                            ctx.fillText("+", cx - slabW / 2 + i * step, slabBottomY - 8);
+                        }
+                    }
+                    ctx.restore();
+                }
+            }
+
+            // 3. Gauss Surface (The dotted box)
+            if (config.showGauss) {
+                ctx.strokeStyle = "var(--gauss-surface)";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                const gaussW = 120;
+                const gaussH = 100;
+                let gaussY = cy;
+
+                if (config.gaussPosition === 'plate') {
+                    // Around the top plate
+                    gaussY = cy - d / 2 + h / 2;
+                } else if (config.gaussPosition === 'inside') {
+                    // Floating inside the field
+                    gaussY = cy - 20;
+                }
+
+                ctx.strokeRect(cx - gaussW / 2, gaussY - gaussH / 2, gaussW, gaussH);
+                ctx.setLineDash([]);
+
+                // Label
+                ctx.fillStyle = "var(--gauss-surface)";
+                ctx.fillText("Gaussian Surface", cx, gaussY - gaussH / 2 - 10);
+            }
+        }
+
+        function drawFields(cx, cy) {
+            const d = 250;
+            const h = 20;
+            const startY = cy - d / 2 + h;
+            const endY = cy + d / 2 - h;
+            const spacing = 40;
+
+            // Calculate Net Field roughly
+            const freeE = 100;
+            const netE = freeE / config.kappa; // E_net = E_0 / k
+
+            // Draw Net Field Lines
+            ctx.strokeStyle = "#ff9f43";
+            ctx.lineWidth = 3;
+
+            // Adjust opacity based on field strength
+            const strengthOpacity = Math.max(0.3, 1 / config.kappa);
+
+            for (let x = cx - 160; x <= cx + 160; x += spacing) {
+                // If line is inside dielectric area, reduce opacity to visualize weaker field
+                const isInside = (config.insertion > 0 && Math.abs(x - cx) < 180);
+
+                ctx.globalAlpha = isInside ? strengthOpacity : 1.0;
+
+                ctx.beginPath();
+                ctx.moveTo(x, startY + 10);
+                ctx.lineTo(x, endY - 10);
+                ctx.stroke();
+
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(x, endY - 10);
+                ctx.lineTo(x - 5, endY - 20);
+                ctx.lineTo(x + 5, endY - 20);
+                ctx.fillStyle = "#ff9f43";
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        function loop() {
+            // Clear background
+            ctx.fillStyle = "#0c0c0c";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            drawCapacitor(cx, cy);
+            drawFields(cx, cy);
+
+            requestAnimationFrame(loop);
+        }
+
+        // --- Educational Content (Simplified) ---
+        const steps = [
+            {
+                title: "1. Gauss's Law in a Vacuum",
+                text: "Imagine we wrap a virtual box (a Gaussian Surface) around the top plate.<br><br>In a vacuum, the Electric Field ($\\vec{E}$) coming out of the box depends purely on the charge enclosed ($Q_{free}$).<br><br>The formula is simple:<br><div class='math-block'>$$ \\oint \\vec{E} \\cdot d\\vec{A} = \\frac{Q_{free}}{\\epsilon_0} $$</div>",
+                setup: () => { config.kappa = 1; config.material = "Vacuum"; config.insertion = 0; config.showGauss = true; config.gaussPosition = 'plate'; },
+                controls: ``
+            },
+            {
+                title: "2. Adding a Dielectric",
+                text: "Now, let's insert a material like Glass between the plates.<br><br>Notice the faint blue charges appearing on the material's surface? These are <strong>Bound Charges</strong>. They appear because the material creates its own internal electric field that fights against the main field.",
+                setup: () => { config.insertion = 1; config.kappa = 5; config.material = "Glass"; config.showGauss = false; },
+                controls: `
+                <div style="margin-bottom:5px; color:#aaa; font-size:12px;">Material Type</div>
+                <select onchange="config.kappa = materials[this.value]; config.material = this.value">
+                    <option value="Vacuum">Vacuum (No Effect)</option>
+                    <option value="Paper">Paper (Weak)</option>
+                    <option value="Glass" selected>Glass (Strong)</option>
+                </select>`
+            },
+            {
+                title: "3. The Problem",
+                text: "If we draw our Gaussian box now, the total charge inside includes both the Plate Charge ($+$) and the Bound Charge ($-$).<br><br>The Net Charge is smaller, so the Net Field is weaker.<br><br>Calculating the Bound Charge is annoying and difficult. We want a way to calculate the field using <em>only</em> the charge we control ($Q_{free}$).",
+                setup: () => { config.showGauss = true; config.gaussPosition = 'plate'; },
+                controls: `<div style="text-align:center; color:#ff9f43;">Notice the field lines fade (weaken) in Glass.</div>`
+            },
+            {
+                title: "4. The Solution (Dielectric Constant)",
+                text: "We use a shortcut called the Dielectric Constant ($\\kappa$).<br><br>Instead of counting the bound charges, we just modify Gauss's law. We say the field is reduced by a factor of $\\kappa$.<br><br>The new simplified law for dielectrics is:<div class='math-block'>$$ \\oint \\vec{E} \\cdot d\\vec{A} = \\frac{Q_{free}}{\\kappa \\epsilon_0} $$</div>",
+                setup: () => { config.showGauss = true; config.gaussPosition = 'plate'; },
+                controls: ``
+            },
+            {
+                title: "Conclusion",
+                text: "1. <strong>Vacuum:</strong> Field is strong. $E = E_0$.<br>2. <strong>Dielectric:</strong> Material gets polarized. Bound charges oppose the free charges.<br>3. <strong>Result:</strong> The Net Field is weaker ($E = E_0 / \\kappa$).<br><br>We account for this by simply dividing the enclosed free charge by $\\kappa$ in our calculations.",
+                setup: () => {
+                    config.showGauss = false;
+                },
+                controls: `<div style="text-align:center; color:#888;">Switch materials to see the field strength change.</div>
+                <select onchange="config.kappa = materials[this.value]; config.material = this.value">
+                    <option value="Vacuum">Vacuum (Strong Field)</option>
+                    <option value="Glass" selected>Glass (Weak Field)</option>
+                </select>`
+            }
+        ];
+
+        let currentStep = 0;
+
+        function loadStep(idx) {
+            currentStep = idx;
+            const s = steps[idx];
+            const container = document.getElementById('story-container');
+
+            container.innerHTML = `<div class="chapter-title">${s.title}</div><div class="text-content">${s.text}</div>`;
+            document.getElementById('dynamic-controls').innerHTML = s.controls || '';
+
+            // Run any specific setup for this step
+            if (s.setup) s.setup();
+
+            const btn = document.querySelector('.next-btn');
+            if (currentStep === steps.length - 1) {
+                btn.innerHTML = "Next Lesson";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next";
+                btn.disabled = false;
+            }
+
+            // Render Math using KaTeX
+            renderMathInElement(container, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },
+                    { left: "$", right: "$", display: false }
+                ]
+            });
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                loadStep(currentStep + 1);
+            } else {
+                window.top.location.href = '/theapplefalls/lesson/4_experiments_disconnected';
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) loadStep(currentStep - 1);
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            resize();
+            loadStep(0);
+            loop();
+        });
+    </script>
+</body>
+
+</html>

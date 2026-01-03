@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: The Nature of Capacity</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #111;
+            --panel: #1a1a1a;
+            --text: #ddd;
+            --accent: #ff9f43;
+            --danger: #e74c3c;
+            --charge: #3498db;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: 450px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #ccc;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* KaTeX Corrections */
+        .katex-display {
+            margin: 1em 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* --- CONTROLS --- */
+        #controls {
+            background: #000;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        button {
+            background: #252525;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 12px;
+            margin-top: 15px;
+            letter-spacing: 1px;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        button.pump-btn {
+            border-color: var(--charge);
+            color: var(--charge);
+        }
+
+        button.pump-btn:hover {
+            background: var(--charge);
+            color: #fff;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            display: block;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #080808;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            margin: 0;
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        .next-btn:hover {
+            background: #ffb875;
+        }
+
+        /* --- VIEWPORT --- */
+        main {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #222 0%, #000 90%);
+        }
+
+        #flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.05s;
+        }
+
+        #legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border: 1px solid #333;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .glow-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #3498db;
+            box-shadow: 0 0 10px #3498db;
+        }
+
+        #status-light {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #333;
+            box-shadow: 0 0 5px #000;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 6: The Single Conductor</div>
+        </header>
+
+        <div id="story-container"></div>
+
+        <div id="controls">
+            <div id="dynamic-controls"></div>
+        </div>
+        <div id="nav">
+            <button class="nav-btn" onclick="prevStep()">Back</button>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <div id="status-light"></div>
+        <div id="legend">
+            <div class="glow-dot"></div>
+            <span>Glow Intensity = Electric Field Strength</span>
+        </div>
+        <div id="flash-overlay"></div>
+    </main>
+
+    <script>
+        // --- AUDIO SYSTEM ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let humOsc = null;
+        let humGain = null;
+
+        function initAudio() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (!humOsc) {
+                humOsc = audioCtx.createOscillator();
+                humGain = audioCtx.createGain();
+                humOsc.type = 'sine';
+                humOsc.frequency.value = 60; // Low hum
+                humGain.gain.value = 0;
+                humOsc.connect(humGain);
+                humGain.connect(audioCtx.destination);
+                humOsc.start();
+            }
+        }
+
+        function updateHum(stressLevel) {
+            if (!humGain) return;
+            const pitch = 60 + (stressLevel * 200);
+            const vol = Math.min(stressLevel * 0.1, 0.15);
+            humOsc.frequency.setTargetAtTime(pitch, audioCtx.currentTime, 0.1);
+            humGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.1);
+        }
+
+        function playSparkSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // --- THREE.JS SETUP ---
+        const viewport = document.getElementById('viewport');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, viewport.offsetWidth / viewport.offsetHeight, 0.1, 100);
+        camera.position.set(0, 4, 10);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        viewport.appendChild(renderer.domElement);
+
+        const orbit = new THREE.OrbitControls(camera, renderer.domElement);
+        orbit.enableDamping = true; orbit.enablePan = false;
+        orbit.minDistance = 5; orbit.maxDistance = 15;
+
+        // --- OBJECTS ---
+        const grid = new THREE.GridHelper(50, 50, 0x333333, 0x080808);
+        grid.position.y = -2; scene.add(grid);
+
+        const standGeo = new THREE.CylinderGeometry(0.1, 0.4, 4, 16);
+        const standMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 });
+        const stand = new THREE.Mesh(standGeo, standMat);
+        scene.add(stand);
+
+        const sphereGeo = new THREE.SphereGeometry(1, 64, 64);
+        const sphereMat = new THREE.MeshPhysicalMaterial({
+            color: 0x555555, metalness: 0.9, roughness: 0.1,
+            emissive: 0x3498db, emissiveIntensity: 0
+        });
+        const conductor = new THREE.Mesh(sphereGeo, sphereMat);
+        conductor.position.y = 2; scene.add(conductor);
+
+        const haloGeo = new THREE.SphereGeometry(1.2, 32, 32);
+        const haloMat = new THREE.MeshBasicMaterial({
+            color: 0x3498db, transparent: true, opacity: 0.0, side: THREE.BackSide, blending: THREE.AdditiveBlending
+        });
+        const halo = new THREE.Mesh(haloGeo, haloMat);
+        conductor.add(halo);
+
+        const sparkGeo = new THREE.BufferGeometry();
+        const sparkMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 3 });
+        const spark = new THREE.Line(sparkGeo, sparkMat);
+        spark.visible = false; scene.add(spark);
+
+        const light = new THREE.PointLight(0xffffff, 1, 50);
+        light.position.set(5, 10, 5); scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // --- SIMULATION LOGIC ---
+        let sim = { charge: 0, radius: 1.0, stress: 0 };
+        let isBroken = false;
+
+        function updatePhysics() {
+            conductor.scale.setScalar(sim.radius);
+            halo.scale.setScalar(1.0 + (sim.stress * 0.1));
+
+            sim.stress = sim.charge / (sim.radius * sim.radius * 6);
+
+            // Visual Feedback
+            const glow = Math.min(sim.stress, 1.2);
+            conductor.material.emissiveIntensity = glow * 2;
+            halo.material.opacity = glow * 0.5;
+
+            // Status Light
+            const status = document.getElementById('status-light');
+            if (sim.stress > 0.9) {
+                status.style.background = '#e74c3c';
+                status.style.boxShadow = '0 0 15px #e74c3c';
+            } else if (sim.stress > 0.1) {
+                status.style.background = '#3498db';
+                status.style.boxShadow = `0 0 ${glow * 10}px #3498db`;
+            } else {
+                status.style.background = '#333';
+                status.style.boxShadow = 'none';
+            }
+
+            updateHum(sim.stress);
+
+            if (sim.stress >= 1.0 && !isBroken) triggerBreakdown();
+        }
+
+        function triggerBreakdown() {
+            isBroken = true;
+            playSparkSound();
+            const flash = document.getElementById('flash-overlay');
+            flash.style.opacity = 0.8;
+            setTimeout(() => flash.style.opacity = 0, 100);
+
+            const points = [];
+            points.push(new THREE.Vector3(0, 2 + sim.radius, 0));
+            let curr = points[0].clone();
+            for (let i = 0; i < 6; i++) {
+                curr.y += 0.5 + Math.random();
+                curr.x += (Math.random() - 0.5) * 3;
+                curr.z += (Math.random() - 0.5) * 3;
+                points.push(curr.clone());
+            }
+            sparkGeo.setFromPoints(points);
+            spark.visible = true;
+
+            setTimeout(() => {
+                sim.charge = 0;
+                spark.visible = false;
+                isBroken = false;
+                updatePhysics();
+                if (currentStep === 1) document.getElementById('btn-next').disabled = false;
+            }, 300);
+        }
+
+        function addCharge() { initAudio(); sim.charge += 1.0; updatePhysics(); }
+        function setRadius(val) { sim.radius = parseFloat(val); updatePhysics(); }
+        function resetSim() {
+            sim.charge = 0; sim.stress = 0; isBroken = false; spark.visible = false;
+            updatePhysics();
+        }
+
+        // --- LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+            orbit.update();
+            if (sim.stress > 0.5 && !isBroken) {
+                conductor.position.x = (Math.random() - 0.5) * (sim.stress * 0.05);
+                conductor.position.z = (Math.random() - 0.5) * (sim.stress * 0.05);
+            } else {
+                conductor.position.x = 0; conductor.position.z = 0;
+            }
+            if (spark.visible) spark.material.opacity = Math.random();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- NARRATIVE CONTENT ---
+        const steps = [
+            {
+                title: "Electrical Pressure",
+                text: `Imagine this sphere is a container. We want to pack electrons onto its surface.
+            <br><br>
+            As we pump charge, we do work against repulsion. This builds up <strong>Electrical Potential (Voltage)</strong>. 
+            <br><br>
+            Watch the blue glow—it represents the intensity of the electric field trying to escape the surface.`,
+                controls: `
+                <button class="pump-btn" onclick="addCharge()">Add Charge</button>
+            `,
+                setup: () => {
+                    resetSim();
+                    sim.radius = 1.0;
+                    document.getElementById('btn-next').disabled = false;
+                }
+            },
+            {
+                title: "The Breaking Point",
+                text: `The air acts as an insulator, but it has limits. If the Electric Field (Glow) becomes too intense, it rips air molecules apart.
+            <br><br>
+            <strong>Your Goal:</strong> Keep pumping charge until the system fails.`,
+                controls: `
+                <button class="pump-btn" onclick="addCharge()">Add Charge</button>
+            `,
+                setup: () => {
+                    if (isBroken) resetSim();
+                    sim.radius = 1.0;
+                    document.getElementById('btn-next').disabled = true;
+                }
+            },
+            {
+                title: "Intuition: Cramped vs. Spacious",
+                text: `We currently have some charge $Q$ on the sphere. The "glow" tells us the sphere is under high pressure (high Voltage).
+            <br><br>
+            <strong>What is Capacitance?</strong>
+            It's a measure of "Storage Efficiency." It asks: <em>"How much voltage does it cost to store this charge?"</em>
+            <br><br>
+            <strong>Try this:</strong> Increase the sphere size below.
+            <br>
+            Note that even though the Charge ($Q$) stays exactly the same, the Glow/Voltage drops significantly. A larger sphere is less "cramped," so it has a higher capacity to accept charge without fighting back.`,
+                controls: `
+                <label>Sphere Size (Geometry)</label>
+                <input type="range" min="0.8" max="2.0" step="0.1" value="1.0" oninput="setRadius(this.value)">
+                <button class="pump-btn" onclick="addCharge()">Add More Charge</button>
+            `,
+                setup: () => {
+                    sim.charge = 4.0;
+                    sim.radius = 1.0;
+                    isBroken = false;
+                    updatePhysics();
+                    document.getElementById('btn-next').disabled = false;
+                }
+            },
+            {
+                title: "Conclusion",
+                text: `We just saw that for a fixed Charge ($Q$), making the Radius ($R$) bigger reduced the Potential ($V$).
+            <br><br>
+            This gives us the definition of **Capacitance ($C$)**: The ratio of how much charge we hold vs. how much pressure it creates.
+            $$ C = \\frac{Q}{V} $$
+            <br>
+            Let's derive the formula for a sphere:
+            1. Potential on a sphere surface: $ V = \\frac{1}{4\\pi\\epsilon_0} \\frac{Q}{R} $
+            2. Substitute that into the definition: $ C = \\frac{Q}{ (\\frac{1}{4\\pi\\epsilon_0} \\frac{Q}{R}) } $
+            3. The $Q$ cancels out, leaving:
+            $$ C = 4\\pi\\epsilon_0 R $$
+            <br>
+            <strong>Conclusion:</strong> Capacity doesn't depend on Charge. It depends purely on the geometry ($R$) of the object.`,
+                controls: `<div style="text-align:center; color:#666; font-style:italic; padding:20px;">Lesson Complete</div>`,
+                setup: () => {
+                    sim.radius = 2.0;
+                    sim.charge = 5.0;
+                    updatePhysics();
+                    document.getElementById('btn-next').innerText = "Next Lesson";
+                    document.getElementById('btn-next').disabled = false;
+                }
+            }
+        ];
+
+        let currentStep = 0;
+
+        function loadStep(idx) {
+            currentStep = idx;
+            const s = steps[idx];
+
+            document.getElementById('story-container').innerHTML = `
+            <div class="chapter-title">${s.title}</div>
+            <div>${s.text}</div>
+        `;
+            document.getElementById('dynamic-controls').innerHTML = s.controls;
+
+            renderMathInElement(document.getElementById('story-container'), {
+                delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }]
+            });
+
+            if (s.setup) s.setup();
+
+            const btn = document.getElementById('btn-next');
+            if (currentStep === steps.length - 1) {
+                btn.innerHTML = "Next Lesson";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next";
+                btn.disabled = false;
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                loadStep(currentStep + 1);
+            } else {
+                window.top.location.href = '/theapplefalls/lesson/4_capacitance_revised';
+            }
+        }
+        function prevStep() { if (currentStep > 0) loadStep(currentStep - 1); }
+
+        loadStep(0);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = viewport.offsetWidth / viewport.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
+        });
+
+    </script>
+</body>
+
+</html>

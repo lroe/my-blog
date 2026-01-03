@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: The Polarized Stream</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* Orange */
+            --accent-hover: #e58e3c;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* LEFT PANEL: THE STORYBOOK */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .instruction-inline {
+            color: var(--accent);
+            font-weight: bold;
+            background: rgba(255, 159, 67, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        /* CONTROLS AREA */
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #181818;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 15px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            filter: grayscale(1);
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+        }
+
+        /* NAVIGATION FOOTER */
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        /* NEXT BUTTON STYLING FIX */
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+            color: #000;
+        }
+
+        .nav-btn.next:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+            transform: none;
+            animation: none;
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+        }
+
+        .scene-tag {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+
+        .readout {
+            float: right;
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Simulation: Electro-Hydrodynamics</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <!-- 1. Gravity / Flow -->
+            <div class="control-row" id="ctrl-flow">
+                <label>Step 1: The Medium</label>
+                <button id="btn-flow" onclick="toggleWater()">Open Valve</button>
+            </div>
+
+            <!-- 2. Static Charge -->
+            <div class="control-row" id="ctrl-charge">
+                <label>Step 2: Charge Density (Q)</label>
+                <input type="range" id="slider-charge" min="0" max="100" value="0">
+            </div>
+
+            <!-- 3. Oscillation -->
+            <div class="control-row" id="ctrl-freq">
+                <label>Step 3: Polarity Switch <span class="readout" id="freq-val">0 Hz</span></label>
+                <input type="range" id="slider-freq" min="0" max="20" value="0" step="0.1">
+            </div>
+
+            <!-- Reset -->
+            <div class="control-row" id="ctrl-reset"
+                style="margin-top:10px; border-top:1px solid #2c313a; padding-top:15px; opacity: 1; pointer-events: all; filter: grayscale(0);">
+                <label>Experiment Control</label>
+                <button onclick="resetSim()">Reset System</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div class="scene-tag" style="top: 20px; right: 20px;">Lab Frame</div>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE 3D ENGINE
+        // ==========================================
+
+        const state = {
+            waterFlowing: false,
+            charge: 0,
+            frequency: 0,
+            time: 0
+        };
+
+        const scene = new THREE.Scene();
+
+        const sidebarWidth = 420;
+        let aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const viewSize = 45;
+
+        const camera = new THREE.OrthographicCamera(
+            -viewSize * aspect / 2, viewSize * aspect / 2,
+            viewSize / 2, -viewSize / 2,
+            1, 1000
+        );
+
+        camera.position.set(30, 30, 30);
+        camera.lookAt(0, -5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 5);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        scene.add(dirLight);
+
+        // --- GROUND & FLOOR ---
+        const floorGeo = new THREE.PlaneGeometry(100, 100);
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x222222, roughness: 0.9, metalness: 0.1
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -15;
+        floor.receiveShadow = true;
+        scene.add(floor);
+        scene.background = new THREE.Color(0x151515);
+
+        // Grid (Visual Guide for the Ground)
+        const gridHelper = new THREE.GridHelper(100, 20, 0x2c313a, 0x1f2229);
+        gridHelper.position.y = -14.9;
+        scene.add(gridHelper);
+
+        // Common Material
+        const metalMat = new THREE.MeshStandardMaterial({ color: 0x555, roughness: 0.3, metalness: 0.8 });
+
+        // --- OBJECTS ---
+
+        // 1. Van de Graaff Generator (The Source)
+        const machineGroup = new THREE.Group();
+
+        // Base
+        const baseGeo = new THREE.BoxGeometry(6, 2, 6);
+        const base = new THREE.Mesh(baseGeo, metalMat);
+        base.position.y = -14;
+        base.castShadow = true;
+
+        // Column
+        const colGeo = new THREE.CylinderGeometry(1, 1, 15, 16);
+        const plasticMat = new THREE.MeshStandardMaterial({ color: 0xaaaaaa, roughness: 0.2, transparent: true, opacity: 0.4 });
+        const col = new THREE.Mesh(colGeo, plasticMat);
+        col.position.y = -6.5;
+
+        // Dome
+        const domeGeo = new THREE.IcosahedronGeometry(4, 2);
+        const domeMat = new THREE.MeshStandardMaterial({ color: 0xcdcfd1, roughness: 0.1, metalness: 1.0 });
+        const dome = new THREE.Mesh(domeGeo, domeMat);
+        dome.position.y = 1;
+        dome.castShadow = true;
+
+        // Sparks (Visual feedback for charge)
+        const glowGeo = new THREE.IcosahedronGeometry(4.2, 1);
+        const glowMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.0, wireframe: true });
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        dome.add(glow);
+
+        machineGroup.add(base, col, dome);
+        machineGroup.position.set(10, 0, 0);
+        scene.add(machineGroup);
+
+        // 2. The Faucet Assembly (Modified to include Ground Support)
+        const faucetGroup = new THREE.Group();
+
+        // Horizontal Arm
+        const pipeGeo = new THREE.CylinderGeometry(0.5, 0.5, 10, 8);
+        pipeGeo.rotateZ(Math.PI / 2);
+        const pipe = new THREE.Mesh(pipeGeo, metalMat);
+        pipe.position.set(-8, 12, 0);
+        pipe.castShadow = true;
+
+        // Nozzle (Water comes out here)
+        const nozzleGeo = new THREE.CylinderGeometry(0.5, 0.8, 2, 8);
+        const nozzle = new THREE.Mesh(nozzleGeo, metalMat);
+        nozzle.position.set(-3, 11, 0);
+        nozzle.castShadow = true;
+
+        // NEW: Vertical Supply Pipe (Attached to Ground)
+        const supplyHeight = 26; // Distance from y=12 down to y=-14
+        const supplyGeo = new THREE.CylinderGeometry(0.6, 0.6, supplyHeight, 8);
+        const supplyPipe = new THREE.Mesh(supplyGeo, metalMat);
+        // Position x=-12 (back of horizontal pipe), y centered between 12 and -14
+        supplyPipe.position.set(-12, -1, 0);
+        supplyPipe.castShadow = true;
+        supplyPipe.receiveShadow = true;
+
+        // NEW: Pipe Base (Concrete block on the floor)
+        const pipeBaseGeo = new THREE.BoxGeometry(4, 1.5, 4);
+        const pipeBase = new THREE.Mesh(pipeBaseGeo, metalMat);
+        pipeBase.position.set(-12, -14.25, 0); // Resting on the floor at y=-15
+        pipeBase.receiveShadow = true;
+
+        // NEW: Elbow Connector (Top left join)
+        const elbowGeo = new THREE.SphereGeometry(0.8, 16, 16);
+        const elbow = new THREE.Mesh(elbowGeo, metalMat);
+        elbow.position.set(-12, 12, 0);
+
+        faucetGroup.add(pipe, nozzle, supplyPipe, pipeBase, elbow);
+        scene.add(faucetGroup);
+
+        // 3. Water Particle System
+        const particleCount = 400;
+        const waterGeo = new THREE.IcosahedronGeometry(0.3, 0);
+        const waterMat = new THREE.MeshPhongMaterial({
+            color: 0x00d2d3,
+            emissive: 0x004444,
+            specular: 0xffffff,
+            shininess: 100,
+            flatShading: true
+        });
+
+        const particles = [];
+        const gravity = -0.15;
+
+        for (let i = 0; i < particleCount; i++) {
+            const mesh = new THREE.Mesh(waterGeo, waterMat);
+            mesh.visible = false;
+            mesh.userData = {
+                active: false,
+                velocity: new THREE.Vector3(),
+                life: 0
+            };
+            scene.add(mesh);
+            particles.push(mesh);
+        }
+
+        // Collection Basin (Where water lands)
+        const basinGeo = new THREE.CylinderGeometry(4, 3, 2, 16);
+        const basinMat = new THREE.MeshStandardMaterial({ color: 0x333, side: THREE.DoubleSide });
+        const basin = new THREE.Mesh(basinGeo, basinMat);
+        basin.position.set(-3, -14, 0);
+        basin.receiveShadow = true;
+        scene.add(basin);
+
+
+        // ==========================================
+        // PART 2: PHYSICS ENGINE
+        // ==========================================
+
+        function spawnParticle() {
+            const p = particles.find(p => !p.userData.active);
+            if (p) {
+                p.userData.active = true;
+                p.position.set(-3, 10, 0); // Start at nozzle
+                p.userData.velocity.set(
+                    (Math.random() - 0.5) * 0.05,
+                    -0.1,
+                    (Math.random() - 0.5) * 0.05
+                );
+                p.userData.life = 0;
+                p.visible = true;
+            }
+        }
+
+        function updatePhysics() {
+            const domePos = new THREE.Vector3(10, 1, 0);
+            let currentCharge = state.charge;
+
+            if (state.frequency > 0) {
+                currentCharge = state.charge * Math.cos(state.time * state.frequency);
+            }
+
+            glow.material.opacity = Math.abs(currentCharge) / 200;
+            glow.scale.setScalar(1 + Math.abs(currentCharge) / 300);
+
+            particles.forEach(p => {
+                if (!p.userData.active) return;
+
+                p.userData.velocity.y += gravity * 0.05;
+
+                const dist = p.position.distanceTo(domePos);
+
+                if (currentCharge !== 0) {
+                    const dir = new THREE.Vector3().subVectors(domePos, p.position).normalize();
+
+                    let forceMag = (Math.abs(currentCharge) * 1.5) / (dist * dist);
+                    if (currentCharge < 0) forceMag *= -0.5;
+
+                    if (Math.abs(state.charge) > 80) {
+                        p.userData.velocity.x += (Math.random() - 0.5) * 0.02;
+                        p.userData.velocity.z += (Math.random() - 0.5) * 0.02;
+                    }
+
+                    p.userData.velocity.add(dir.multiplyScalar(forceMag * 0.05));
+                }
+
+                p.position.add(p.userData.velocity);
+
+                if (p.position.y < -14) {
+                    p.userData.active = false;
+                    p.visible = false;
+                }
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            state.time += 0.05;
+
+            if (state.waterFlowing) {
+                spawnParticle();
+                spawnParticle();
+            }
+
+            updatePhysics();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // ==========================================
+        // PART 3: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentChapter = 0;
+
+        document.getElementById('slider-charge').addEventListener('input', (e) => {
+            state.charge = parseFloat(e.target.value);
+            checkAdvance();
+        });
+
+        document.getElementById('slider-freq').addEventListener('input', (e) => {
+            state.frequency = parseFloat(e.target.value);
+            document.getElementById('freq-val').innerText = state.frequency + " Hz";
+            checkAdvance();
+        });
+
+        function toggleWater() {
+            state.waterFlowing = !state.waterFlowing;
+            const btn = document.getElementById('btn-flow');
+            btn.innerText = state.waterFlowing ? "Close Valve" : "Open Valve";
+            checkAdvance();
+        }
+
+        function resetSim() {
+            state.waterFlowing = false;
+            state.charge = 0;
+            state.frequency = 0;
+
+            document.getElementById('slider-charge').value = 0;
+            document.getElementById('slider-freq').value = 0;
+            document.getElementById('freq-val').innerText = "0 Hz";
+            document.getElementById('btn-flow').innerText = "Open Valve";
+
+            particles.forEach(p => { p.userData.active = false; p.visible = false; });
+
+            loadLesson(0);
+        }
+
+        const lessons = [
+            {
+                title: "Principles: The Dipole",
+                text: "Water (<strong style='color:#00d2d3'>H₂O</strong>) is not just a liquid; it is a collection of magnetic-like magnets called <strong>dipoles</strong>. The oxygen atom hogs electrons, making one side negative, while the hydrogens remain positive.<br><br>Right now, gravity is the only force acting on the stream. It falls straight down.<br><br><span class='instruction-inline'>Click 'OPEN VALVE'</span> to establish the baseline stream.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-flow');
+                },
+                check: () => state.waterFlowing
+            },
+            {
+                title: "The Electric Field Gradient",
+                text: "We have a Van de Graaff generator nearby. When charged, it creates a non-uniform <strong>Electric Field (E)</strong>.<br><br>Because the field is stronger near the dome, the attractive force on the water's dipoles is stronger than the repulsive force. This creates a <strong>Net Force</strong> towards the sphere.<br><br><span class='instruction-inline'>Increase Charge (Q)</span> to about 50% to see the stream bend.",
+                setup: () => {
+                    unlock('ctrl-charge');
+                },
+                check: () => state.charge > 40
+            },
+            {
+                title: "Supercharged: Induction & Chaos",
+                text: "Bending is classic physics. Now let's supercharge it.<br><br>If we rapidly flip the polarity of the charge (AC), or create extreme charge density, two things happen:<br>1. <strong>Mechanical Oscillation:</strong> The stream tries to follow the changing field direction.<br>2. <strong>Rayleigh Instability:</strong> Repulsive forces inside the water overcome surface tension, causing the stream to spray or split.<br><br><span class='instruction-inline'>Increase Hz</span> to oscillate the field.",
+                setup: () => {
+                    unlock('ctrl-freq');
+                },
+                check: () => state.frequency > 5
+            },
+            {
+                title: "Conclusion",
+                text: "You are now manipulating matter without touching it.<br><br>At high frequencies, the water molecules cannot physically rotate fast enough to track the field perfectly, resulting in complex helix patterns or atomization (spraying).<br><br>Feel free to adjust Flow, Charge, and Frequency to create stable helices or chaotic storms. You have completed Chapter 2! You now understand the invisible forces that shape our world.",
+                setup: () => {
+                    // All open
+                },
+                check: () => true
+            }
+        ];
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+            document.querySelector('header .subtitle').innerText = `Experiment Phase ${idx + 1}: ${l.title}`;
+            document.getElementById('chapter-content').innerHTML =
+                `<div class="chapter-title">${l.title}</div>
+             <div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+
+            if (currentChapter === lessons.length - 1) {
+                btn.innerHTML = "Next Lesson &rarr;";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+                btn.disabled = !l.check();
+            }
+
+            l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                // End of module
+                window.location.href = '/theapplefalls/index.html';
+            }
+        }
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+        function checkAdvance() {
+            if (currentChapter >= lessons.length - 1) return;
+            if (lessons[currentChapter].check()) {
+                document.getElementById('btn-next').disabled = false;
+            }
+        }
+
+        function lockAll() { document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active')); }
+        function unlock(id) { document.getElementById(id).classList.add('active'); }
+
+        // Init
+        loadLesson(0);
+
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -viewSize * newAspect / 2;
+            camera.right = viewSize * newAspect / 2;
+            camera.top = viewSize / 2;
+            camera.bottom = -viewSize / 2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Junction Rule - The Apple Falls</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #151515;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --border: #333;
+            --total-color: #f1c40f;
+            --branch1-color: #2ecc71;
+            --branch2-color: #3498db;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+        }
+
+        #narrative-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.8;
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+
+        strong {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .formula {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* NAVIGATION */
+        .nav-footer {
+            padding: 30px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background: #222;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex: 1;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* MAIN SIMULATION AREA */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #050505;
+        }
+
+        #sim-container {
+            flex: 1;
+            position: relative;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .viz-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* HUD */
+        #meter-panel {
+            position: absolute;
+            top: 60px;
+            right: 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .meter {
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            border-radius: 12px;
+            text-align: right;
+            backdrop-filter: blur(10px);
+            min-width: 140px;
+        }
+
+        .meter-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .meter-value {
+            display: block;
+            font-family: monospace;
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        /* CONTROLS */
+        #controls {
+            padding: 30px;
+            background: var(--panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 40px;
+        }
+
+        .control-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Chapter 9: The Junction Rule</h1>
+        </header>
+
+        <div id="narrative-container">
+            <!-- Slide 0 -->
+            <div class="slide active" id="slide-0">
+                <h2>The Splitting Stream</h2>
+                <p>What happens when a wire branches into two? Electrons are like water in a pipe—they don't just
+                    vanish.</p>
+                <p>Every electron that enters a <strong>junction</strong> (a node) must leave it through one of the
+                    branches.</p>
+            </div>
+
+            <!-- Slide 1 -->
+            <div class="slide" id="slide-1">
+                <h2>Conservation of Charge</h2>
+                <p>Kirchhoff's Junction Rule is <strong>Conservation of Charge</strong> in action.</p>
+                <p>The total current entering a node must equal the total current leaving it:</p>
+                <div class="formula">
+                    \(\sum I_{in} = \sum I_{out}\)
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide" id="slide-2">
+                <h2>Path of Least Resistance</h2>
+                <p>When current reaches a split, it doesn't split 50/50 unless the resistors are equal.</p>
+                <p><strong>Try this:</strong> Lower one resistance and watch how more "particles" choose that path. The
+                    node acts as a traffic director based on ease of flow.</p>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide" id="slide-3">
+                <h2>Verifying the Sum</h2>
+                <p>Check the meters on the right. No matter how you adjust the sliders, you'll see:</p>
+                <div class="formula" style="font-size: 22px; color: #fff;">
+                    \(I_{total} = I_1 + I_2\)
+                </div>
+                <p>The total flow is always preserved!</p>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide" id="slide-4">
+                <h2>Conclusion</h2>
+                <p>In this simulation, we see discrete "balls" travel from the battery around the loop. <strong>In
+                        reality, it doesn't work like that.</strong></p>
+                <p>The entire wire is already <strong>full of electrons</strong>. Turning on the battery is like pushing
+                    a <strong>bicycle chain</strong>: as soon as you push one link, the whole chain moves at once.</p>
+                <p>Current is the simultaneous drift of trillions of charges already present everywhere in the metal.
+                </p>
+            </div>
+        </div>
+
+        <div class="nav-footer">
+            <button id="prevBtn" onclick="changeSlide(-1)" disabled>Back</button>
+            <button id="nextBtn" onclick="changeSlide(1)" class="primary">Next</button>
+        </div>
+    </aside>
+
+    <main>
+        <div id="sim-container">
+            <div class="viz-box">
+                <canvas id="circuitCanvas"></canvas>
+
+                <div id="meter-panel">
+                    <div class="meter" style="border-right: 4px solid var(--total-color);">
+                        <span class="meter-label">Total Current (In)</span>
+                        <span id="it-val" class="meter-value" style="color: var(--total-color);">0.00A</span>
+                    </div>
+                    <div class="meter" style="border-right: 4px solid var(--branch1-color);">
+                        <span class="meter-label">Branch 1 (I₁)</span>
+                        <span id="i1-val" class="meter-value" style="color: var(--branch1-color);">0.00A</span>
+                    </div>
+                    <div class="meter" style="border-right: 4px solid var(--branch2-color);">
+                        <span class="meter-label">Branch 2 (I₂)</span>
+                        <span id="i2-val" class="meter-value" style="color: var(--branch2-color);">0.00A</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div class="control-group">
+                <div class="label-row">
+                    <span>Resistor 1 (Top)</span>
+                    <span id="r1-label">10Ω</span>
+                </div>
+                <input type="range" id="r1-slider" min="1" max="50" value="10" step="1">
+            </div>
+            <div class="control-group">
+                <div class="label-row">
+                    <span>Resistor 2 (Bottom)</span>
+                    <span id="r2-label">10Ω</span>
+                </div>
+                <input type="range" id="r2-slider" min="1" max="50" value="10" step="1">
+            </div>
+            <div class="control-group">
+                <div class="label-row">
+                    <span>Battery Voltage</span>
+                    <span id="v-label">12V</span>
+                </div>
+                <input type="range" id="v-slider" min="2" max="24" value="12" step="1">
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('circuitCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const r1S = document.getElementById('r1-slider');
+        const r2S = document.getElementById('r2-slider');
+        const vS = document.getElementById('v-slider');
+        const r1L = document.getElementById('r1-label');
+        const r2L = document.getElementById('r2-label');
+        const vL = document.getElementById('v-label');
+
+        const itVal = document.getElementById('it-val');
+        const i1Val = document.getElementById('i1-val');
+        const i2Val = document.getElementById('i2-val');
+
+        function resize() {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const state = {
+            v: 12,
+            r1: 10,
+            r2: 10,
+            i1: 0,
+            i2: 0,
+            itotal: 0
+        };
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.p = 0; // Progress around the loop [0, 1]
+                this.branch = 0; // 0=main, 1=top, 2=bottom
+                this.speed = 0.005;
+            }
+            update(dt) {
+                const I1_ratio = state.i1 / (state.itotal || 1);
+
+                this.p += state.itotal * 0.01 * dt;
+
+                // Decisions at junctions
+                if (this.p > 0.15 && this.p < 0.65 && this.branch === 0) {
+                    this.branch = Math.random() < I1_ratio ? 1 : 2;
+                }
+
+                if (this.p > 0.65 && this.branch !== 0) {
+                    this.branch = 0;
+                }
+
+                if (this.p > 1.0) {
+                    this.p -= 1.0;
+                    this.branch = 0;
+                }
+            }
+            draw() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const pad = 80;
+                const cw = w - pad * 2;
+                const ch = h - pad * 2;
+
+                let x, y;
+
+                // Segment 1: Bottom wire (Right to Left) -> Battery
+                if (this.p < 0.25) {
+                    const t = this.p / 0.25;
+                    x = pad + cw * (1 - t);
+                    y = pad + ch;
+                }
+                // Segment 2: Left wire (Up) -> Junction 1
+                else if (this.p < 0.3) {
+                    const t = (this.p - 0.25) / 0.05;
+                    x = pad;
+                    y = pad + ch * (1 - t);
+                }
+                // Segment 3: Junction 1 -> Branches
+                else if (this.p < 0.7) {
+                    const t = (this.p - 0.3) / 0.4;
+                    x = pad + t * cw;
+                    if (this.branch === 1) {
+                        y = pad; // Top
+                    } else {
+                        y = pad + ch; // Still technically bottom? No, let's make it more visual.
+                        // Let's refine the loop layout.
+                    }
+                }
+
+                // Let's use a cleaner path mapping.
+            }
+        }
+
+        // Continuous Path Mapping
+        function getXY(p, branch) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const padX = w * 0.15;
+            const padY = h * 0.2;
+            const cw = w - padX * 2;
+            const ch = h - padY * 2;
+            const splitX = padX + cw * 0.2;
+            const mergeX = padX + cw * 0.8;
+
+            // Define segment breakdown for the loop
+            // Total length is split proportionately
+            // We'll define nodes and interpolate through them
+
+            let p_seg;
+            if (p < 0.15) { // Start -> Split Node
+                p_seg = p / 0.15;
+                return { x: padX + p_seg * (splitX - padX), y: h / 2 };
+            } else if (p < 0.65) { // The Parallel Section (including vertical)
+                p_seg = (p - 0.15) / 0.5;
+                const targetY = (branch === 1) ? h / 2 - ch / 3 : h / 2 + ch / 3;
+
+                if (p_seg < 0.15) { // Up/Down to branch
+                    const tt = p_seg / 0.15;
+                    return { x: splitX, y: h / 2 + tt * (targetY - h / 2) };
+                } else if (p_seg < 0.85) { // Horizontal across resistor
+                    const tt = (p_seg - 0.15) / 0.7;
+                    return { x: splitX + tt * (mergeX - splitX), y: targetY };
+                } else { // Return to center height
+                    const tt = (p_seg - 0.85) / 0.15;
+                    return { x: mergeX, y: targetY + tt * (h / 2 - targetY) };
+                }
+            } else { // Return Path
+                p_seg = (p - 0.65) / 0.35;
+                const path = [
+                    { x: mergeX, y: h / 2 },
+                    { x: padX + cw, y: h / 2 },
+                    { x: padX + cw, y: h / 2 + ch / 2 },
+                    { x: padX, y: h / 2 + ch / 2 },
+                    { x: padX, y: h / 2 }
+                ];
+
+                // Interpolate through return corners
+                const segCount = path.length - 1;
+                const sIdx = Math.floor(p_seg * segCount);
+                const localP = (p_seg * segCount) % 1;
+                const startNode = path[Math.min(sIdx, segCount)];
+                const endNode = path[Math.min(sIdx + 1, segCount)];
+                return {
+                    x: startNode.x + localP * (endNode.x - startNode.x),
+                    y: startNode.y + localP * (endNode.y - startNode.y)
+                };
+            }
+        }
+
+        const particles = [];
+        for (let i = 0; i < 80; i++) {
+            const p = new Particle();
+            p.p = i / 80;
+            particles.push(p);
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            state.v = parseFloat(vS.value);
+            state.r1 = parseFloat(r1S.value);
+            state.r2 = parseFloat(r2S.value);
+
+            r1L.innerText = `${state.r1}Ω`;
+            r2L.innerText = `${state.r2}Ω`;
+            vL.innerText = `${state.v}V`;
+
+            // Parallel Resistance calculation: 1/Req = 1/R1 + 1/R2
+            const r_eq = (state.r1 * state.r2) / (state.r1 + state.r2);
+            state.itotal = state.v / r_eq;
+            state.i1 = state.v / state.r1;
+            state.i2 = state.v / state.r2;
+
+            itVal.innerText = `${state.itotal.toFixed(2)}A`;
+            i1Val.innerText = `${state.i1.toFixed(2)}A`;
+            i2Val.innerText = `${state.i2.toFixed(2)}A`;
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const padX = w * 0.15;
+            const padY = h * 0.2;
+            const cw = w - padX * 2;
+            const ch = h - padY * 2;
+            const splitX = padX + cw * 0.2;
+            const mergeX = padX + cw * 0.8;
+
+            // Draw Wires
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+
+            // Branching junction
+            ctx.moveTo(padX, h / 2);
+            ctx.lineTo(splitX, h / 2);
+            ctx.lineTo(splitX, h / 2 - ch / 3);
+            ctx.lineTo(mergeX, h / 2 - ch / 3);
+            ctx.lineTo(mergeX, h / 2);
+
+            ctx.moveTo(splitX, h / 2);
+            ctx.lineTo(splitX, h / 2 + ch / 3);
+            ctx.lineTo(mergeX, h / 2 + ch / 3);
+            ctx.lineTo(mergeX, h / 2);
+
+            ctx.lineTo(padX + cw, h / 2);
+            ctx.lineTo(padX + cw, h / 2 + ch / 2);
+            ctx.lineTo(padX, h / 2 + ch / 2);
+            ctx.lineTo(padX, h / 2);
+            ctx.stroke();
+
+            // Resistors
+            // R1 (Top)
+            ctx.fillStyle = '#050505';
+            ctx.fillRect((splitX + mergeX) / 2 - 30, h / 2 - ch / 3 - 15, 60, 30);
+            ctx.strokeStyle = 'var(--branch1-color)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const r1x = (splitX + mergeX) / 2;
+            ctx.moveTo(r1x - 25, h / 2 - ch / 3);
+            for (let i = 0; i < 6; i++) ctx.lineTo(r1x - 20 + i * 8, h / 2 - ch / 3 + (i % 2 ? 8 : -8));
+            ctx.lineTo(r1x + 25, h / 2 - ch / 3);
+            ctx.stroke();
+            // Branch 1 Label
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Outfit';
+            ctx.fillText("BRANCH 1", r1x, h / 2 - ch / 3 - 25);
+
+            // R2 (Bottom)
+            ctx.fillStyle = '#050505';
+            ctx.fillRect((splitX + mergeX) / 2 - 30, h / 2 + ch / 3 - 15, 60, 30);
+            ctx.strokeStyle = 'var(--branch2-color)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const r2x = (splitX + mergeX) / 2;
+            ctx.moveTo(r2x - 25, h / 2 + ch / 3);
+            for (let i = 0; i < 6; i++) ctx.lineTo(r2x - 20 + i * 8, h / 2 + ch / 3 + (i % 2 ? 8 : -8));
+            ctx.lineTo(r2x + 25, h / 2 + ch / 3);
+            ctx.stroke();
+            // Branch 2 Label
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Outfit';
+            ctx.fillText("BRANCH 2", r2x, h / 2 + ch / 3 + 35);
+
+            // Battery
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(padX - 25, h / 2 + ch / 4 - 20, 50, 40);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(padX - 15, h / 2 + ch / 4 - 5); ctx.lineTo(padX + 15, h / 2 + ch / 4 - 5); ctx.stroke();
+            ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(padX - 8, h / 2 + ch / 4 + 5); ctx.lineTo(padX + 8, h / 2 + ch / 4 + 5); ctx.stroke();
+
+            // Particles
+            particles.forEach(p => {
+                p.update(0.016);
+                const pos = getXY(p.p, p.branch);
+                ctx.fillStyle = 'var(--accent)';
+                if (p.p > 0.2 && p.p < 0.8) {
+                    ctx.fillStyle = p.branch === 1 ? 'var(--branch1-color)' : 'var(--branch2-color)';
+                } else if (p.p >= 0.8 || p.p <= 0.2) {
+                    ctx.fillStyle = 'var(--total-color)';
+                }
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            requestAnimationFrame(drawScene);
+        }
+
+        // Narrative Control
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+
+        function changeSlide(dir) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += dir;
+            slides[currentSlide].classList.add('active');
+
+            prevBtn.disabled = currentSlide === 0;
+            if (currentSlide === slides.length - 1) {
+                nextBtn.innerText = "Next Lesson →";
+                nextBtn.onclick = () => window.top.location.href = '/theapplefalls/lesson/7_measuring_circuits';
+            } else {
+                nextBtn.innerText = "Next";
+                nextBtn.onclick = () => changeSlide(1);
+            }
+        }
+
+        drawScene();
+    </script>
+</body>
+
+</html>

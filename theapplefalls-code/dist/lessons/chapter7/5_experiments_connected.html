@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Connected Capacitor</title>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* THE ORANGE */
+            --battery: #ff9f43;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 400px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--accent);
+            padding-left: 10px;
+        }
+
+        .text-content {
+            line-height: 1.6;
+            font-size: 15px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        .math-block {
+            background: #222;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            text-align: center;
+            margin: 15px 0;
+            color: var(--accent);
+            font-size: 1.1em;
+        }
+
+        #controls {
+            background: #111;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        #nav {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        .disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #080808 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+
+        /* Heads Up Display */
+        .hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            width: 220px;
+            pointer-events: none;
+        }
+
+        .hud-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .hud-val {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .hud-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .hud-bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 7: The Connected Battery</div>
+        </header>
+        <div id="story-container"></div>
+        <div id="controls"></div>
+        <div id="nav">
+            <button class="nav-btn" id="prevBtn" onclick="prevStep()">Back</button>
+            <button class="nav-btn next-btn" id="nextBtn" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <canvas id="simCanvas"></canvas>
+        <div class="hud">
+            <!-- Voltage Meter -->
+            <div class="hud-row">
+                <span>VOLTAGE (V)</span>
+                <span class="hud-val" style="color:var(--battery)">CONSTANT</span>
+            </div>
+            <div class="hud-bar-bg">
+                <div class="hud-bar-fill" style="width: 100%; background: var(--battery);"></div>
+            </div>
+
+            <!-- Charge Meter -->
+            <div class="hud-row">
+                <span>CHARGE (Q)</span>
+                <span class="hud-val" id="val-q">Loading...</span>
+            </div>
+            <div class="hud-bar-bg">
+                <div class="hud-bar-fill" id="bar-q" style="background: #ff6b6b"></div>
+            </div>
+
+            <!-- Capacitance Meter -->
+            <div class="hud-row">
+                <span>CAPACITANCE (C)</span>
+                <span class="hud-val" id="val-c">Loading...</span>
+            </div>
+            <div class="hud-bar-bg">
+                <div class="hud-bar-fill" id="bar-c" style="background: #ccc"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- State ---
+        const state = {
+            distance: 100,
+            dielectricPos: 0,
+            kappa: 5.0,
+            voltage: 100, // Fixed Voltage
+            stepIndex: 0
+        };
+
+        // --- Canvas ---
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        // Color constants for Canvas (since it can't read CSS vars easily)
+        const COLORS = {
+            pos: "#ff6b6b", // Red-ish
+            neg: "#48dbfb", // Blue-ish
+            field: "255, 159, 67" // RGB for Orange (accent)
+        };
+
+        function resize() {
+            const parent = document.getElementById('viewport');
+            width = parent.offsetWidth - 40;
+            height = parent.offsetHeight - 40;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', resize);
+
+        // --- Physics Engine ---
+        function getPhysics() {
+            // 1. Calculate Capacitance
+            // C = k * A / d
+            const effectiveKappa = 1 + (state.dielectricPos * (state.kappa - 1));
+            // Multiplier 20000 is arbitrary to make numbers look nice on screen
+            const C = (effectiveKappa * 20000) / state.distance;
+
+            // 2. Calculate Charge
+            // Q = CV (Since V is constant)
+            // Scaling factor adjusted so Q is in a renderable range
+            const Q = C * (state.voltage / 1000);
+
+            // 3. Calculate Field
+            // E = V / d (V is constant, so E changes only with distance)
+            const E = state.voltage / state.distance;
+
+            return { C, Q, E, effectiveKappa };
+        }
+
+        // --- Drawing Engine ---
+        function draw() {
+            // Background
+            ctx.fillStyle = "#111";
+            ctx.fillRect(0, 0, width, height);
+
+            const cx = width / 2;
+            const cy = height / 2;
+            const plateW = 320;
+            const plateH = 15;
+            const d = state.distance;
+            const physics = getPhysics();
+
+            // --- 1. Draw Circuit (Battery) ---
+            ctx.strokeStyle = "#444";
+            ctx.lineWidth = 3;
+            const wireOffset = 260;
+
+            // Top Circuit
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - d / 2);
+            ctx.lineTo(cx, cy - d / 2 - 60);
+            ctx.lineTo(cx - wireOffset, cy - d / 2 - 60);
+            ctx.lineTo(cx - wireOffset, cy + d / 2 + 60); // Loop to bottom
+            ctx.stroke();
+
+            // Bottom Circuit connection
+            ctx.beginPath();
+            ctx.moveTo(cx, cy + d / 2);
+            ctx.lineTo(cx, cy + d / 2 + 60);
+            ctx.lineTo(cx - wireOffset, cy + d / 2 + 60);
+            ctx.stroke();
+
+            // Battery Graphic
+            const batX = cx - wireOffset;
+            const batY = cy;
+
+            // Clear wire behind battery
+            ctx.fillStyle = "#111";
+            ctx.fillRect(batX - 15, batY - 25, 30, 50);
+
+            // Battery Terminals
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = "#ff9f43";
+            // Top (+V)
+            ctx.beginPath(); ctx.moveTo(batX - 20, batY - 8); ctx.lineTo(batX + 20, batY - 8); ctx.stroke();
+            // Bottom (0V)
+            ctx.beginPath(); ctx.moveTo(batX - 10, batY + 8); ctx.lineTo(batX + 10, batY + 8); ctx.stroke();
+
+            ctx.fillStyle = "#ff9f43";
+            ctx.font = "bold 16px monospace";
+            ctx.fillText("V", batX - 35, batY + 5);
+
+            // --- 2. Dielectric ---
+            const slabW = plateW;
+            const slabH = d - plateH;
+            const slabX = (cx - plateW / 2) + (state.dielectricPos * plateW) - plateW;
+
+            if (state.dielectricPos > 0.01) {
+                ctx.save();
+                // Mask to clip within plates
+                ctx.beginPath();
+                ctx.rect(cx - plateW / 2, cy - d / 2 + plateH / 2, plateW, d - plateH);
+                ctx.clip();
+
+                // Draw Glass
+                ctx.fillStyle = "rgba(0, 206, 201, 0.2)"; // Teal tint
+                ctx.fillRect(slabX, cy - d / 2 + plateH / 2, plateW, d - plateH);
+                ctx.strokeStyle = "rgba(0, 206, 201, 0.5)";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(slabX, cy - d / 2 + plateH / 2, plateW, d - plateH);
+
+                // Induced Charges (Bound charges oppose plates)
+                const boundCount = Math.min(15, Math.floor(physics.Q / 3)); // Adjusted scaling
+                ctx.font = "bold 14px Arial";
+                ctx.textAlign = "center";
+                const step = plateW / (boundCount + 1);
+
+                for (let i = 1; i <= boundCount; i++) {
+                    let lx = slabX + i * step - (step / 2);
+                    if (lx > cx - plateW / 2 && lx < cx + plateW / 2) {
+                        // Top Surface (Induced Negative)
+                        ctx.fillStyle = "rgba(255,255,255,0.5)";
+                        ctx.fillText("-", lx, cy - d / 2 + plateH + 6);
+                        // Bottom Surface (Induced Positive)
+                        ctx.fillText("+", lx, cy + d / 2 - plateH - 6);
+                    }
+                }
+                ctx.restore();
+            }
+
+            // --- 3. Plates ---
+            ctx.fillStyle = "#636e72";
+            ctx.fillRect(cx - plateW / 2, cy - d / 2, plateW, plateH); // Top
+            ctx.fillRect(cx - plateW / 2, cy + d / 2 - plateH, plateW, plateH); // Bottom
+
+            // --- 4. VISUALIZING CHARGE (Q) ---
+            // Calculate how many charges to draw based on Q
+            // Q ranges roughly from ~5 (far apart, no dielectric) to ~200 (close, dielectric)
+            // We scale this to number of characters
+            let numCharges = Math.floor(physics.Q * 0.8);
+
+            // Clamp for visual sanity
+            if (numCharges < 2) numCharges = 2;
+            if (numCharges > 35) numCharges = 35; // Don't overcrowd
+
+            const qStep = plateW / (numCharges + 1);
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            for (let i = 1; i <= numCharges; i++) {
+                let px = (cx - plateW / 2) + i * qStep;
+
+                // Top Plate (Positive)
+                ctx.fillStyle = COLORS.pos;
+                ctx.fillText("+", px, cy - d / 2 + plateH / 2 + 1);
+
+                // Bottom Plate (Negative)
+                ctx.fillStyle = COLORS.neg;
+                ctx.fillText("-", px, cy + d / 2 - plateH / 2 + 1);
+            }
+
+            // --- 5. Electric Field ---
+            const eStrength = physics.E; // V/d
+            const opacity = Math.min(1.0, eStrength * 1.2);
+
+            ctx.strokeStyle = `rgba(${COLORS.field}, ${opacity})`;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+
+            // Draw field lines corresponding to charges
+            const numLines = Math.max(3, Math.floor(numCharges / 1.5));
+            const lStep = plateW / (numLines + 1);
+
+            for (let i = 1; i <= numLines; i++) {
+                let lx = (cx - plateW / 2) + i * lStep;
+                ctx.beginPath();
+                ctx.moveTo(lx, cy - d / 2 + plateH);
+                ctx.lineTo(lx, cy + d / 2 - plateH);
+                ctx.stroke();
+
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(lx, cy + d / 2 - plateH);
+                ctx.lineTo(lx - 4, cy + d / 2 - plateH - 8);
+                ctx.lineTo(lx + 4, cy + d / 2 - plateH - 8);
+                ctx.fillStyle = `rgba(${COLORS.field}, ${opacity})`;
+                ctx.fill();
+            }
+            ctx.setLineDash([]);
+
+
+            // Update HUD text/bars
+            updateHUD(physics);
+
+            requestAnimationFrame(draw);
+        }
+
+        function updateHUD(phys) {
+            // Max Q is roughly when d=50 and kappa=5
+            const maxQ = 200; // Adjusted for visual bar scaling
+            const qPct = Math.min(100, (phys.Q / maxQ) * 100);
+            document.getElementById('bar-q').style.width = qPct + "%";
+            document.getElementById('val-q').innerText = phys.Q.toFixed(0) + " units";
+
+            // C Bar
+            const maxC = 200;
+            const cVal = phys.C;
+            const cPct = Math.min(100, (cVal / maxC) * 100);
+            document.getElementById('bar-c').style.width = cPct + "%";
+            document.getElementById('val-c').innerText = cVal.toFixed(1) + " units";
+        }
+
+        // --- Story / Controls ---
+        const steps = [
+            {
+                title: "1. The Connected System",
+                text: "The battery is connected! It acts like a pressure pump, maintaining a constant Voltage ($V$).<br><br>$$V = \\text{constant}$$<br>This means the battery will actively push charges onto the plates (or suck them off) to keep the potential difference steady.",
+                controls: ``,
+                init: () => { state.distance = 100; state.dielectricPos = 0; }
+            },
+            {
+                title: "2. Pulling Plates Apart",
+                text: "Slowly increase the distance. <strong>Look closely at the + and - signs on the plates.</strong><br><br>See them disappearing? As $d$ increases, Capacitance ($C$) drops.<br><br>Since $Q = CV$, if $C$ drops and $V$ stays put, $Q$ must drop. The battery sucks the excess charge back in.",
+                controls: `
+                    <div class="control-group">
+                        <label>Plate Separation (d)</label>
+                        <input type="range" min="50" max="300" value="100" oninput="state.distance = parseInt(this.value)">
+                    </div>
+                `,
+                init: () => { state.dielectricPos = 0; }
+            },
+            {
+                title: "3. Inserting Dielectric",
+                text: "Now, slide the glass in. <strong>Watch the charges multiply!</strong><br><br>The glass weakens the internal field. To keep the Voltage up at full strength, the battery must pump a massive amount of extra charge onto the plates.<br><br>$$Q_{new} = \\kappa \\cdot Q_{old}$$",
+                controls: `
+                    <div class="control-group">
+                        <label>Dielectric Position</label>
+                        <input type="range" min="0" max="100" value="0" oninput="state.dielectricPos = this.value/100">
+                    </div>
+                    <div class="control-group">
+                        <label>Plate Separation</label>
+                        <input type="range" min="50" max="300" value="150" oninput="state.distance = parseInt(this.value)">
+                    </div>
+                `,
+                init: () => { state.distance = 150; state.dielectricPos = 0; }
+            },
+            {
+                title: "Conclusion",
+                text: "Play with both sliders.<br><br>1. <strong>Distance $\\uparrow$:</strong> Charges leave.<br>2. <strong>Dielectric In:</strong> Charges enter.<br><br>This is the opposite behavior of Voltage in the disconnected case! Here, $V$ is boring (constant), so $Q$ does all the interesting work.",
+                controls: `
+                    <div class="control-group">
+                        <label>Dielectric Position</label>
+                        <input type="range" min="0" max="100" value="100" oninput="state.dielectricPos = this.value/100">
+                    </div>
+                    <div class="control-group">
+                        <label>Plate Separation</label>
+                        <input type="range" min="50" max="300" value="100" oninput="state.distance = parseInt(this.value)">
+                    </div>
+                `,
+                init: () => {
+                    state.distance = 100;
+                    state.dielectricPos = 1;
+                    document.getElementById('nextBtn').innerText = "Next Lesson";
+                }
+            }
+        ];
+
+        // --- Navigation Logic ---
+        function loadStep(idx) {
+            state.stepIndex = idx;
+            const s = steps[idx];
+            const container = document.getElementById('story-container');
+            const controls = document.getElementById('controls');
+
+            container.innerHTML = `<div class="chapter-title">${s.title}</div><div class="text-content">${s.text}</div>`;
+            controls.innerHTML = s.controls;
+
+            document.getElementById('prevBtn').classList.toggle('disabled', idx === 0);
+
+            const btn = document.getElementById('nextBtn');
+            if (state.stepIndex === steps.length - 1) {
+                btn.innerHTML = "Next Lesson";
+                btn.classList.remove('disabled');
+            } else {
+                btn.innerHTML = "Next";
+                btn.classList.remove('disabled');
+            }
+
+            if (s.init) s.init();
+
+            if (window.renderMathInElement) {
+                renderMathInElement(container, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false }
+                    ]
+                });
+            }
+        }
+
+        function nextStep() {
+            if (state.stepIndex < steps.length - 1) {
+                loadStep(state.stepIndex + 1);
+            } else {
+                window.top.location.href = '/theapplefalls/lesson/6_dielectric_breakdown';
+            }
+        }
+        function prevStep() {
+            if (state.stepIndex > 0) loadStep(state.stepIndex - 1);
+        }
+
+        // --- Initialization ---
+        document.addEventListener("DOMContentLoaded", () => {
+            resize();
+            loadStep(0);
+            draw();
+        });
+
+    </script>
+</body>
+
+</html>

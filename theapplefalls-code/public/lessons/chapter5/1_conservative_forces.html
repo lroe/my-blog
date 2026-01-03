@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Conservative Forces & The Closed Loop Integral</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --accent-hover: #e58e3c;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .instruction-inline {
+            color: var(--accent);
+            font-weight: bold;
+            background: rgba(255, 159, 67, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .math-block {
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border: 1px solid #333;
+            color: #fff;
+            text-align: center;
+        }
+
+        #controls-area {
+            background: #181818;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 15px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            filter: grayscale(1);
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+            color: #000;
+        }
+
+        .nav-btn.next:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+        }
+
+        .scene-tag {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 5: Electric Potential</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content"></div>
+        </div>
+
+        <div id="controls-area">
+            <div class="control-row" id="ctrl-intro">
+                <label>Step 1: Place Charge</label>
+                <button id="btn-intro" onclick="placeCharge()">Add Source Charge (+Q)</button>
+            </div>
+
+            <div class="control-row" id="ctrl-path">
+                <label>Step 2: Draw Path</label>
+                <button id="btn-path" onclick="drawClosedPath()">Show Closed Loop Path</button>
+            </div>
+
+            <div class="control-row" id="ctrl-calc">
+                <label>Step 3: Calculate Integral</label>
+                <button id="btn-calc" onclick="calculateIntegral()">∮ E · dl = ?</button>
+            </div>
+
+            <div class="control-row" id="ctrl-reset"
+                style="margin-top:10px; border-top:1px solid #2c313a; padding-top:15px; opacity: 1; pointer-events: all; filter: grayscale(0);">
+                <label>Experiment Control</label>
+                <button onclick="resetSim()">Reset System</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div class="scene-tag" style="top: 20px; right: 20px;">Electric Field</div>
+    </main>
+
+    <script>
+        const state = {
+            chargeVisible: false,
+            pathVisible: false,
+            integralCalculated: false,
+            time: 0
+        };
+
+        const scene = new THREE.Scene();
+        const sidebarWidth = 420;
+        let aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const viewSize = 40;
+
+        const camera = new THREE.OrthographicCamera(
+            -viewSize * aspect / 2, viewSize * aspect / 2,
+            viewSize / 2, -viewSize / 2,
+            1, 1000
+        );
+        camera.position.set(20, 25, 20);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const floorGeo = new THREE.PlaneGeometry(100, 100);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.8, metalness: 0.2 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -10;
+        floor.receiveShadow = true;
+        scene.background = new THREE.Color(0x151515);
+
+        const gridHelper = new THREE.GridHelper(100, 20, 0x2c313a, 0x1f2229);
+        gridHelper.position.y = -9.9;
+        scene.add(floor);
+        scene.add(gridHelper);
+
+        // Source Charge
+        const sourceGroup = new THREE.Group();
+        const sourceGeo = new THREE.IcosahedronGeometry(3, 1);
+        const sourceMat = new THREE.MeshStandardMaterial({ color: 0xff6b6b, flatShading: true, emissive: 0x550000 });
+        const sourceMesh = new THREE.Mesh(sourceGeo, sourceMat);
+        sourceMesh.castShadow = true;
+        sourceGroup.add(sourceMesh);
+        scene.add(sourceGroup);
+        sourceGroup.visible = false;
+
+        // Field Lines
+        const fieldGroup = new THREE.Group();
+        for (let r = 6; r < 25; r += 6) {
+            const count = r * 1.5;
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * Math.PI * 2;
+                const x = Math.cos(angle) * r;
+                const z = Math.sin(angle) * r;
+
+                const arrowGeo = new THREE.CylinderGeometry(0.1, 0.1, 2, 4);
+                arrowGeo.translate(0, 1, 0);
+                arrowGeo.rotateZ(-Math.PI / 2);
+                const arrowMat = new THREE.MeshBasicMaterial({ color: 0x54a0ff, transparent: true, opacity: 0.4 });
+                const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+                arrow.position.set(x, 0, z);
+
+                const dir = new THREE.Vector3(x, 0, z).normalize();
+                const axisX = new THREE.Vector3(1, 0, 0);
+                const quat = new THREE.Quaternion().setFromUnitVectors(axisX, dir);
+                arrow.rotation.setFromQuaternion(quat);
+
+                fieldGroup.add(arrow);
+            }
+        }
+        scene.add(fieldGroup);
+        fieldGroup.visible = false;
+
+        // Closed Loop Path
+        const pathGroup = new THREE.Group();
+        const pathPoints = [];
+        const radius = 15;
+        for (let i = 0; i <= 64; i++) {
+            const angle = (i / 64) * Math.PI * 2;
+            pathPoints.push(new THREE.Vector3(
+                Math.cos(angle) * radius,
+                0,
+                Math.sin(angle) * radius
+            ));
+        }
+        const pathGeo = new THREE.BufferGeometry().setFromPoints(pathPoints);
+        const pathMat = new THREE.LineBasicMaterial({ color: 0xfeca57, linewidth: 2 });
+        const pathLine = new THREE.Line(pathGeo, pathMat);
+        pathGroup.add(pathLine);
+        scene.add(pathGroup);
+        pathGroup.visible = false;
+
+        // Result Text
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        ctx.font = 'bold 40px Arial';
+        ctx.fillStyle = '#2ed573';
+        ctx.textAlign = 'center';
+        const tex = new THREE.CanvasTexture(canvas);
+        const spriteMat = new THREE.SpriteMaterial({ map: tex });
+        const resultSprite = new THREE.Sprite(spriteMat);
+        resultSprite.scale.set(15, 4, 1);
+        resultSprite.position.set(0, 8, 0);
+        scene.add(resultSprite);
+        resultSprite.visible = false;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            state.time += 0.02;
+
+            if (state.chargeVisible) {
+                sourceMesh.position.y = Math.sin(state.time) * 0.2;
+                sourceMesh.rotation.y += 0.005;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        let currentChapter = 0;
+
+        function placeCharge() {
+            state.chargeVisible = true;
+            sourceGroup.visible = true;
+            fieldGroup.visible = true;
+            document.getElementById('btn-intro').disabled = true;
+            checkAdvance();
+        }
+
+        function drawClosedPath() {
+            state.pathVisible = true;
+            pathGroup.visible = true;
+            document.getElementById('btn-path').disabled = true;
+            checkAdvance();
+        }
+
+        function calculateIntegral() {
+            state.integralCalculated = true;
+            ctx.fillText('∮ E · dl = 0', 256, 80);
+            tex.needsUpdate = true;
+            resultSprite.visible = true;
+            document.getElementById('btn-calc').disabled = true;
+            checkAdvance();
+        }
+
+        function resetSim() {
+            state.chargeVisible = false;
+            state.pathVisible = false;
+            state.integralCalculated = false;
+
+            sourceGroup.visible = false;
+            fieldGroup.visible = false;
+            pathGroup.visible = false;
+            resultSprite.visible = false;
+
+            document.getElementById('btn-intro').disabled = false;
+            document.getElementById('btn-path').disabled = false;
+            document.getElementById('btn-calc').disabled = false;
+
+            loadLesson(0);
+        }
+
+        const lessons = [
+            {
+                title: "Introduction: The Field",
+                text: "We've learned about electric fields and forces. But there's another fundamental concept: <strong>Electric Potential</strong>. Before we can understand potential, we need to explore a special property of electrostatic fields.<br><br><span class='instruction-inline'>Click 'ADD SOURCE CHARGE'</span> to begin.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-intro');
+                },
+                check: () => state.chargeVisible
+            },
+            {
+                title: "The Closed Loop",
+                text: "Imagine moving a test charge around this field in a complete circuit—starting and ending at the same point. What is the total work done by the electric field?<br><br>The mathematical expression for this is the <strong>closed loop integral</strong>:<br><div class='math-block'>∮ E · dl</div><br>The circle on the integral symbol means we're integrating around a closed path.<br><br><span class='instruction-inline'>Click 'SHOW CLOSED LOOP PATH'</span>.",
+                setup: () => {
+                    unlock('ctrl-path');
+                },
+                check: () => state.pathVisible
+            },
+            {
+                title: "Conservative Forces",
+                text: "For <strong>electrostatic</strong> (static, non-changing) fields, this integral always equals <strong>zero</strong>. No matter what path you take, if you return to your starting point, the net work done is zero.<br><br>This makes the electric field a <strong>Conservative Force</strong>—just like gravity. The work done depends only on start and end points, not the path taken.<br><br><span class='instruction-inline'>Click '∮ E · dl = ?'</span> to calculate.",
+                setup: () => {
+                    unlock('ctrl-calc');
+                },
+                check: () => state.integralCalculated
+            },
+            {
+                title: "Conclusion",
+                text: "This zero result has profound implications:<br><br>1. <strong>Path Independence:</strong> The work to move a charge from point A to B is the same regardless of the route.<br><br>2. <strong>Potential Difference:</strong> We can define a unique value (potential) for each point in space.<br><br>3. <strong>Energy Conservation:</strong> The electric field conserves energy.<br><br>In the next lesson, we'll use this property to derive the electric field from potential.",
+                setup: () => {
+                    document.getElementById('btn-next').innerText = "Next Lesson";
+                    document.getElementById('btn-next').disabled = false;
+                },
+                check: () => true
+            }
+        ];
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+            document.querySelector('header .subtitle').innerText = `Lesson ${idx + 1}: ${l.title}`;
+            document.getElementById('chapter-content').innerHTML =
+                `<div class="chapter-title">${l.title}</div>
+                 <div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+
+            if (currentChapter === lessons.length - 1) {
+                btn.innerHTML = "Next Lesson &rarr;";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+                btn.disabled = !l.check();
+            }
+
+            if (l.setup) l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                window.top.location.href = '/theapplefalls/lesson/2_field_from_potential';
+            }
+        }
+
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+
+        function checkAdvance() {
+            if (currentChapter >= lessons.length - 1) return;
+            if (lessons[currentChapter].check()) {
+                document.getElementById('btn-next').disabled = false;
+            }
+        }
+
+        function lockAll() { document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active')); }
+        function unlock(id) { document.getElementById(id).classList.add('active'); }
+
+        loadLesson(0);
+
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -viewSize * newAspect / 2;
+            camera.right = viewSize * newAspect / 2;
+            camera.top = viewSize / 2;
+            camera.bottom = -viewSize / 2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>
