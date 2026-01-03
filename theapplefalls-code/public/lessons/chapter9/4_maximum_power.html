@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maximum Power - The Apple Falls</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #151515;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --accent-dim: rgba(255, 159, 67, 0.2);
+            --border: #333;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --graph-line: #48dbfb;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+        }
+
+        #narrative-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        p {
+            line-height: 1.8;
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+
+        strong {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .formula {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* NAVIGATION */
+        .nav-footer {
+            padding: 30px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background: #222;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex: 1;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #333;
+            border-color: #555;
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* MAIN SIMULATION AREA */
+        main {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: #050505;
+        }
+
+        #sim-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 40px;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .viz-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viz-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #888;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        canvas {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI OVERLAYS */
+        #meter-panel {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .meter {
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid var(--border);
+            padding: 15px 20px;
+            border-radius: 12px;
+            text-align: right;
+            width: 160px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .meter-label {
+            font-size: 13px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .meter-value {
+            display: block;
+            font-family: 'Courier New', monospace;
+            font-size: 28px;
+            color: var(--accent);
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+
+        #controls {
+            padding: 30px;
+            background: var(--panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 40px;
+        }
+
+        .control-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .highlight-box {
+            border: 1px dashed var(--accent);
+            padding: 10px;
+            border-radius: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                border-color: rgba(255, 159, 67, 0.2);
+            }
+
+            50% {
+                border-color: rgba(255, 159, 67, 1);
+            }
+
+            100% {
+                border-color: rgba(255, 159, 67, 0.2);
+            }
+        }
+
+        /* PEAK INDICATOR */
+        #peak-indicator {
+            position: absolute;
+            padding: 5px 10px;
+            background: var(--success);
+            color: #000;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            pointer-events: none;
+            display: none;
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Chapter 9: Maximum Power Transfer</h1>
+        </header>
+
+        <div id="narrative-container">
+            <!-- Slide 0 -->
+            <div class="slide active" id="slide-0">
+                <h2>The Power Dilemma</h2>
+                <p>If you want to get the most power out of a battery, what should you do?</p>
+                <p>Decreasing the load resistance (\(R\)) gives you **more current**, but it also makes the terminal
+                    voltage **sag**! It's a trade-off.</p>
+            </div>
+
+            <!-- Slide 1 -->
+            <div class="slide" id="slide-1">
+                <h2>A Bitter Short</h2>
+                <p>At \(R = 0\), you have maximum current but zero voltage. Power (\(P=VI\)) is **zero**.</p>
+                <p>At infinite \(R\), you have maximum voltage but zero current. Power is **zero** again!</p>
+                <p>The "sweet spot" must be somewhere in between.</p>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide" id="slide-2">
+                <h2>The Power Formula</h2>
+                <p>Mathematically, power delivered to the load is \(P = I^2 R\).</p>
+                <div class="formula">
+                    \(P(R) = \left( \frac{\mathcal{E}}{R+r_i} \right)^2 R = \frac{\mathcal{E}^2 R}{(R+r_i)^2}\)
+                </div>
+                <p>To find the maximum, we need to solve for when the slope is zero: \(\frac{dP}{dR} = 0\).</p>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide" id="slide-3">
+                <h2>The Calculus</h2>
+                <p>Using the quotient rule:</p>
+                <div class="formula" style="font-size: 14px; text-align: left; padding-left: 10px;">
+                    \(\frac{dP}{dR} = \mathcal{E}^2 \frac{(R+r_i)^2(1) - R(2)(R+r_i)}{(R+r_i)^4}\)<br><br>
+                    Setting numerator to zero:<br>
+                    \((R+r_i) - 2R = 0 \implies \mathbf{R = r_i}\)
+                </div>
+                <p>This confirms the <strong>Matching Condition</strong> for maximum power.</p>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide" id="slide-4">
+                <h2>Experiment</h2>
+                <p>Use the sliders below to adjust the parameters. Notice how changing the source voltage
+                    (\(\mathcal{E}\)) scale the peak, but never moves its location!</p>
+                <p>The location of peak power is <strong>strictly</strong> determined by the internal resistance
+                    \(r_i\).</p>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="slide" id="slide-5">
+                <h2>Conclusion</h2>
+                <p>Matching \(R = r_i\) gives you max power, but it's only **50% efficient**. Half the energy is wasted
+                    heating the battery itself!</p>
+                <p>In power grids, we don't want max power—we want high efficiency, so we keep \(R\) much larger than
+                    \(r_i\).</p>
+            </div>
+        </div>
+
+        <div class="nav-footer">
+            <button id="prevBtn" onclick="changeSlide(-1)" disabled>Back</button>
+            <button id="nextBtn" onclick="changeSlide(1)" class="primary">Next</button>
+        </div>
+    </aside>
+
+    <main>
+        <div id="sim-container"
+            style="flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; padding: 30px; gap: 30px; align-items: stretch;">
+            <!-- Left: Circuit Box -->
+            <div class="viz-box">
+                <div class="viz-header">Circuit Visualization</div>
+                <canvas id="circuitCanvas"></canvas>
+                <div id="meter-panel">
+                    <div class="meter">
+                        <span class="meter-label">Terminal V</span>
+                        <span id="v-val" class="meter-value">12.00V</span>
+                    </div>
+                    <div class="meter">
+                        <span class="meter-label">Current I</span>
+                        <span id="i-val" class="meter-value">1.20A</span>
+                    </div>
+                    <div class="meter">
+                        <span class="meter-label">Load Power</span>
+                        <span id="p-val" class="meter-value" style="color:var(--graph-line)">14.40W</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Graph Box -->
+            <div class="viz-box">
+                <div class="viz-header">Power vs. Resistance Graph</div>
+                <canvas id="graphCanvas"></canvas>
+                <div id="peak-indicator">MAX POWER</div>
+            </div>
+        </div>
+
+        <div id="controls"
+            style="flex-shrink: 0; padding: 25px 40px; background: var(--panel); border-top: 2px solid var(--border); display: flex; gap: 40px; z-index: 20;">
+            <div class="control-group">
+                <div class="label-row">
+                    <span>Source EMF (\(\mathcal{E}\))</span>
+                    <span id="emf-label">12.0V</span>
+                </div>
+                <input type="range" id="emf-slider" min="1" max="24" value="12" step="0.5">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <span>Load Resistance (R)</span>
+                    <span id="r-label">10.0 Ω</span>
+                </div>
+                <input type="range" id="r-slider" min="0.1" max="50" value="10" step="0.1">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <span>Internal Resistance (r_i)</span>
+                    <span id="ri-label">5.0 Ω</span>
+                </div>
+                <input type="range" id="ri-slider" min="0.1" max="25" value="5" step="0.1">
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const cCanvas = document.getElementById('circuitCanvas');
+        const gCanvas = document.getElementById('graphCanvas');
+        const cCtx = cCanvas.getContext('2d');
+        const gCtx = gCanvas.getContext('2d');
+
+        const rSlider = document.getElementById('r-slider');
+        const riSlider = document.getElementById('ri-slider');
+        const emfSlider = document.getElementById('emf-slider');
+        const rLabel = document.getElementById('r-label');
+        const riLabel = document.getElementById('ri-label');
+        const emfLabel = document.getElementById('emf-label');
+
+        const vVal = document.getElementById('v-val');
+        const iVal = document.getElementById('i-val');
+        const pVal = document.getElementById('p-val');
+        const peakInd = document.getElementById('peak-indicator');
+
+        function resize() {
+            cCanvas.width = cCanvas.parentElement.offsetWidth;
+            cCanvas.height = cCanvas.parentElement.offsetHeight;
+            gCanvas.width = gCanvas.parentElement.offsetWidth;
+            gCanvas.height = gCanvas.parentElement.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const state = {
+            emf: 12.0,
+            ri: 5.0,
+            rload: 10.0,
+            current: 0,
+            vterm: 12.0,
+            power: 0
+        };
+
+        function updatePhysics() {
+            state.rload = parseFloat(rSlider.value);
+            state.ri = parseFloat(riSlider.value);
+            state.emf = parseFloat(emfSlider.value);
+
+            rLabel.innerText = `${state.rload.toFixed(1)} Ω`;
+            riLabel.innerText = `${state.ri.toFixed(1)} Ω`;
+            emfLabel.innerText = `${state.emf.toFixed(1)}V`;
+
+            state.current = state.emf / (state.rload + state.ri);
+            state.vterm = state.emf - (state.current * state.ri);
+            state.power = state.current * state.vterm; // P = I * V_term = I^2 * R_load
+
+            vVal.innerText = `${state.vterm.toFixed(2)}V`;
+            iVal.innerText = `${state.current.toFixed(2)}A`;
+            pVal.innerText = `${state.power.toFixed(2)}W`;
+        }
+
+        function drawCircuit() {
+            const w = cCanvas.width;
+            const h = cCanvas.height;
+            cCtx.clearRect(0, 0, w, h);
+
+            const pad = 60;
+            const cw = w - pad * 2;
+            const ch = h - pad * 2;
+
+            // Wire loop
+            cCtx.strokeStyle = 'rgba(255,255,255,0.1)';
+            cCtx.setLineDash([5, 5]);
+            cCtx.strokeRect(pad, pad, cw, ch);
+            cCtx.setLineDash([]);
+
+            // Battery Position (Left)
+            const bx = pad;
+            const by = pad + ch / 2;
+
+            // Real Battery Box (Dasher line around plates + ri)
+            cCtx.setLineDash([5, 5]);
+            cCtx.strokeStyle = 'rgba(255, 159, 67, 0.4)';
+            cCtx.lineWidth = 1;
+            cCtx.strokeRect(bx - 40, by - 60, 80, 170);
+            cCtx.setLineDash([]);
+
+            cCtx.fillStyle = 'rgba(255, 159, 67, 0.4)';
+            cCtx.font = 'bold 10px Outfit';
+            cCtx.textAlign = 'center';
+            cCtx.fillText("PHYSICAL SOURCE", bx, by + 102);
+
+            // Clear space for components inside the box
+            cCtx.clearRect(bx - 30, by - 55, 60, 115);
+
+            // Battery plates
+            cCtx.strokeStyle = '#fff';
+            cCtx.lineWidth = 1;
+            cCtx.beginPath(); cCtx.moveTo(bx - 20, by - 10); cCtx.lineTo(bx + 20, by - 10); cCtx.stroke();
+            cCtx.lineWidth = 4;
+            cCtx.beginPath(); cCtx.moveTo(bx - 10, by + 10); cCtx.lineTo(bx + 10, by + 10); cCtx.stroke();
+
+            // Internal Resistor symbol
+            cCtx.strokeStyle = 'rgba(255,159,67,0.5)';
+            cCtx.lineWidth = 2;
+            cCtx.beginPath();
+            cCtx.moveTo(bx, by + 15);
+            for (let i = 0; i < 4; i++) {
+                cCtx.lineTo(bx - 12 + (i % 2) * 24, by + 25 + i * 8);
+            }
+            cCtx.lineTo(bx, by + 60);
+            cCtx.stroke();
+            cCtx.fillStyle = 'var(--accent)';
+            cCtx.font = 'bold 18px Outfit';
+            cCtx.textAlign = 'center';
+            cCtx.fillText(`ri = ${state.ri}Ω`, bx, by + 90);
+
+            // Load Resistor (Right)
+            const lx = pad + cw;
+            const ly = pad + ch / 2;
+            cCtx.clearRect(lx - 30, ly - 40, 60, 80);
+
+            // Glow based on power
+            const heat = Math.min(1, state.power / ((state.emf * state.emf) / (4 * 0.1)));
+            const glow = cCtx.createRadialGradient(lx, ly, 0, lx, ly, 60);
+            glow.addColorStop(0, `rgba(255, 159, 67, ${state.power / 8})`);
+            glow.addColorStop(1, 'transparent');
+            cCtx.fillStyle = glow;
+            cCtx.beginPath(); cCtx.arc(lx, ly, 60, 0, Math.PI * 2); cCtx.fill();
+
+            cCtx.strokeStyle = '#fff';
+            cCtx.lineWidth = 3;
+            cCtx.beginPath();
+            cCtx.moveTo(lx, ly - 40);
+            for (let i = 0; i < 7; i++) {
+                cCtx.lineTo(lx - 20 + (i % 2) * 40, ly - 30 + i * 10);
+            }
+            cCtx.lineTo(lx, ly + 40);
+            cCtx.stroke();
+            cCtx.font = 'bold 24px Outfit';
+            cCtx.fillStyle = '#fff';
+            cCtx.textAlign = 'center';
+            cCtx.fillText(`R = ${state.rload}Ω`, lx, ly + 90);
+
+            // EMF label
+            cCtx.font = 'bold 18px Outfit';
+            cCtx.fillStyle = '#fff';
+            cCtx.fillText(`\u2130 = ${state.emf}V`, bx, by - 40);
+
+            // Electrons
+            const flowSpeed = state.current * 0.1;
+            const time = Date.now() * 0.002 * flowSpeed;
+            cCtx.fillStyle = 'var(--accent)';
+            for (let i = 0; i < 15; i++) {
+                let p = (i / 15 + time) % 1;
+                let px, py;
+                if (p < 0.25) { px = pad + cw * (1 - p / 0.25); py = pad; }
+                else if (p < 0.5) { px = pad; py = pad + ch * (p - 0.25) / 0.25; }
+                else if (p < 0.75) { px = pad + cw * (p - 0.5) / 0.25; py = ch + pad; }
+                else { px = cw + pad; py = pad + ch * (1 - (p - 0.75) / 0.25); }
+                cCtx.beginPath(); cCtx.arc(px, py, 2, 0, Math.PI * 2); cCtx.fill();
+            }
+
+            requestAnimationFrame(drawCircuit);
+        }
+
+        function drawGraph() {
+            const w = gCanvas.width;
+            const h = gCanvas.height;
+            gCtx.clearRect(0, 0, w, h);
+
+            const padX = 50;
+            const padY = 50;
+            const gw = w - padX * 2;
+            const gh = h - padY * 2;
+
+            // Axes
+            gCtx.strokeStyle = '#333';
+            gCtx.lineWidth = 1;
+            gCtx.beginPath();
+            gCtx.moveTo(padX, padY); gCtx.lineTo(padX, padY + gh); gCtx.lineTo(padX + gw, padY + gh);
+            gCtx.stroke();
+
+            gCtx.fillStyle = '#fff';
+            gCtx.font = 'bold 18px Outfit';
+            gCtx.textAlign = 'left';
+            gCtx.fillText("Power (Watts)", padX - 40, padY - 20);
+            gCtx.textAlign = 'right';
+            gCtx.fillText("Resistance (Ohms)", padX + gw, padY + gh + 40);
+
+            // Draw Curve
+            gCtx.strokeStyle = 'var(--graph-line)';
+            gCtx.lineWidth = 2;
+            gCtx.beginPath();
+
+            const maxR = 50;
+            const maxP = (state.emf * state.emf) / (4 * state.ri); // Max possible power for current ri
+
+            let peakX, peakY;
+
+            for (let r = 0.1; r <= maxR; r += 0.5) {
+                const i = state.emf / (r + state.ri);
+                const p = i * i * r;
+
+                const curX = padX + (r / maxR) * gw;
+                const curY = padY + gh - (p / (maxP * 1.2)) * gh;
+
+                if (r === 0.1) gCtx.moveTo(curX, curY);
+                else gCtx.lineTo(curX, curY);
+
+                if (Math.abs(r - state.ri) < 0.3) {
+                    peakX = curX;
+                    peakY = curY;
+                }
+            }
+            gCtx.stroke();
+
+            // Current state dot
+            const dotX = padX + (state.rload / maxR) * gw;
+            const dotY = padY + gh - (state.power / (maxP * 1.2)) * gh;
+
+            gCtx.fillStyle = '#fff';
+            gCtx.beginPath(); gCtx.arc(dotX, dotY, 4, 0, Math.PI * 2); gCtx.fill();
+
+            // Show peak indicator if close
+            if (Math.abs(state.rload - state.ri) < 1) {
+                peakInd.style.display = 'block';
+                peakInd.style.left = `${dotX}px`;
+                peakInd.style.top = `${dotY}px`;
+            } else {
+                peakInd.style.display = 'none';
+            }
+
+            requestAnimationFrame(drawGraph);
+        }
+
+        rSlider.addEventListener('input', updatePhysics);
+        riSlider.addEventListener('input', updatePhysics);
+        emfSlider.addEventListener('input', updatePhysics);
+
+        updatePhysics();
+        drawCircuit();
+        drawGraph();
+
+        // NARRATIVE LOGIC
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+
+        function changeSlide(dir) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += dir;
+            slides[currentSlide].classList.add('active');
+
+            prevBtn.disabled = currentSlide === 0;
+            if (currentSlide === slides.length - 1) {
+                nextBtn.innerText = "Finish Lesson \u2192";
+                nextBtn.onclick = () => window.parent.location.href = '/lesson/chapter9/loop_rule';
+            } else {
+                nextBtn.innerText = "Next";
+                nextBtn.onclick = () => changeSlide(1);
+            }
+        }
+    </script>
+</body>
+
+</html>

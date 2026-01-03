@@ -1,0 +1,748 @@
+<!-- START OF FILE chapter1.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chapter 1: The Elastic Struggle</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* --- THEME & LAYOUT (Preserved from Template) --- */
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* Orange */
+            --accent-hover: #e58e3c;
+            --danger: #ff5252;
+            --safe: #54a0ff;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 450px;
+            /* Slightly wider for the expanded text */
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .highlight {
+            color: var(--accent);
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #181818;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 15px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            filter: grayscale(1);
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        /* PULSE ANIMATION */
+        @keyframes pulse-orange {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 159, 67, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 8px rgba(255, 159, 67, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 159, 67, 0);
+            }
+        }
+
+        .pulse {
+            animation: pulse-orange 2s infinite;
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+            color: #000;
+        }
+
+        .nav-btn.next:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+            animation: none;
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: #151515;
+            overflow: hidden;
+        }
+
+        /* HUD SPECIFIC FOR CHAPTER 1 */
+        #hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 5px;
+            pointer-events: none;
+            font-family: 'Courier New', monospace;
+            width: 250px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .hud-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .hud-val {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* ENERGY BAR */
+        #energy-container {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        #energy-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.1s, background 0.3s;
+            box-shadow: 0 0 10px var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Chapter 4: Work and Energy</h1>
+            <div class="subtitle">Lesson 1: The Elastic Struggle</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+
+            <!-- Charge Switch -->
+            <div class="control-row" id="ctrl-charge">
+                <label>Test Charge Polarity (q)</label>
+                <div style="display:flex; gap:10px;">
+                    <button id="btn-pos" onclick="uiSetCharge(1)">Positive (+q)</button>
+                    <button id="btn-neg" onclick="uiSetCharge(-1)">Negative (-q)</button>
+                </div>
+            </div>
+
+            <!-- Slider -->
+            <div class="control-row" id="ctrl-move">
+                <label>Distance from Source (Work Input)</label>
+                <input type="range" id="slider-dist" min="2" max="25" value="25" step="0.1">
+            </div>
+
+            <!-- Release -->
+            <div class="control-row" id="ctrl-release">
+                <label>Work-Energy Theorem</label>
+                <button id="btn-release" onclick="uiRelease()">Let Go (Release)</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div id="hud">
+            <!-- Formula removed as requested -->
+            <div class="hud-row">
+                <span>Stored Energy (U):</span>
+                <span id="val-energy" class="hud-val">0 J</span>
+            </div>
+            <div id="energy-container">
+                <div id="energy-bar"></div>
+            </div>
+            <div style="margin-top:10px; font-size:11px; color:#666; text-align:right;">
+                POTENTIAL
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE 3D ENGINE
+        // ==========================================
+
+        const state = {
+            polarity: 1, // 1 for +q, -1 for -q
+            distance: 25,
+            isReleasing: false,
+            velocity: 0,
+            energy: 0,
+            shake: 0
+        };
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x151515);
+
+        // Camera setup
+        const sidebarWidth = 450;
+        const aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const d = 20;
+        const camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+
+        // Isometric view
+        const cameraBasePos = new THREE.Vector3(20, 20, 20);
+        camera.position.copy(cameraBasePos);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // --- GRID LANDSCAPE ---
+        const gridSize = 40;
+        const gridDivisions = 40;
+        const gridGeo = new THREE.PlaneGeometry(gridSize, gridSize, gridDivisions, gridDivisions);
+        gridGeo.rotateX(-Math.PI / 2); // Lay flat
+
+        const gridMat = new THREE.MeshBasicMaterial({
+            color: 0x444444,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const gridMesh = new THREE.Mesh(gridGeo, gridMat);
+        scene.add(gridMesh);
+
+        const originalPositions = gridGeo.attributes.position.array.slice();
+
+        // --- SPHERE A (Source +Q) ---
+        const sphereAGeo = new THREE.SphereGeometry(1.5, 32, 32);
+        const sphereAMat = new THREE.MeshStandardMaterial({
+            color: 0xffaa00,
+            emissive: 0xff5500,
+            emissiveIntensity: 0.8,
+            roughness: 0.2
+        });
+        const sphereA = new THREE.Mesh(sphereAGeo, sphereAMat);
+        scene.add(sphereA);
+
+        // --- SPHERE B (Test q) ---
+        const sphereBGeo = new THREE.SphereGeometry(0.8, 32, 32);
+        const sphereBMat = new THREE.MeshStandardMaterial({
+            color: 0x54a0ff,
+            emissive: 0x0055ff,
+            emissiveIntensity: 0.5
+        });
+        const sphereB = new THREE.Mesh(sphereBGeo, sphereBMat);
+        sphereB.position.set(10, 0, 0);
+        scene.add(sphereB);
+
+        // --- SPRING VISUALIZATION ---
+        const springPoints = 50;
+        const springGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(springPoints * 3);
+        springGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        const springMat = new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.8,
+            linewidth: 2
+        });
+        const springLine = new THREE.Line(springGeo, springMat);
+        scene.add(springLine);
+
+        // --- LIGHTING ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffaa00, 1, 50);
+        pointLight.position.set(0, 5, 0);
+        scene.add(pointLight);
+
+        // --- PHYSICS & ANIMATION ---
+
+        function updateGrid() {
+            const positions = gridMesh.geometry.attributes.position.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                const x = originalPositions[i];
+                const z = originalPositions[i + 2];
+                const dist = Math.sqrt(x * x + z * z);
+                const height = 15 / (dist + 2);
+                positions[i + 1] = height; // Set Y
+            }
+            gridMesh.geometry.attributes.position.needsUpdate = true;
+        }
+
+        function updateSpring() {
+            const r = sphereB.position.distanceTo(sphereA.position);
+            const positions = springLine.geometry.attributes.position.array;
+
+            const start = sphereA.position.clone();
+            const end = sphereB.position.clone();
+            const dir = new THREE.Vector3().subVectors(end, start).normalize();
+
+            const up = new THREE.Vector3(0, 1, 0);
+            const right = new THREE.Vector3().crossVectors(dir, up).normalize();
+            if (right.lengthSq() === 0) right.set(1, 0, 0);
+
+            const isRepulsion = state.polarity > 0;
+            const stress = Math.max(0, (25 - r) / 20); // 0 to 1 approx
+
+            if (isRepulsion) {
+                // SPRING COMPRESSION
+                springMat.color.setHSL(0.08, 1.0, 0.5 + stress * 0.5); // Gold to White
+                const freq = 5 + stress * 20;
+                const amp = 0.2 + stress * 0.5;
+
+                for (let i = 0; i < springPoints; i++) {
+                    const t = i / (springPoints - 1);
+                    const pos = new THREE.Vector3().lerpVectors(start, end, t);
+                    const wave = Math.sin(t * Math.PI * freq) * amp;
+                    pos.addScaledVector(right, wave);
+                    positions[i * 3] = pos.x;
+                    positions[i * 3 + 1] = pos.y;
+                    positions[i * 3 + 2] = pos.z;
+                }
+            } else {
+                // BUNGEE TENSION
+                springMat.color.setHSL(0.6, 1.0, 0.5 + stress * 0.5); // Blue to Cyan
+                for (let i = 0; i < springPoints; i++) {
+                    const t = i / (springPoints - 1);
+                    const pos = new THREE.Vector3().lerpVectors(start, end, t);
+                    const wave = Math.sin(t * Math.PI * 20 + Date.now() / 50) * 0.05 * stress;
+                    pos.addScaledVector(right, wave);
+                    positions[i * 3] = pos.x;
+                    positions[i * 3 + 1] = pos.y;
+                    positions[i * 3 + 2] = pos.z;
+                }
+            }
+            springLine.geometry.attributes.position.needsUpdate = true;
+        }
+
+        function updatePhysics() {
+            const r = Math.max(2, state.distance);
+            const h = 15 / (r + 2);
+            sphereB.position.set(r, h, 0);
+
+            const kQ = 2000;
+            const U = (kQ * state.polarity) / r;
+            state.energy = U;
+
+            // Camera Shake logic
+            if (state.polarity > 0 && r < 8) {
+                state.shake = (8 - r) * 0.05;
+            } else {
+                state.shake = 0;
+            }
+
+            // RELEASE MECHANIC (Work-Energy Theorem)
+            if (state.isReleasing) {
+                const force = (kQ * state.polarity) / (r * r);
+                const accel = force * 0.1;
+                state.velocity += accel;
+                state.distance += state.velocity;
+
+                state.velocity *= 0.98;
+
+                if (state.distance > 30 || state.distance < 2) {
+                    state.isReleasing = false;
+                    state.velocity = 0;
+                    state.distance = Math.max(2, Math.min(25, state.distance));
+                    document.getElementById('slider-dist').value = state.distance;
+                    document.getElementById('btn-release').innerText = "Let Go (Release)";
+                    document.getElementById('slider-dist').disabled = false;
+                } else {
+                    document.getElementById('slider-dist').value = state.distance;
+                }
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updatePhysics();
+            updateGrid();
+            updateSpring();
+            updateHUD();
+
+            if (state.shake > 0) {
+                camera.position.x = cameraBasePos.x + (Math.random() - 0.5) * state.shake;
+                camera.position.y = cameraBasePos.y + (Math.random() - 0.5) * state.shake;
+                camera.position.z = cameraBasePos.z + (Math.random() - 0.5) * state.shake;
+            } else {
+                camera.position.copy(cameraBasePos);
+            }
+            camera.lookAt(0, 2, 0);
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // ==========================================
+        // PART 2: UI & NARRATIVE
+        // ==========================================
+
+        function updateHUD() {
+            const r = state.distance;
+            const u = Math.round(state.energy);
+
+            document.getElementById('val-energy').innerText = u + " J";
+
+            const bar = document.getElementById('energy-bar');
+
+            if (state.polarity > 0) {
+                // POSITIVE WORK
+                const pct = Math.min(100, (u / 500) * 100);
+                bar.style.width = pct + "%";
+                bar.style.backgroundColor = "#ff9f43";
+                bar.style.boxShadow = "0 0 10px #ff9f43";
+                document.getElementById('val-energy').style.color = "#ff9f43";
+            } else {
+                // NEGATIVE WORK
+                const pct = Math.min(100, (Math.abs(u) / 500) * 100);
+                bar.style.width = pct + "%";
+                bar.style.backgroundColor = "#54a0ff";
+                bar.style.boxShadow = "0 0 10px #54a0ff";
+                document.getElementById('val-energy').style.color = "#54a0ff";
+            }
+        }
+
+        document.getElementById('slider-dist').addEventListener('input', (e) => {
+            if (state.isReleasing) return;
+            state.distance = parseFloat(e.target.value);
+            checkAdvance();
+        });
+
+        function uiSetCharge(sign) {
+            state.polarity = sign;
+
+            sphereB.material.color.setHex(sign > 0 ? 0x54a0ff : 0xff5252);
+            sphereB.material.emissive.setHex(sign > 0 ? 0x0044aa : 0xaa0000);
+
+            document.getElementById('btn-pos').style.borderColor = sign > 0 ? '#fff' : '#444';
+            document.getElementById('btn-neg').style.borderColor = sign < 0 ? '#fff' : '#444';
+
+            state.shake = 0;
+            checkAdvance();
+        }
+
+        function uiRelease() {
+            state.isReleasing = true;
+            document.getElementById('slider-dist').disabled = true;
+            document.getElementById('btn-release').innerText = "Simulating...";
+            checkAdvance();
+        }
+
+        // --- STORY LOGIC (EXPANDED) ---
+
+        const lessons = [
+            {
+                title: "The Silent Void",
+                text: "Welcome to <strong>First Principles</strong>.<br><br>In the center sits a massive charge <strong>+Q</strong>. It has distorted the fabric of space around it, creating a 'Potential Mountain'.<br><br>Currently, the system is at rest. There is no interaction because there is no second charge to feel this field.",
+                setup: () => {
+                    document.getElementById('hud').style.opacity = 0;
+                    lockAll();
+                    state.distance = 25;
+                    uiSetCharge(1);
+                    document.getElementById('slider-dist').value = 25;
+                },
+                check: () => true
+            },
+            {
+                title: "The Intruder",
+                text: "We introduce a test charge <strong>+q</strong> (the blue sphere) at infinity.<br><br>Since both charges are positive, the Electric Field of +Q screams at +q to <em>go away</em>. They repel.<br><br>To bring them together, someone has to fight this field. That someone is <strong>YOU</strong> (the External Agent).<br><br><strong>Action:</strong> Drag the slider to begin pushing the charge inward.",
+                setup: () => {
+                    document.getElementById('hud').style.opacity = 1;
+                    unlock('ctrl-move');
+                    document.getElementById('slider-dist').classList.add('pulse');
+                },
+                check: () => state.distance < 15
+            },
+            {
+                title: "Work Input (Positive)",
+                text: "Feel the resistance? The Electric Field is pushing outward with a force $F_{elec}$. To move the charge inward, you must apply an equal and opposite force $F_{ext}$.<br><br>Since your force and the displacement are in the same direction, <strong>YOU are doing Positive Work</strong>.<br><br>Where does your hard work go? It doesn't vanish. It is being stored in the 'spring' of the electric field configuration. <br><br><strong>Action:</strong> Push it to the limit (closer than 5).",
+                setup: () => {
+                    document.getElementById('slider-dist').classList.add('pulse');
+                },
+                check: () => state.distance < 5
+            },
+            {
+                title: "Derivation: The Math",
+                text: "How do we calculate this energy?<br><br>Work is the integral of Force over Distance:<br>$$W = \\int_{\\infty}^{r} \\vec{F}_{ext} \\cdot d\\vec{r}$$<br><br>1. The Electric Force is Coulomb's Law: $F_E = \\frac{kQq}{r^2}$<br>2. To push it in, we apply an opposite force: $F_{ext} = -F_E$<br>3. Integrating from infinity to $r$:<br>$$W = \\int_{\\infty}^{r} -\\frac{kQq}{x^2} dx = [ \\frac{kQq}{x} ]_{\\infty}^{r} = \\frac{kQq}{r}$$<br><br>This formula $\\frac{kQq}{r}$ is the <strong>Electric Potential Energy</strong> you see in the bar.",
+                setup: () => {
+                    lockAll();
+                    if (window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise();
+                },
+                check: () => true
+            },
+            {
+                title: "Stored Energy (U)",
+                text: "Look at the Energy Bar. That is the work you just did ($W_{ext}$).<br><br>We call this stored work <strong>Electric Potential Energy ($U$)</strong>. <br><br>$$W_{you} = \\Delta U$$<br><br>If you remove your hand (the external force), the Electric Field will take that stored energy and convert it into Kinetic Energy, pushing the particle away.<br><br><strong>Action:</strong> Press 'Let Go' to release the stored energy.",
+                setup: () => {
+                    document.getElementById('slider-dist').classList.remove('pulse');
+                    unlock('ctrl-release');
+                    document.getElementById('btn-release').classList.add('pulse');
+                },
+                check: () => state.isReleasing === true
+            },
+            {
+                title: "The Polarity Switch",
+                text: "Let's flip the physics. Bringing like charges together requires Work <em>by Us</em>. But what if the test charge loves the source?<br><br><strong>Action:</strong> Switch the test charge to <strong>Negative (-q)</strong>.",
+                setup: () => {
+                    state.distance = 20;
+                    state.velocity = 0;
+                    document.getElementById('slider-dist').value = 20;
+                    document.getElementById('slider-dist').disabled = false;
+
+                    lockAll();
+                    unlock('ctrl-charge');
+                    document.getElementById('btn-neg').classList.add('pulse');
+                },
+                check: () => state.polarity === -1
+            },
+            {
+                title: "Work Input (Negative)",
+                text: "Now the Electric Field is pulling the charge <em>in</em>. It wants to do the work for you.<br><br>If you want to place the charge gently at a specific distance, you have to <strong>hold it back</strong>.<br><br>Your force is pulling <em>away</em>, but the movement is <em>inward</em>. Opposite directions. This means <strong>YOU are doing Negative Work</strong>.<br><br>The system is spending its own energy, sliding down the potential hill. <br><br><strong>Action:</strong> Carefully lower the charge (drag slider left).",
+                setup: () => {
+                    unlock('ctrl-move');
+                    document.getElementById('slider-dist').classList.add('pulse');
+                },
+                check: () => state.distance < 8
+            },
+            {
+                title: "Conclusion: First Principles",
+                text: "We have derived the essence of Electrostatics:<br><br>1. <strong>Like Charges (+/+):</strong> You fight the field. You do Positive Work. Energy ($U$) increases (Spring compressed).<br><br>2. <strong>Opposite Charges (+/-):</strong> You yield to the field. You do Negative Work. Energy ($U$) decreases (Spring relaxed).<br><br>The energy is never lost; it is stored in the relative configuration of the charges. This stored work is the definition of <strong>Electric Potential</strong>.",
+                setup: () => {
+                    unlock('ctrl-charge');
+                    unlock('ctrl-move');
+                    unlock('ctrl-release');
+                    document.querySelectorAll('.pulse').forEach(e => e.classList.remove('pulse'));
+                    document.getElementById('btn-next').innerText = "Next Lesson";
+                    document.getElementById('btn-next').disabled = false;
+                },
+                check: () => true
+            }
+        ];
+
+        let currentChapter = 0;
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+
+            // Text Update
+            document.getElementById('chapter-content').innerHTML = `
+                <div class="chapter-title">${l.title}</div>
+                <div class="story-text">${l.text}</div>
+            `;
+            if (window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise();
+
+            // Reset UI states
+            document.getElementById('btn-next').disabled = !l.check();
+            document.querySelectorAll('.pulse').forEach(e => e.classList.remove('pulse'));
+
+            l.setup();
+        }
+
+        function checkAdvance() {
+            if (lessons[currentChapter].check()) {
+                const btn = document.getElementById('btn-next');
+                if (btn.disabled) {
+                    btn.disabled = false;
+                    btn.classList.add('pulse');
+                }
+            }
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                window.parent.location.href = '/lesson/chapter4/2';
+            }
+        }
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+
+        function lockAll() { document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active')); }
+        function unlock(id) { document.getElementById(id).classList.add('active'); }
+
+        // Init
+        loadLesson(0);
+
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -d * newAspect; camera.right = d * newAspect;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>
+<!-- END OF FILE -->

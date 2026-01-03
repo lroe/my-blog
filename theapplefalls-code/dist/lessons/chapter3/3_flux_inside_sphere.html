@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gauss's Notebook: Flux</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            --accent-hover: #ffb773;
+            --border: #2c313a;
+            --math-color: #54a0ff;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .instruction-inline {
+            color: var(--accent);
+            font-weight: bold;
+            background: rgba(255, 159, 67, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .math-block {
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border: 1px solid #333;
+            color: var(--math-color);
+            text-align: center;
+        }
+
+        #controls-area {
+            background: #131519;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 20px;
+            opacity: 0.4;
+            pointer-events: none;
+            transition: 0.4s;
+            filter: grayscale(1);
+            position: relative;
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        button {
+            background: #2c313a;
+            color: #aaa;
+            border: 1px solid #3d4450;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            background: #3d4450;
+            color: #fff;
+            border-color: #555;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+        }
+
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: none;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+            font-weight: 800;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+            color: #000;
+            box-shadow: 0 0 15px rgba(255, 159, 67, 0.4);
+        }
+
+        .nav-btn.next:disabled {
+            background: #222;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+        }
+
+        .scene-tag {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Gauss's Notebook</h1>
+            <div class="subtitle">Simulation: Spherical Flux</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <!-- 1. Create Surface -->
+            <div class="control-row" id="ctrl-sphere">
+                <label>Step 1: The Gaussian Surface</label>
+                <button id="btn-sphere" onclick="toggleSphere()">Enclose Charge (Radius R)</button>
+            </div>
+
+            <!-- 2. Inspect Vectors -->
+            <div class="control-row" id="ctrl-vectors">
+                <label>Step 2: Field & Area Vectors</label>
+                <button id="btn-vectors" onclick="toggleVectors()">Show E and dA</button>
+            </div>
+
+            <!-- 3. Change Radius -->
+            <div class="control-row" id="ctrl-radius">
+                <label>Step 3: Change Radius (R)</label>
+                <input type="range" id="slider-radius" min="8" max="25" value="12" step="0.1">
+            </div>
+
+            <!-- Reset -->
+            <div class="control-row" id="ctrl-reset"
+                style="margin-top:10px; border-top:1px solid #2c313a; padding-top:15px; opacity: 1; pointer-events: all; filter: grayscale(0);">
+                <label>Experiment Control</label>
+                <button onclick="resetSim()">Reset System</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div class="scene-tag" style="top: 20px; right: 20px;">Vacuum Space (ε₀)</div>
+        <!-- HUD Removed -->
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE 3D ENGINE
+        // ==========================================
+
+        const state = {
+            sphereVisible: false,
+            vectorsVisible: false,
+            radius: 12,
+            time: 0
+        };
+
+        const scene = new THREE.Scene();
+
+        const sidebarWidth = 420;
+        let aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const viewSize = 50;
+
+        // Isometric-ish view
+        const camera = new THREE.OrthographicCamera(
+            -viewSize * aspect / 2, viewSize * aspect / 2,
+            viewSize / 2, -viewSize / 2,
+            1, 1000
+        );
+
+        camera.position.set(30, 30, 30);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // Floor (Reference Plane)
+        const gridHelper = new THREE.GridHelper(100, 20, 0x2c313a, 0x181a1f);
+        gridHelper.position.y = -15;
+        scene.add(gridHelper);
+
+        // --- OBJECTS ---
+
+        // 1. Source Charge (+Q)
+        const sourceGeo = new THREE.IcosahedronGeometry(2, 2);
+        const sourceMat = new THREE.MeshStandardMaterial({ color: 0xff6b6b, emissive: 0x550000, flatShading: true });
+        const sourceMesh = new THREE.Mesh(sourceGeo, sourceMat);
+        sourceMesh.castShadow = true;
+        scene.add(sourceMesh);
+
+        // Label Q
+        function createTextSprite(text, color = "white", scale = 1) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.font = 'bold 50px Arial';
+            ctx.fillStyle = color;
+            ctx.textAlign = "center";
+            ctx.fillText(text, 128, 80);
+            const tex = new THREE.CanvasTexture(canvas);
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
+            sprite.scale.set(scale * 2, scale, 1);
+            sprite.renderOrder = 100;
+            return sprite;
+        }
+        const labelQ = createTextSprite("+Q", "#ff6b6b", 3);
+        labelQ.position.y = 3.5;
+        scene.add(labelQ);
+
+        // 2. The Gaussian Sphere
+        const sphereGroup = new THREE.Group();
+        // Wireframe structure
+        const sphereGeo = new THREE.IcosahedronGeometry(1, 2);
+        const wireMat = new THREE.MeshBasicMaterial({ color: 0x444444, wireframe: true, transparent: true, opacity: 0.3 });
+
+        const wireMesh = new THREE.Mesh(sphereGeo, wireMat);
+
+        sphereGroup.add(wireMesh);
+
+        scene.add(sphereGroup);
+        sphereGroup.visible = false;
+
+        // 3. Vector System (E and dA)
+        const vectorGroup = new THREE.Group();
+        sphereGroup.add(vectorGroup); // Vectors attach to sphere coordinate system
+
+        const vectors = [];
+
+        // Create arrows on the vertices of the sphere
+        const sphereVerts = sphereGeo.parameters.radius * 1;
+        const posAttribute = sphereGeo.attributes.position;
+
+        // Helper to make an arrow
+        function createArrow(color, labelText) {
+            const grp = new THREE.Group();
+
+            // Thinner Shaft
+            const sGeo = new THREE.CylinderGeometry(0.02, 0.02, 1, 8);
+            sGeo.translate(0, 0.5, 0);
+            sGeo.rotateX(Math.PI / 2); // Point Z
+            const sMat = new THREE.MeshBasicMaterial({ color: color });
+            const shaft = new THREE.Mesh(sGeo, sMat);
+
+            // Smaller Head
+            const hGeo = new THREE.ConeGeometry(0.08, 0.25, 8);
+            hGeo.rotateX(Math.PI / 2);
+            hGeo.translate(0, 0, 1);
+            const head = new THREE.Mesh(hGeo, sMat);
+
+            grp.add(shaft, head);
+
+            if (labelText) {
+                const l = createTextSprite(labelText, color, 1.5);
+                l.position.set(0, 0.5, 0.5);
+                grp.add(l);
+            }
+
+            return grp;
+        }
+
+        // Loop step 15 to reduce density
+        for (let i = 0; i < posAttribute.count; i += 15) {
+            const v = new THREE.Vector3().fromBufferAttribute(posAttribute, i);
+            v.normalize(); // Unit vector direction
+
+            const arrowRoot = new THREE.Group();
+            arrowRoot.position.copy(v); // Place at surface (r=1 relative to group)
+            arrowRoot.lookAt(v.clone().multiplyScalar(2)); // Point outward
+
+            // Electric Field Arrow (Blue)
+            const eArrow = createArrow(0x54a0ff, null);
+            eArrow.userData = { type: 'E' };
+
+            // Area Normal Arrow (Orange) - Slightly offset so they don't z-fight
+            const dAArrow = createArrow(0xff9f43, null);
+            dAArrow.position.x = 0.10; // Reduced offset slightly
+            dAArrow.userData = { type: 'dA' };
+
+            arrowRoot.add(eArrow);
+            arrowRoot.add(dAArrow);
+            vectorGroup.add(arrowRoot);
+            vectors.push({ root: arrowRoot, e: eArrow, da: dAArrow, dir: v });
+        }
+        vectorGroup.visible = false;
+
+
+        // ==========================================
+        // PART 2: ANIMATION & UPDATE LOGIC
+        // ==========================================
+
+        function updatePhysics() {
+            const R = state.radius;
+
+            // Scale the Sphere Group
+            // The base geometry has radius 1. So scale = R.
+            sphereGroup.scale.set(R, R, R);
+
+            // Update Vector Visuals
+            // Coulomb's Law: E ~ 1/R^2. 
+            // Let's normalize visual scale: at R=10, scale=1.
+            // At R=20, E should be 1/4 size.
+            const refR = 10;
+            const eScale = (refR * refR) / (R * R);
+
+            vectors.forEach(vec => {
+                // E Arrow length scales with Field Strength (Physical)
+                let lenE = eScale * 1.5;
+
+                // Apply scale
+                vec.e.scale.set(1, 1, lenE); // Scale Z (length)
+
+                // dA Arrow (Unit Normal representation)
+                vec.da.scale.set(1, 1, 0.8);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            state.time += 0.01;
+
+            // Floating charge
+            sourceMesh.position.y = Math.sin(state.time * 2) * 0.5;
+            labelQ.position.y = 3.5 + Math.sin(state.time * 2) * 0.5;
+
+            // Rotate sphere slowly if visible
+            if (state.sphereVisible) {
+                sphereGroup.rotation.y = state.time * 0.1;
+                sphereGroup.rotation.z = Math.sin(state.time * 0.5) * 0.1;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+
+        // ==========================================
+        // PART 3: NARRATIVE CONTROLLER
+        // ==========================================
+
+        let currentChapter = 0;
+
+        // Actions
+        function toggleSphere() {
+            state.sphereVisible = true;
+            sphereGroup.visible = true;
+            document.getElementById('btn-sphere').disabled = true;
+            updatePhysics();
+            checkAdvance();
+        }
+
+        function toggleVectors() {
+            state.vectorsVisible = true;
+            vectorGroup.visible = true;
+            document.getElementById('btn-vectors').disabled = true;
+            updatePhysics();
+            checkAdvance();
+        }
+
+        document.getElementById('slider-radius').addEventListener('input', (e) => {
+            state.radius = parseFloat(e.target.value);
+            updatePhysics();
+            checkAdvance();
+        });
+
+        function resetSim() {
+            state.sphereVisible = false;
+            state.vectorsVisible = false;
+            state.radius = 12;
+
+            sphereGroup.visible = false;
+            vectorGroup.visible = false;
+
+            document.getElementById('slider-radius').value = 12;
+            document.getElementById('btn-sphere').disabled = false;
+            document.getElementById('btn-vectors').disabled = false;
+
+            lockAll();
+            loadLesson(0);
+        }
+
+        const lessons = [
+            {
+                title: "First Principles: The Trap",
+                text: "We want to measure how much 'electric influence' emanates from the charge <strong style='color:#ff6b6b'>+Q</strong>.<br><br>Imagine this charge is a lightbulb. To measure its total brightness, we must catch 100% of the light. We need to surround it completely.<br><br>This imaginary trap is called a <strong>Gaussian Surface</strong>.<br><br><span class='instruction-inline'>Click 'ENCLOSE CHARGE'</span> to place a spherical surface of radius R.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-sphere');
+                },
+                check: () => state.sphereVisible
+            },
+            {
+                title: "Local Geometry",
+                text: "Look closely at the surface. At any point, we have two vectors:<br><br>1. <strong style='color:#54a0ff'>E (Electric Field)</strong>: Pushes outward from the center.<br>2. <strong style='color:#ff9f43'>dA (Area Normal)</strong>: Points straight out from the surface.<br><br>Because we chose a sphere, <strong>E is parallel to dA</strong> everywhere. This makes the math incredibly simple. The 'flow' is going straight through the holes of our net.<br><br><span class='instruction-inline'>Click 'SHOW VECTORS'</span> to visualize this alignment.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-vectors');
+                },
+                check: () => state.vectorsVisible
+            },
+            {
+                title: "The Flux Calculation",
+                text: "<strong>Flux (Φ)</strong> is the Field multiplied by the Area it passes through.<br><div class='math-block'>Φ = ∮ E · dA</div><br>Since E is constant over the sphere surface (same distance R) and parallel to the area vectors, the integral becomes simple multiplication:<br><div class='math-block'>Φ = E × (Surface Area)</div><br>Now proceed to change the radius to see what happens.",
+                setup: () => { unlock('ctrl-radius'); },
+                check: () => true
+            },
+            {
+                title: "Conclusion",
+                text: "Here is the magic. <span class='instruction-inline'>Move the Radius Slider</span>.<br><br>As R <strong>increases</strong>:<br>1. The Surface Area grows larger (<strong style='color:#ff9f43'>R²</strong>).<br>2. The Electric Field gets weaker (<strong style='color:#54a0ff'>1/R²</strong>).<br><br>These two effects perfectly cancel each other out!<br><br><div class='math-block' style='font-size:12px'>Φ = (kQ/R²) × (4πR²) = 4πkQ = Q/ε₀</div><br>The Total Flux depends <strong>only</strong> on the charge Q inside, not the size of the sphere.",
+                setup: () => { },
+                check: () => true
+            }
+        ];
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+            document.querySelector('header .subtitle').innerText = `Lesson ${idx + 1}: ${l.title}`;
+            document.getElementById('chapter-content').innerHTML =
+                `<div class="chapter-title">${l.title}</div>
+             <div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+
+            if (currentChapter === lessons.length - 1) {
+                btn.innerHTML = "Next Lesson &rarr;";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+                btn.disabled = !l.check();
+            }
+
+            l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                window.parent.location.href = '/lesson/gauss_law';
+            }
+        }
+        function prevLesson() { if (currentChapter > 0) loadLesson(currentChapter - 1); }
+        function checkAdvance() {
+            if (currentChapter >= lessons.length - 1) return;
+            if (lessons[currentChapter].check()) document.getElementById('btn-next').disabled = false;
+        }
+
+        function lockAll() { document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active')); }
+        function unlock(id) { document.getElementById(id).classList.add('active'); }
+
+        // Init
+        loadLesson(0);
+
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -viewSize * newAspect / 2;
+            camera.right = viewSize * newAspect / 2;
+            camera.top = viewSize / 2;
+            camera.bottom = -viewSize / 2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>

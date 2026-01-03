@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Vector Arrows</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* Orange */
+            --accent-hover: #e58e3c;
+            --border: #333;
+            --pos-color: #ff6b6b;
+            --neg-color: #54a0ff;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        /* LEFT PANEL: THE STORYBOOK */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .instruction-inline {
+            color: var(--accent);
+            font-weight: bold;
+            background: rgba(255, 159, 67, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .math-block {
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border: 1px solid #333;
+            color: #fff;
+            text-align: center;
+        }
+
+        /* CONTROLS AREA */
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #181818;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 15px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            filter: grayscale(1);
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+        }
+
+        /* NAVIGATION FOOTER */
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        /* NEXT BUTTON STYLING FIX */
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+            border: none;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+            color: #000;
+        }
+
+        .nav-btn.next:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+            transform: none;
+            animation: none;
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+        }
+
+        .scene-tag {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Simulation: Vector Representation</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <!-- 1. Polarity Toggle -->
+            <div class="control-row" id="ctrl-polarity">
+                <label>Step 1: Charge Nature</label>
+                <button id="btn-polarity" onclick="togglePolarity()">Current: Positive (+)</button>
+            </div>
+
+            <!-- 2. Measurement Ring Slider -->
+            <div class="control-row" id="ctrl-ring">
+                <label>Step 2: Measurement Radius (r)</label>
+                <input type="range" id="slider-dist" min="6" max="35" value="10" step="0.1">
+            </div>
+
+            <!-- 3. Show Grid -->
+            <div class="control-row" id="ctrl-grid">
+                <label>Step 3: The Vector Field</label>
+                <button id="btn-grid" onclick="toggleFullGrid()">Toggle Full Field Map</button>
+            </div>
+
+            <!-- Reset -->
+            <div class="control-row" id="ctrl-reset"
+                style="margin-top:10px; border-top:1px solid #2c313a; padding-top:15px; opacity: 1; pointer-events: all; filter: grayscale(0);">
+                <label>System</label>
+                <button onclick="resetSim()">Reset Experiment</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div class="scene-tag" style="top: 20px; right: 20px;">Vector Visualization Mode</div>
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE 3D ENGINE
+        // ==========================================
+
+        const state = {
+            polarity: 1, // 1 for Positive, -1 for Negative
+            radius: 10,
+            showGrid: false,
+            time: 0,
+            gridAnimated: false
+        };
+
+        const scene = new THREE.Scene();
+
+        const sidebarWidth = 420;
+        let aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const viewSize = 50;
+
+        // Orthographic Camera for that "Textbook Diagram" look
+        const camera = new THREE.OrthographicCamera(
+            -viewSize * aspect / 2, viewSize * aspect / 2,
+            viewSize / 2, -viewSize / 2,
+            1, 1000
+        );
+
+        camera.position.set(20, 35, 20);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 5);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        scene.add(dirLight);
+
+        // Floor (Dark Grid)
+        const floorGeo = new THREE.PlaneGeometry(100, 100);
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x222222,
+            roughness: 0.8,
+            metalness: 0.2
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -5;
+        floor.receiveShadow = true;
+        scene.add(floor);
+        scene.background = new THREE.Color(0x151515);
+
+        const gridHelper = new THREE.GridHelper(100, 20, 0x2c313a, 0x1f2229);
+        gridHelper.position.y = -4.9;
+        scene.add(gridHelper);
+
+        // --- OBJECTS ---
+
+        // 1. Central Charge
+        const sourceGeo = new THREE.IcosahedronGeometry(3, 0); // Low poly
+        const sourceMat = new THREE.MeshStandardMaterial({
+            color: 0xff6b6b,
+            flatShading: true,
+            emissive: 0x550000,
+            emissiveIntensity: 0.5
+        });
+        const sourceMesh = new THREE.Mesh(sourceGeo, sourceMat);
+        sourceMesh.castShadow = true;
+        sourceMesh.position.y = 0;
+        scene.add(sourceMesh);
+
+        // Charge Label Sprite
+        function createTextSprite(text, scale) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.font = 'bold 60px Arial';
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center";
+            ctx.fillText(text, 128, 80);
+            const tex = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.scale.set(scale * 2, scale, 1);
+            sprite.renderOrder = 100;
+            return sprite;
+        }
+
+        const labelQ = createTextSprite("Q (+)", 4);
+        labelQ.position.y = 5;
+        scene.add(labelQ);
+
+        // 2. Arrow Factory
+        const arrowShaftGeo = new THREE.CylinderGeometry(0.15, 0.15, 1, 6);
+        arrowShaftGeo.translate(0, 0.5, 0);
+        arrowShaftGeo.rotateZ(-Math.PI / 2); // Point +X
+
+        const arrowHeadGeo = new THREE.ConeGeometry(0.4, 0.8, 6);
+        arrowHeadGeo.rotateZ(-Math.PI / 2);
+        arrowHeadGeo.translate(1, 0, 0);
+
+        const arrowMat = new THREE.MeshStandardMaterial({ color: 0xe0e6ed, flatShading: true });
+
+        function createArrow() {
+            const grp = new THREE.Group();
+            const shaft = new THREE.Mesh(arrowShaftGeo, arrowMat);
+            const head = new THREE.Mesh(arrowHeadGeo, arrowMat);
+            shaft.castShadow = true;
+            head.castShadow = true;
+
+            // We put the visuals in a child group so we can scale the arrow length 
+            // without distorting the 'thickness' of the shaft too much if we wanted,
+            // but for simple uniform scaling, this structure is fine.
+            const visuals = new THREE.Group();
+            visuals.add(shaft, head);
+            grp.add(visuals);
+
+            grp.userData = { visuals: visuals };
+            return grp;
+        }
+
+        // 3. Measurement Ring Arrows (The active demonstration ring)
+        const ringArrows = [];
+        const ringGroup = new THREE.Group();
+        const ringCount = 12;
+        for (let i = 0; i < ringCount; i++) {
+            const arrow = createArrow();
+            ringGroup.add(arrow);
+            ringArrows.push(arrow);
+        }
+        scene.add(ringGroup);
+
+        // 4. Background Grid Arrows (The "Field Map")
+        const gridArrows = [];
+        const gridGroup = new THREE.Group();
+        // Create a circular distribution of background arrows
+        for (let r = 8; r <= 35; r += 5) {
+            const count = Math.floor(r * 1.5);
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * Math.PI * 2 + (r % 2); // Offset rings slightly
+                const arrow = createArrow();
+                arrow.position.set(Math.cos(angle) * r, 0, Math.sin(angle) * r);
+
+                // Set slight transparency for background arrows
+                arrow.userData.visuals.children.forEach(m => {
+                    m.material = m.material.clone();
+                    m.material.transparent = true;
+                    m.material.opacity = 0.3;
+                });
+
+                gridGroup.add(arrow);
+                gridArrows.push(arrow);
+            }
+        }
+        scene.add(gridGroup);
+        gridGroup.visible = false;
+
+
+        // ==========================================
+        // PART 2: LOGIC & ANIMATION
+        // ==========================================
+
+        function updateArrows() {
+            const center = new THREE.Vector3(0, 0, 0);
+            const axisX = new THREE.Vector3(1, 0, 0);
+
+            // 1. Update Measurement Ring
+            const r = state.radius;
+            // Inverse square calculation for scale. 
+            // Max strength at r=5, min at r=40.
+            // E ~ 1/r^2. Let's make scale roughly 100/r^2
+            let scale = 250 / (r * r);
+            scale = Math.min(scale, 8); // Cap max size
+            scale = Math.max(scale, 1); // Cap min size
+
+            for (let i = 0; i < ringCount; i++) {
+                const angle = (i / ringCount) * Math.PI * 2 + (state.time * 0.1);
+                const x = Math.cos(angle) * r;
+                const z = Math.sin(angle) * r;
+                const arrow = ringArrows[i];
+
+                arrow.position.set(x, 0, z);
+
+                // Direction Logic
+                const dir = new THREE.Vector3(x, 0, z).normalize();
+                if (state.polarity === -1) dir.negate(); // Point inward if negative
+
+                const quat = new THREE.Quaternion().setFromUnitVectors(axisX, dir);
+                arrow.quaternion.copy(quat);
+
+                arrow.userData.visuals.scale.set(scale, 1, 1);
+            }
+
+            // 2. Update Background Grid (if visible)
+            if (state.showGrid) {
+                gridArrows.forEach(arrow => {
+                    const dist = arrow.position.distanceTo(center);
+                    let gScale = 250 / (dist * dist);
+                    gScale = Math.min(gScale, 5);
+                    gScale = Math.max(gScale, 0.5);
+
+                    const dir = arrow.position.clone().normalize();
+                    if (state.polarity === -1) dir.negate();
+
+                    const quat = new THREE.Quaternion().setFromUnitVectors(axisX, dir);
+                    arrow.quaternion.slerp(quat, 0.1); // Smooth transition when polarity changes
+
+                    arrow.userData.visuals.scale.set(gScale, 1, 1);
+                });
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            state.time += 0.01;
+
+            // Bobbing Source
+            sourceMesh.position.y = Math.sin(state.time * 2) * 0.3;
+            sourceMesh.rotation.y += 0.005;
+            sourceMesh.rotation.z -= 0.002;
+            labelQ.position.y = 5 + Math.sin(state.time * 2) * 0.3;
+
+            updateArrows();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // ==========================================
+        // PART 3: INTERACTION
+        // ==========================================
+
+        let currentChapter = 0;
+
+        function togglePolarity() {
+            state.polarity *= -1;
+            const btn = document.getElementById('btn-polarity');
+
+            if (state.polarity === 1) {
+                btn.innerText = "Current: Positive (+)";
+                btn.style.borderColor = "#3d4450";
+                btn.style.color = "#aaa";
+                sourceMat.color.setHex(0xff6b6b);
+                sourceMat.emissive.setHex(0x550000);
+
+                // Update Label
+                const canvas = labelQ.material.map.image;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, 256, 128);
+                ctx.fillStyle = "white";
+                ctx.textAlign = "center";
+                ctx.fillText("Q (+)", 128, 80);
+                labelQ.material.map.needsUpdate = true;
+
+            } else {
+                btn.innerText = "Current: Negative (-)";
+                btn.style.borderColor = "#54a0ff";
+                btn.style.color = "#54a0ff";
+                sourceMat.color.setHex(0x54a0ff);
+                sourceMat.emissive.setHex(0x002255);
+
+                // Update Label
+                const canvas = labelQ.material.map.image;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, 256, 128);
+                ctx.fillStyle = "#54a0ff"; // make text blueish
+                ctx.textAlign = "center";
+                ctx.fillText("Q (-)", 128, 80);
+                labelQ.material.map.needsUpdate = true;
+            }
+            checkAdvance();
+        }
+
+        document.getElementById('slider-dist').addEventListener('input', (e) => {
+            state.radius = parseFloat(e.target.value);
+            checkAdvance();
+        });
+
+        function toggleFullGrid() {
+            state.showGrid = !state.showGrid;
+            const btn = document.getElementById('btn-grid');
+            gridGroup.visible = state.showGrid;
+
+            if (state.showGrid) {
+                btn.innerText = "Hide Full Field Map";
+                btn.style.background = "#2c313a";
+                btn.style.color = "#fff";
+            } else {
+                btn.innerText = "Toggle Full Field Map";
+                btn.style.background = "#2c313a";
+                btn.style.color = "#aaa";
+            }
+            checkAdvance();
+        }
+
+        function resetSim() {
+            state.polarity = -1; // Toggle function will flip it to 1
+            togglePolarity();
+            state.radius = 10;
+            document.getElementById('slider-dist').value = 10;
+            state.showGrid = true;
+            toggleFullGrid(); // Will flip to false
+
+            loadLesson(0);
+        }
+
+        // --- LESSON CONTENT ---
+
+        const lessons = [
+            {
+                title: "Direction & Polarity",
+                text: "Electric fields are vector fields. This means every point in space has a direction and a magnitude.<br><br><strong>Convention:</strong> Field arrows always point <em>away</em> from Positive charges and <em>toward</em> Negative charges.<br><br>The red sphere is our Positive source. <span class='instruction-inline'>Click 'CHARGE NATURE'</span> to swap it to a Negative source and observe the arrows.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-polarity');
+                },
+                check: () => state.polarity === -1 // User must have clicked at least once
+            },
+            {
+                title: "Magnitude & Distance",
+                text: "The <strong>Length</strong> of the arrow represents the strength (Magnitude) of the field at that specific point.<br><br>According to the inverse-square law ($1/r^2$), the field is very strong close to the source and fades rapidly as you move away.<br><br><span class='instruction-inline'>Move the Slider</span> to change the distance (r) of the measurement ring.",
+                setup: () => {
+                    unlock('ctrl-ring');
+                },
+                check: () => state.radius > 20 || state.radius < 8 // Moved slider significantly
+            },
+            {
+                title: "The Vector Map",
+                text: "So far, we have only looked at a specific ring. But the field exists everywhere simultaneously.<br><br>By drawing arrows at grid points, we create a <strong>Vector Field Map</strong>. This allows us to visualize the 'texture' of the space surrounding the charge.<br><br>Notice how the arrows are huge near the center and tiny at the edges.<span class='instruction-inline'>Click 'TOGGLE FULL FIELD MAP'</span>.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-grid');
+                },
+                check: () => state.showGrid
+            },
+            {
+                title: "Conclusion",
+                text: "You have visualized the two critical components of the Electric Field Vector:<br><br>1. <strong>Direction:</strong> Determined by the sign of the source charge (+/-).<br>2. <strong>Magnitude:</strong> Visualized by arrow length, governed by the $1/r^2$ law.<br><br>This 'porcupine' pattern is the classic signature of a point charge in empty space. But what happens when multiple charges interact? We need to learn how to add these vectors together.",
+                setup: () => {
+                    unlock('ctrl-polarity');
+                    unlock('ctrl-ring');
+                },
+                check: () => true
+            }
+        ];
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+            document.querySelector('header .subtitle').innerText = `Lesson ${idx + 1}: ${l.title}`;
+            document.getElementById('chapter-content').innerHTML =
+                `<div class="chapter-title">${l.title}</div>
+             <div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+
+            if (currentChapter === lessons.length - 1) {
+                btn.innerHTML = "Next Lesson &rarr;";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+                btn.disabled = !l.check();
+            }
+
+            l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                window.parent.location.href = '/lesson/vec_addition';
+            }
+        }
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+        function checkAdvance() {
+            if (currentChapter >= lessons.length - 1) return;
+            if (lessons[currentChapter].check()) {
+                document.getElementById('btn-next').disabled = false;
+            }
+        }
+
+        function lockAll() { document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active')); }
+        function unlock(id) { document.getElementById(id).classList.add('active'); }
+
+        // Init
+        loadLesson(0);
+
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -viewSize * newAspect / 2;
+            camera.right = viewSize * newAspect / 2;
+            camera.top = viewSize / 2;
+            camera.bottom = -viewSize / 2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>

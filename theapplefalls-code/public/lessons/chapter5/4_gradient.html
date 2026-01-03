@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>The Gradient in Cartesian Coordinates</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --accent-hover: #e58e3c;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .instruction-inline {
+            color: var(--accent);
+            font-weight: bold;
+            background: rgba(255, 159, 67, 0.1);
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .math-block {
+            background: #222;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border: 1px solid #333;
+            color: #fff;
+            text-align: center;
+        }
+
+        #controls-area {
+            background: #181818;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 15px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            filter: grayscale(1);
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+        }
+
+        .nav-btn.next:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+        }
+
+        .scene-tag {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 5: The Gradient</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content"></div>
+        </div>
+
+        <div id="controls-area">
+            <div class="control-row active" id="ctrl-probe">
+                <label>Move Gradient Probe</label>
+                <input type="range" id="probe-x" min="-15" max="15" value="10" step="0.5">
+                <div style="font-size: 10px; color: #555; margin-top: 5px;">X Position: <span id="x-val">10</span></div>
+            </div>
+
+            <div class="control-row" id="ctrl-show">
+                <label>Step 1: Show Gradient Field</label>
+                <button onclick="showGradientField()">Display ∇V Field</button>
+            </div>
+
+            <div class="control-row" id="ctrl-reset"
+                style="margin-top:10px; border-top:1px solid #2c313a; padding-top:15px; opacity: 1; pointer-events: all; filter: grayscale(0);">
+                <button onclick="resetSim()">Reset System</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div class="scene-tag" style="top: 20px; right: 20px;">3D Potential Landscape</div>
+    </main>
+
+    <script>
+        const state = {
+            probeX: 10,
+            gradientVisible: false,
+            componentsVisible: false,
+            time: 0
+        };
+
+        const scene = new THREE.Scene();
+        const sidebarWidth = 420;
+        let aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const viewSize = 40;
+
+        const camera = new THREE.OrthographicCamera(
+            -viewSize * aspect / 2, viewSize * aspect / 2,
+            viewSize / 2, -viewSize / 2,
+            1, 1000
+        );
+        camera.position.set(25, 30, 25);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        dirLight.position.set(10, 20, 5);
+        scene.add(dirLight);
+
+        scene.background = new THREE.Color(0x151515);
+
+        // Create potential surface (cone-like shape showing V = k/r)
+        const surfaceGroup = new THREE.Group();
+        const resolution = 40;
+        for (let i = 0; i < resolution; i++) {
+            const angle = (i / resolution) * Math.PI * 2;
+            const points = [];
+            for (let r = 3; r <= 25; r += 1) {
+                const height = 15 / r; // V ~ 1/r
+                points.push(new THREE.Vector3(
+                    Math.cos(angle) * r,
+                    height,
+                    Math.sin(angle) * r
+                ));
+            }
+            const geo = new THREE.BufferGeometry().setFromPoints(points);
+            const mat = new THREE.LineBasicMaterial({
+                color: 0x4ecdc4,
+                transparent: true,
+                opacity: 0.3
+            });
+            const line = new THREE.Line(geo, mat);
+            surfaceGroup.add(line);
+        }
+        scene.add(surfaceGroup);
+
+        // Ground plane
+        const gridHelper = new THREE.GridHelper(60, 30, 0x2c313a, 0x1f2229);
+        gridHelper.position.y = -0.1;
+        scene.add(gridHelper);
+
+        // Source charge at origin
+        const sourceGeo = new THREE.IcosahedronGeometry(2, 1);
+        const sourceMat = new THREE.MeshStandardMaterial({
+            color: 0xff6b6b,
+            emissive: 0x550000,
+            flatShading: true
+        });
+        const source = new THREE.Mesh(sourceGeo, sourceMat);
+        scene.add(source);
+
+        // Gradient probe (ball that moves)
+        const probeGeo = new THREE.SphereGeometry(0.8);
+        const probeMat = new THREE.MeshStandardMaterial({ color: 0xfeca57 });
+        const probe = new THREE.Mesh(probeGeo, probeMat);
+        scene.add(probe);
+
+        // Gradient arrow from probe
+        const gradArrowGroup = new THREE.Group();
+        const shaftGeo = new THREE.CylinderGeometry(0.15, 0.15, 1, 8);
+        shaftGeo.translate(0, 0.5, 0);
+        shaftGeo.rotateZ(-Math.PI / 2);
+        const headGeo = new THREE.ConeGeometry(0.4, 0.8, 8);
+        headGeo.rotateZ(-Math.PI / 2);
+        headGeo.translate(1, 0, 0);
+        const arrowMat = new THREE.MeshStandardMaterial({ color: 0x54a0ff });
+        const shaft = new THREE.Mesh(shaftGeo, arrowMat);
+        const head = new THREE.Mesh(headGeo, arrowMat);
+        gradArrowGroup.add(shaft, head);
+        scene.add(gradArrowGroup);
+        gradArrowGroup.visible = false;
+
+        // Gradient field removed - too confusing in 2D
+
+        function updateProbe() {
+            const x = state.probeX;
+            const z = 0;
+            const r = Math.sqrt(x * x + z * z);
+            const height = r > 0 ? 15 / r : 5;
+
+            probe.position.set(x, height, z);
+            gradArrowGroup.position.set(x, height, z);
+
+            // Update arrow scale and direction
+            if (r > 0) {
+                // Calculate gradient in 3D: ∇V = (∂V/∂x, ∂V/∂y, ∂V/∂z)
+                // For V = 15/r, we have ∂V/∂r = -15/r²
+                const dVdx = -15 * x / (r * r * r);
+                const dVdz = -15 * z / (r * r * r);
+
+                // Electric field components: E = -∇V
+                const Ex = -dVdx;  // Points radially outward
+                const Ez = -dVdz;
+                // Vertical component: as we move radially out, height decreases
+                const Ey = -(-15 / (r * r)); // Points down the potential slope
+
+                // USE SAME SCALING FACTOR for both blue arrow and RGB components!
+                const scaleFactor = 3; // Single unified scale factor
+
+                // Blue gradient arrow - total field vector
+                const gradDir = new THREE.Vector3(Ex, Ey, Ez);
+                const gradMag = gradDir.length();
+                gradDir.normalize();
+
+                const blueArrowLength = gradMag * scaleFactor;
+                gradArrowGroup.scale.set(blueArrowLength, 1, 1);
+
+                // Orient arrow to point in gradient direction
+                const quat = new THREE.Quaternion().setFromUnitVectors(
+                    new THREE.Vector3(1, 0, 0),
+                    gradDir
+                );
+                gradArrowGroup.quaternion.copy(quat);
+            }
+
+            document.getElementById('x-val').innerText = x.toFixed(1);
+        }
+
+        document.getElementById('probe-x').addEventListener('input', (e) => {
+            state.probeX = parseFloat(e.target.value);
+            updateProbe();
+            checkAdvance();
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            state.time += 0.01;
+            source.rotation.y += 0.005;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        let currentChapter = 0;
+
+        function showGradientField() {
+            state.gradientVisible = true;
+            gradArrowGroup.visible = true;
+            document.querySelector('button[onclick="showGradientField()"]').disabled = true;
+            checkAdvance();
+        }
+
+
+
+        function resetSim() {
+            state.probeX = 10;
+            state.gradientVisible = false;
+
+            gradArrowGroup.visible = false;
+
+            document.getElementById('probe-x').value = 10;
+            document.querySelector('button[onclick="showGradientField()"]').disabled = false;
+
+            updateProbe();
+            loadLesson(0);
+        }
+
+        const lessons = [
+            {
+                title: "The Potential Landscape",
+                text: "You're looking at a 3D visualization of electric potential. The curved surface shows V(r) = k/r for a point charge. The yellow probe sits on this surface.<br><br>Move the slider to change the probe's position. Notice how the probe's height changes—that's the potential at that point.<br><br><span class='instruction-inline'>Move the slider</span> to explore the potential landscape.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-probe');
+                },
+                check: () => Math.abs(state.probeX - 10) > 3
+            },
+            {
+                title: "The Gradient: ∇V",
+                text: "The <strong>gradient</strong> (∇V) is a 3D vector field that points in the direction of steepest increase of potential:<br><div class='math-block'>∇V = (∂V/∂x, ∂V/∂y, ∂V/∂z)</div><br>The electric field is E = -∇V, pointing <em>downhill</em> from high to low potential. The blue arrow at the probe position shows this direction.<br><br><span class='instruction-inline'>Click 'DISPLAY ∇V FIELD'</span> to show it.",
+                setup: () => {
+                    unlock('ctrl-show');
+                },
+                check: () => state.gradientVisible
+            },
+            {
+                title: "Understanding the Gradient",
+                text: "The gradient has three components (∂V/∂x, ∂V/∂y, ∂V/∂z) called <strong>partial derivatives</strong>—they measure how V changes in each direction.<br><br>For our point charge:<br>• Near the charge: steep gradient → strong field → long blue arrow<br>• Far from charge: gentle gradient → weak field → short blue arrow<br><br>The blue arrow shows both the magnitude AND direction of the electric field.",
+                setup: () => { },
+                check: () => true
+            },
+            {
+                title: "Conclusion",
+                text: "The electric field has units of <strong>V/m</strong> (volts per meter):<br><div class='math-block'>E = -∇V = -dV/dr</div><br>This is the rate of change of voltage with distance. A steeper potential gradient means a stronger field.<br><br>For a point charge: E = kQ/r²<br><br>Next, we'll apply this to parallel plates where the field is uniform.",
+                setup: () => {
+                    document.getElementById('btn-next').innerText = "Next Lesson";
+                    document.getElementById('btn-next').disabled = false;
+                },
+                check: () => true
+            }
+        ];
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+            document.querySelector('header .subtitle').innerText = `Lesson ${idx + 1}: ${l.title}`;
+            document.getElementById('chapter-content').innerHTML =
+                `<div class="chapter-title">${l.title}</div><div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+            if (currentChapter === lessons.length - 1) {
+                btn.innerHTML = "Next Lesson &rarr;";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+                btn.disabled = !l.check();
+            }
+            if (l.setup) l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                window.parent.location.href = '/lesson/chapter5/parallel_plates';
+            }
+        }
+
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+
+        function checkAdvance() {
+            if (currentChapter >= lessons.length - 1) return;
+            if (lessons[currentChapter].check()) {
+                document.getElementById('btn-next').disabled = false;
+            }
+        }
+
+        function lockAll() {
+            document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active'));
+        }
+        function unlock(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        updateProbe();
+        loadLesson(0);
+
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -viewSize * newAspect / 2;
+            camera.right = viewSize * newAspect / 2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>

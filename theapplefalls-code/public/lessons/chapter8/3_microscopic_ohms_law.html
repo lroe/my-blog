@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Microscopic Ohm's Law</title>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --border: #333;
+            --electron: #48dbfb;
+            --lattice: #ff5e57;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: #1a1a1a;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            font-weight: 300;
+        }
+
+        .text-content {
+            line-height: 1.7;
+            font-size: 17px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .concept-block {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .math-block {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.2;
+            border: 1px solid #222;
+        }
+
+        #controls {
+            background: #111;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 150px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #222 0%, #080808 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            border-radius: 12px;
+            background: #050505;
+            border: 1px solid #333;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 5px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #stats {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 25px;
+            color: #888;
+            font-size: 13px;
+            font-family: 'Consolas', monospace;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid #222;
+        }
+
+        .stat-val {
+            color: var(--accent);
+            font-size: 20px;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 8: The Physics of Resistance</div>
+        </header>
+
+        <div id="story-container"></div>
+
+        <div id="controls">
+            <div id="dynamic-controls"></div>
+        </div>
+
+        <div id="nav">
+            <a href="2_drift_velocity_snail.html" class="nav-btn">Back</a>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <canvas id="simCanvas"></canvas>
+
+        <div id="stats">
+            <div class="stat-item"><span class="stat-val" id="val-sigma">1.0X</span> Conductivity ($\sigma$)</div>
+            <div class="stat-item"><span class="stat-val" id="val-i" style="color: #48dbfb">LOW</span> Current ($I$)
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const viewport = document.getElementById('viewport');
+        const statsRow = document.getElementById('stats');
+
+        let width, height;
+        let n = 20;
+        let tau = 50;
+        let electrons = [];
+        let latticePoints = [];
+
+        function resize() {
+            width = Math.min(viewport.clientWidth - 100, 700);
+            height = Math.min(viewport.clientHeight - 350, 450);
+            canvas.width = width;
+            canvas.height = height;
+            initLattice();
+            initElectrons();
+        }
+
+        function initLattice() {
+            latticePoints = [];
+            const spacing = 60;
+            for (let x = spacing / 2; x < width; x += spacing) {
+                for (let y = spacing / 2; y < height; y += spacing) {
+                    latticePoints.push({ x, y });
+                }
+            }
+        }
+
+        class Electron {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = 4 + Math.random() * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.collisionTimer = Math.random() * tau;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.collisionTimer--;
+
+                if (this.collisionTimer <= 0) {
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 8;
+                    this.collisionTimer = tau * (0.5 + Math.random());
+
+                    setTimeout(() => {
+                        this.vx = 4 + Math.random() * 2;
+                        this.vy = (Math.random() - 0.5) * 2;
+                    }, 100);
+                }
+
+                if (this.x > width) this.x = 0;
+                if (this.x < 0) this.x = width;
+                if (this.y > height) this.y = 0;
+                if (this.y < 0) this.y = height;
+            }
+
+            draw() {
+                ctx.fillStyle = 'var(--electron)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(72, 219, 251, 0.2)';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - this.vx * 3, this.y - this.vy * 3);
+                ctx.stroke();
+            }
+        }
+
+        function initElectrons() {
+            electrons = [];
+            for (let i = 0; i < n; i++) {
+                electrons.push(new Electron());
+            }
+        }
+
+        function updateParams() {
+            const nSlider = document.getElementById('n-slider');
+            const tauSlider = document.getElementById('tau-slider');
+            if (nSlider) n = parseInt(nSlider.value);
+            if (tauSlider) tau = parseInt(tauSlider.value);
+
+            initElectrons();
+
+            const sigma = (n * tau / 1000).toFixed(1);
+            const sigmaVal = document.getElementById('val-sigma');
+            if (sigmaVal) sigmaVal.innerText = sigma + "X";
+
+            const iVal = document.getElementById('val-i');
+            if (iVal) {
+                if (sigma < 0.5) { iVal.innerText = "MINIMAL"; iVal.style.color = "#ff5e57"; }
+                else if (sigma < 1.5) { iVal.innerText = "MODERATE"; iVal.style.color = "#ff9f43"; }
+                else { iVal.innerText = "HIGH"; iVal.style.color = "#48dbfb"; }
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, width, height);
+
+            latticePoints.forEach(p => {
+                ctx.fillStyle = '#1a1a1a';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#222';
+                ctx.stroke();
+            });
+
+            electrons.forEach(e => {
+                e.update();
+                e.draw();
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        let currentStepNum = 0;
+        const stepsData = [
+            {
+                title: "1. The Driving Force",
+                text: "<p>Let's derive Ohm's Law from the ground up. An electron of charge $e$ in an electric field $E$ feels a force:</p><div class='math-block'>$F = eE$</div><p>This force creates an acceleration $a = F/m$. Using Newton's Second Law:</p><div class='math-block'>$a = \\frac{eE}{m}$</div>",
+                setup: () => { statsRow.style.opacity = '0'; }
+            },
+            {
+                title: "2. Mean Free Time",
+                text: "<p>The electron accelerates, but not forever. It hits an atom after an average time $\\tau$. The <strong>Drift Velocity</strong> is simply the speed it picks up during that time:</p><div class='math-block'>$v_d = a \\cdot \\tau = \\frac{eE\\tau}{m}$</div><p>This explains why $\\tau$ is so critical—the longer an electron flies between bumps, the faster it goes!</p>",
+                setup: () => { }
+            },
+            {
+                title: "3. From Velocity to Current",
+                text: "<p>If we have $n$ electrons per cubic meter, the total charge passing through a wire cross-section $A$ every second is the Current ($I$):</p><div class='math-block'>$I = (n \\cdot v_d \\cdot A) \\cdot e$</div><p>Substituting our $v_d$ formula into this gives:</p><div class='math-block'>$I = n \\left( \\frac{eE\\tau}{m} \\right) Ae = \\left( \\frac{ne^2\\tau}{m} \\right) AE$</div>",
+                setup: () => { }
+            },
+            {
+                title: "Conclusion",
+                text: "<p>We define the quantity in the parentheses as the <strong>Conductivity ($\sigma$)</strong>. This is the material's innate ability to carry current.</p><div class='math-block'>$$\\sigma = \\frac{ne^2\\tau}{m}$$</div><p>Use the sliders to see how density ($n$) and collision time ($\\tau$) scale the conductivity in real-time!</p>",
+                setup: () => {
+                    statsRow.style.opacity = '1';
+                    document.getElementById('dynamic-controls').innerHTML = `
+                        <div class="control-group">
+                            <label>Electron Density ($n$)</label>
+                            <input type="range" id="n-slider" class="slider" min="5" max="50" value="20" oninput="updateParams()">
+                        </div>
+                        <div class="control-group">
+                            <label>Mean Free Time ($\tau$)</label>
+                            <input type="range" id="tau-slider" class="slider" min="10" max="200" value="50" oninput="updateParams()">
+                        </div>
+                    `;
+                    document.getElementById('btn-next').innerText = "Next Lesson";
+                }
+            }
+        ];
+
+        function nextStep() {
+            if (currentStepNum < stepsData.length - 1) {
+                loadStep(currentStepNum + 1);
+            } else {
+                window.parent.location.href = '/lesson/chapter8/geometry_of_resistance';
+            }
+        }
+
+        function loadStep(idx) {
+            currentStepNum = idx;
+            const s = stepsData[idx];
+            document.getElementById('story-container').innerHTML = `<div class="chapter-title">${s.title}</div><div class="text-content">${s.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+            if (currentStepNum === stepsData.length - 1) {
+                btn.innerHTML = "Next Lesson";
+            } else {
+                btn.innerHTML = "Next";
+            }
+
+            if (window.renderMathInElement) {
+                renderMathInElement(document.getElementById('story-container'), {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false }
+                    ]
+                });
+            }
+            s.setup();
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        loadStep(0);
+        draw();
+    </script>
+</body>
+
+</html>

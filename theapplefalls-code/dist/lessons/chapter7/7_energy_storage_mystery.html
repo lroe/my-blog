@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Energy Storage Mystery</title>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* THE ORANGE */
+            --border: #333;
+            --glass: rgba(72, 219, 251, 0.15);
+            --pos-charge: #ff5e57;
+            --neg-charge: #48dbfb;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: #1a1a1a;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            font-weight: 300;
+        }
+
+        .text-content {
+            line-height: 1.7;
+            font-size: 15px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .concept-block {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .math-block {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        #controls {
+            background: #111;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        .disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #222 0%, #080808 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        /* --- Simulation Components --- */
+        #rod {
+            position: absolute;
+            width: 15px;
+            height: 300px;
+            background: linear-gradient(90deg, #aaa, #ddd, #aaa);
+            top: -400px;
+            left: 50%;
+            border-radius: 10px;
+            transition: top 1s ease;
+            z-index: 50;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            cursor: pointer;
+        }
+
+        .rod-charge {
+            font-weight: bold;
+            color: var(--pos-charge);
+            user-select: none;
+            font-size: 18px;
+        }
+
+        .assembly-container {
+            position: relative;
+            width: 200px;
+            height: 300px;
+            margin-top: 50px;
+        }
+
+        .layer {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Inner Conductor */
+        .inner-metal {
+            height: 220px;
+            width: 140px;
+            left: 30px;
+            background: linear-gradient(90deg, #555, #888, #555);
+            border: 1px solid #777;
+            border-radius: 0 0 15px 15px;
+            z-index: 3;
+            top: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .stem {
+            width: 8px;
+            height: 120px;
+            background: #888;
+            position: absolute;
+            top: -120px;
+        }
+
+        .ball {
+            width: 30px;
+            height: 30px;
+            background: #aaa;
+            border-radius: 50%;
+            position: absolute;
+            top: -145px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        /* The Dielectric (Glass) */
+        .dielectric {
+            height: 260px;
+            width: 160px;
+            left: 20px;
+            top: 20px;
+            background: var(--glass);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0 0 20px 20px;
+            z-index: 2;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            align-items: center;
+            justify-items: center;
+            backdrop-filter: blur(1px);
+        }
+
+        /* Outer Conductor */
+        .outer-metal {
+            height: 200px;
+            width: 180px;
+            left: 10px;
+            top: 80px;
+            background: linear-gradient(90deg, #444, #666, #444);
+            border: 1px solid #555;
+            border-radius: 0 0 25px 25px;
+            z-index: 1;
+        }
+
+        /* Microscopic Dipoles */
+        .dipole {
+            width: 18px;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--pos-charge) 50%, var(--neg-charge) 50%);
+            opacity: 0.5;
+            transition: transform 1s ease, opacity 0.5s;
+            transform: rotate(var(--r));
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Free Charges Overlay */
+        .free-charges {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .f-charge {
+            position: absolute;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.5s;
+        }
+
+        /* Disassembled State */
+        .disassembled .inner-metal {
+            transform: translate(240px, -50px);
+        }
+
+        .disassembled .dielectric {
+            transform: translate(0, -50px);
+        }
+
+        .disassembled .outer-metal {
+            transform: translate(-240px, -50px);
+        }
+
+        /* Spark Effect */
+        #spark {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            width: 4px;
+            height: 400px;
+            background: #fff;
+            transform: translateX(-50%) rotate(0deg);
+            box-shadow: 0 0 20px #fff, 0 0 40px var(--accent);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+            transition: opacity 0.1s;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 7: The Energy Storage Mystery</div>
+        </header>
+
+        <div id="story-container"></div>
+        <div id="controls">
+            <div id="dynamic-controls"></div>
+        </div>
+
+        <div id="nav">
+            <a href="6_dielectric_breakdown.html" class="nav-btn">Back</a>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <div id="rod"></div>
+        <div id="spark"></div>
+
+        <div class="assembly-container" id="jar">
+            <div class="layer outer-metal" id="outer">
+                <div class="free-charges" id="outer-charges"></div>
+            </div>
+            <div class="layer dielectric" id="glass"></div>
+            <div class="layer inner-metal" id="inner">
+                <div class="stem"></div>
+                <div class="ball"></div>
+                <div class="free-charges" id="inner-charges"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const state = {
+            step: 0
+        };
+        let actionTaken = false;
+        const glass = document.getElementById('glass');
+        const rod = document.getElementById('rod');
+        const innerCharges = document.getElementById('inner-charges');
+        const outerCharges = document.getElementById('outer-charges');
+        const jarContainer = document.getElementById('jar');
+        const storyContainer = document.getElementById('story-container');
+        const dynamicControls = document.getElementById('dynamic-controls');
+
+        function initDipoles() {
+            glass.innerHTML = '';
+            for (let i = 0; i < 40; i++) {
+                const d = document.createElement('div');
+                d.className = 'dipole';
+                d.style.setProperty('--r', `${Math.floor(Math.random() * 360)}deg`);
+                glass.appendChild(d);
+            }
+            rod.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                let s = document.createElement('div');
+                s.innerText = "+";
+                s.className = "rod-charge";
+                rod.appendChild(s);
+            }
+        }
+
+        const chapters = [
+            {
+                title: "1. Where is the Energy?",
+                content: `
+                    <p>We've seen that capacitors store energy ($U = \\frac{1}{2}CV^2$). But where, physically, is that energy located?</p>
+                    <div class="concept-block">
+                        Common sense says it's on the metal plates, where the charges are. But we are about to conduct a strange experiment to test this.
+                    </div>
+                    <p>Behold a simple three-piece capacitor: an inner metal cup, a glass insulator, and an outer metal cup.</p>
+                `,
+                action: () => {
+                    rod.style.top = "-400px";
+                    jarContainer.classList.remove('disassembled');
+                    document.querySelectorAll('.dipole').forEach(d => {
+                        d.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+                        d.style.opacity = "0.5";
+                    });
+                },
+                buttons: `<button class="nav-btn next-btn" onclick="performAction()">Show Components</button>`
+            },
+            {
+                title: "2. Polarization",
+                content: `
+                    <p>We bring a high-voltage rod to charge the inner cup. Charges flow in, creating a massive potential difference.</p>
+                    <div class="concept-block">
+                        The field polarizes the dielectric. Dipoles align, effectively binding the charges to the surface.
+                    </div>
+                `,
+                action: () => animateCharging(),
+                buttons: `<button class="nav-btn next-btn" onclick="performAction()">Charge Capacitor</button>`
+            },
+            {
+                title: "3. Separation",
+                content: `
+                    <p>We carefully lift the cups out. If the energy is on the metal, the cups should now be dangerous to touch.</p>
+                    <div class="concept-block">
+                        Notice the glass: its dipoles remain aligned. The surface charges are "locked" in place by the insulator's resistance.
+                    </div>
+                `,
+                action: () => animateDisassembly(),
+                buttons: `<button class="nav-btn next-btn" onclick="performAction()">Disassemble</button>`
+            },
+            {
+                title: "4. The Empty Metal",
+                content: `
+                    <p>Let's touch both metal cups to the ground. Any free charge they held flows away. They are now completely neutral.</p>
+                    <div class="math-block">$$Q_{metal} \\approx 0$$</div>
+                    <p>The metal parts hold NO energy. Surely the capacitor is dead now?</p>
+                `,
+                action: () => animateGrounding(),
+                buttons: `<button class="nav-btn next-btn" onclick="performAction()">Ground Metal Parts</button>`
+            },
+            {
+                title: "5. The Secret Revealed",
+                content: `
+                    <p>We put the neutral cups back onto the glass. Suddenly, the system is charged again!</p>
+                    <div class="concept-block">
+                        This IS the famous <strong>Leyden Jar Experiment</strong>. It proves the energy isn't in the metal—it's stored in the <strong>Polarized Dielectric</strong>.
+                    </div>
+                `,
+                action: () => animateReassembly(),
+                buttons: `<button class="nav-btn next-btn" onclick="performAction()">Reassemble</button>`
+            },
+            {
+                title: "Conclusion",
+                content: `
+                    <p>When we short the cups, a massive spark jumps between them. All that molecular tension in the glass is released at once.</p>
+                    <div class="concept-block">
+                        Benjamin Franklin and other early pioneers were baffled by this. Today, we know it as the first principle of dielectric energy storage.
+                    </div>
+                `,
+                action: () => {
+                    animateSpark();
+                    document.getElementById('btn-next').innerText = "Next Chapter";
+                    document.getElementById('btn-next').classList.remove('disabled');
+                },
+                buttons: `<button class="nav-btn" onclick="performAction()">Create Spark</button>`
+            }
+        ];
+
+        function renderChapter(index) {
+            state.step = index;
+            actionTaken = false;
+            document.getElementById('btn-next').classList.add('disabled');
+
+            const c = chapters[index];
+            storyContainer.innerHTML = `<div class="chapter-title">${c.title}</div><div class="text-content">${c.content}</div>`;
+            dynamicControls.innerHTML = c.buttons;
+
+            if (window.renderMathInElement) {
+                renderMathInElement(storyContainer, {
+                    delimiters: [{
+                        left: "$$",
+                        right: "$$",
+                        display: true
+                    }, {
+                        left: "$",
+                        right: "$",
+                        display: false
+                    }]
+                });
+            }
+            // Reset simulation states if needed
+            if (index === 0) c.action();
+        }
+
+        function performAction() {
+            if (actionTaken) return;
+            actionTaken = true;
+            document.getElementById('btn-next').classList.remove('disabled');
+            chapters[state.step].action();
+            // Disable the action button itself to focus on 'Next'
+            dynamicControls.querySelector('button').classList.add('disabled');
+        }
+
+        function nextChapter(i) {
+            renderChapter(i);
+        }
+
+        function animateCharging() {
+            rod.style.top = "20px";
+            setTimeout(() => {
+                innerCharges.innerHTML = '';
+                outerCharges.innerHTML = '';
+                for (let i = 0; i < 15; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'f-charge';
+                    p.innerText = "+";
+                    p.style.color = "var(--pos-charge)";
+                    p.style.left = (Math.random() * 80 + 10) + "%";
+                    p.style.top = (Math.random() * 80 + 10) + "%";
+                    innerCharges.appendChild(p);
+                    const n = document.createElement('div');
+                    n.className = 'f-charge';
+                    n.innerText = "-";
+                    n.style.color = "var(--neg-charge)";
+                    n.style.left = (Math.random() * 80 + 10) + "%";
+                    n.style.top = (Math.random() * 80 + 10) + "%";
+                    outerCharges.appendChild(n);
+                }
+                document.querySelectorAll('.dipole').forEach(d => {
+                    d.style.transform = "rotate(180deg)";
+                    d.style.opacity = "1";
+                });
+                setTimeout(() => {
+                    rod.style.top = "-400px";
+                }, 1000);
+            }, 1000);
+        }
+
+        function animateDisassembly() {
+            jarContainer.classList.add('disassembled');
+        }
+
+        function animateGrounding() {
+            innerCharges.style.opacity = '0';
+            outerCharges.style.opacity = '0';
+            setTimeout(() => {
+                innerCharges.innerHTML = '';
+                outerCharges.innerHTML = '';
+                innerCharges.style.opacity = '1';
+                outerCharges.style.opacity = '1';
+            }, 500);
+        }
+
+        function animateReassembly() {
+            jarContainer.classList.remove('disassembled');
+            setTimeout(() => {
+                innerCharges.innerHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'f-charge';
+                    p.innerText = "+";
+                    p.style.color = "var(--pos-charge)";
+                    p.style.left = (Math.random() * 80 + 10) + "%";
+                    p.style.top = (Math.random() * 80 + 10) + "%";
+                    innerCharges.appendChild(p);
+                    const n = document.createElement('div');
+                    n.className = 'f-charge';
+                    n.innerText = "-";
+                    n.style.color = "var(--neg-charge)";
+                    n.style.left = (Math.random() * 80 + 10) + "%";
+                    n.style.top = (Math.random() * 80 + 10) + "%";
+                    outerCharges.appendChild(n);
+                }
+            }, 1000);
+        }
+
+        function animateSpark() {
+            const spark = document.getElementById('spark');
+            spark.style.opacity = "1";
+            setTimeout(() => {
+                spark.style.opacity = "0";
+                innerCharges.innerHTML = '';
+                outerCharges.innerHTML = '';
+                document.querySelectorAll('.dipole').forEach(d => {
+                    d.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+                    d.style.opacity = "0.5";
+                });
+            }, 300);
+        }
+
+        function loadStep(idx) {
+            state.step = idx;
+            const s = chapters[idx];
+            const btnNext = document.getElementById('btn-next');
+
+            if (state.step === chapters.length - 1) {
+                btnNext.innerText = "Next Chapter";
+                btnNext.classList.remove('disabled');
+            } else {
+                btnNext.innerText = "Next";
+                btnNext.classList.add('disabled');
+            }
+
+            nextChapter(idx);
+        }
+
+        function nextStep() {
+            if (state.step < chapters.length - 1) {
+                loadStep(state.step + 1);
+            } else {
+                window.parent.location.href = '/lesson/chapter8/current_convention';
+            }
+        }
+
+        window.addEventListener('load', () => {
+            initDipoles();
+            renderChapter(0);
+        });
+    </script>
+</body>
+
+</html>
