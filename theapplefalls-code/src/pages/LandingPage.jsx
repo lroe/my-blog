@@ -264,10 +264,6 @@ const LandingPage = () => {
                         </p>
                         <p className="contact">
                             Feel free to reach out: <a href="mailto:bettercalljeevan@gmail.com">bettercalljeevan@gmail.com</a>
-                            <br />
-                            <a href="https://github.com/bettercalljeevan/theapplefalls" target="_blank" rel="noopener noreferrer" className="github-link">
-                                View project on GitHub
-                            </a>
                         </p>
                     </div>
                 </div>
