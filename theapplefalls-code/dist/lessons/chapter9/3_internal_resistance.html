@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Internal Resistance - The Apple Falls</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #151515;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --accent-dim: rgba(255, 159, 67, 0.2);
+            --border: #333;
+            --success: #27ae60;
+            --danger: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+        }
+
+        #narrative-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        p {
+            line-height: 1.8;
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+
+        strong {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .formula {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* NAVIGATION */
+        .nav-footer {
+            padding: 30px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background: #222;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+            flex: 1;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            background: #333;
+            border-color: #555;
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* MAIN SIMULATION AREA */
+        main {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: #050505;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* UI OVERLAYS */
+        #meter-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--border);
+            padding: 20px;
+            border-radius: 12px;
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .meter {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meter-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .meter-value {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        #controls {
+            padding: 30px;
+            background: var(--panel);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .highlight-box {
+            border: 1px dashed var(--accent);
+            padding: 10px;
+            border-radius: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                border-color: rgba(255, 159, 67, 0.2);
+            }
+
+            50% {
+                border-color: rgba(255, 159, 67, 1);
+            }
+
+            100% {
+                border-color: rgba(255, 159, 67, 0.2);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Chapter 9: Internal Resistance</h1>
+        </header>
+
+        <div id="narrative-container">
+            <!-- Slide 0 -->
+            <div class="slide active" id="slide-0">
+                <h2>The "Missing" Energy</h2>
+                <p>Until now, we've treated batteries as <strong>ideal</strong>. We assumed if a battery says 12V, it
+                    gives 12V no matter what.</p>
+                <p>But real life is messy. If you measure a battery when it's powering something heavy, you'll find the
+                    voltage is actually <strong>lower</strong> than advertised.</p>
+            </div>
+
+            <!-- Slide 1 -->
+            <div class="slide" id="slide-1">
+                <h2>Internal Resistance</h2>
+                <p>A battery is made of real materials—chemicals and metals—that have their own resistance.</p>
+                <p>We model this by putting a tiny resistor \(r_i\) <strong>inside</strong> the battery. We call the
+                    "pure" voltage the **EMF** (\(\mathcal{E}\)).</p>
+                <div class="formula">
+                    \(\mathcal{E} = 12V \text{ (Ideal Pump)}\)
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="slide" id="slide-2">
+                <h2>The Terminal Voltage</h2>
+                <p>When current flows, some energy is lost heating up the battery itself as it overcomes \(r_i\).</p>
+                <p>The voltage you actually measure at the terminals (\(V\)) is the EMF minus the "lost" voltage:</p>
+                <div class="formula">
+                    \(V = \mathcal{E} - I \cdot r_i\)
+                </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="slide" id="slide-3">
+                <h2>The "Voltage Sag"</h2>
+                <p>Watch the voltmeter on the right. As you decrease the <strong>Load Resistance</strong>, the current
+                    increases.</p>
+                <p>The more current you draw, the more voltage is "stolen" by the internal resistor, causing the
+                    terminal voltage to <strong>sag</strong>.</p>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="slide" id="slide-4">
+                <h2>Conclusion</h2>
+                <p>What happens if you bridge the terminals with a wire (\(R_{load} \approx 0\))?</p>
+                <p>The current becomes massive: \(I = \mathcal{E} / r_i\). All that energy is dumped directly into the
+                    battery, turning into **intense heat**.</p>
+                <p>This internal friction is why batteries get hot—and can even leak or catch fire if the "sag" is too
+                    deep!</p>
+            </div>
+        </div>
+
+        <div class="nav-footer">
+            <button id="prevBtn" onclick="changeSlide(-1)" disabled>Back</button>
+            <button id="nextBtn" onclick="changeSlide(1)" class="primary">Next</button>
+        </div>
+    </aside>
+
+    <main>
+        <div id="canvas-container">
+            <canvas id="simCanvas"></canvas>
+
+            <div id="meter-panel">
+                <div class="meter">
+                    <span class="meter-label">Terminal Voltage (V)</span>
+                    <span id="volt-val" class="meter-value">12.00V</span>
+                </div>
+                <div class="meter">
+                    <span class="meter-label">Total Current (I)</span>
+                    <span id="amp-val" class="meter-value">0.00A</span>
+                </div>
+                <div class="meter" id="heat-meter">
+                    <span class="meter-label">Internal Warming</span>
+                    <div
+                        style="height: 10px; background: #222; border-radius: 5px; margin-top: 10px; overflow: hidden;">
+                        <div id="heat-bar"
+                            style="width: 0%; height: 100%; background: var(--success); transition: width 0.3s, background 0.3s;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div class="control-group">
+                <div class="label-row">
+                    <span>Load Resistance (R)</span>
+                    <span id="r-label">50.0 Ω</span>
+                </div>
+                <input type="range" id="r-slider" min="0.1" max="100" value="50" step="0.1">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <span>Internal Resistance (r_i)</span>
+                    <span id="ri-label">2.0 Ω</span>
+                </div>
+                <input type="range" id="ri-slider" min="0.1" max="10" value="2" step="0.1">
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        function resize() {
+            width = canvas.width = canvas.parentElement.offsetWidth;
+            height = canvas.height = canvas.parentElement.offsetHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const state = {
+            emf: 12.0,
+            ri: 2.0,
+            rload: 50.0,
+            current: 0,
+            vterm: 12.0,
+            power: 0,
+            particles: []
+        };
+
+        const rSlider = document.getElementById('r-slider');
+        const riSlider = document.getElementById('ri-slider');
+        const rLabel = document.getElementById('r-label');
+        const riLabel = document.getElementById('ri-label');
+
+        const voltVal = document.getElementById('volt-val');
+        const ampVal = document.getElementById('amp-val');
+        const heatBar = document.getElementById('heat-bar');
+
+        function updatePhysics() {
+            state.rload = parseFloat(rSlider.value);
+            state.ri = parseFloat(riSlider.value);
+
+            rLabel.innerText = `${state.rload.toFixed(1)} Ω`;
+            riLabel.innerText = `${state.ri.toFixed(1)} Ω`;
+
+            // I = E / (R + r)
+            state.current = state.emf / (state.rload + state.ri);
+            // V = E - I*r
+            state.vterm = state.emf - (state.current * state.ri);
+
+            // Qualitative heat: proportional to I^2 * ri (but we don't show the math)
+            const heatIndex = (state.current * state.current * state.ri) / 100; // Normalized for 12V system
+            const heatPercent = Math.min(100, heatIndex * 100);
+
+            voltVal.innerText = `${state.vterm.toFixed(2)}V`;
+            ampVal.innerText = `${state.current.toFixed(2)}A`;
+
+            heatBar.style.width = `${heatPercent}%`;
+            if (heatPercent > 70) heatBar.style.background = 'var(--danger)';
+            else if (heatPercent > 30) heatBar.style.background = 'var(--accent)';
+            else heatBar.style.background = 'var(--success)';
+
+            // Visual feedback on meters
+            if (state.vterm < 6) voltVal.style.color = 'var(--danger)';
+            else voltVal.style.color = 'var(--accent)';
+        }
+
+        rSlider.addEventListener('input', updatePhysics);
+        riSlider.addEventListener('input', updatePhysics);
+
+        // Simulation Loop
+        function drawArrow(x1, y1, x2, y2, color) {
+            const headlen = 10;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+
+        function drawCircuit() {
+            ctx.clearRect(0, 0, width, height);
+
+            const margin = 100;
+            const cWidth = width - margin * 2;
+            const cHeight = height - margin * 2;
+
+            const x = margin;
+            const y = margin;
+
+            // DRAW WIRES
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x, y, cWidth, cHeight);
+
+            // DRAW BATTERY (LEFT)
+            const bX = x;
+            const bY = y + cHeight / 2;
+            const bSize = 60;
+
+            // Battery Box (EMF + Ri)
+            ctx.fillStyle = '#111';
+            ctx.fillRect(bX - 40, bY - 80, 80, 160);
+            ctx.strokeStyle = state.current > 1.5 ? 'rgba(231, 76, 60, 0.4)' : '#444';
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(bX - 40, bY - 80, 80, 160);
+            ctx.setLineDash([]);
+
+            // EMF Symbol
+            ctx.strokeStyle = '#fff';
+            ctx.beginPath();
+            ctx.moveTo(bX - 25, bY - 10); ctx.lineTo(bX + 25, bY - 10);
+            ctx.moveTo(bX - 15, bY - 20); ctx.lineTo(bX + 15, bY - 20);
+            ctx.stroke();
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px Courier New';
+            ctx.fillText('E = 12V', bX - 20, bY - 35);
+
+            // Internal Resistor symbol
+            const rY = bY + 30;
+            ctx.beginPath();
+            ctx.moveTo(bX, rY - 20);
+            for (let i = 0; i < 5; i++) {
+                ctx.lineTo(bX - 10 + (i % 2) * 20, rY - 15 + i * 10);
+            }
+            ctx.lineTo(bX, rY + 35);
+            ctx.strokeStyle = 'var(--accent)';
+            ctx.stroke();
+            ctx.fillText(`r_i=${state.ri}Ω`, bX + 15, rY + 15);
+
+            // DRAW LOAD RESISTOR (RIGHT)
+            const lX = x + cWidth;
+            const lY = y + cHeight / 2;
+            ctx.beginPath();
+            ctx.moveTo(lX, lY - 40);
+            for (let i = 0; i < 7; i++) {
+                ctx.lineTo(lX - 15 + (i % 2) * 30, lY - 30 + i * 10);
+            }
+            ctx.lineTo(lX, lY + 40);
+            ctx.strokeStyle = '#fff';
+            ctx.stroke();
+            ctx.fillText(`R=${state.rload}Ω`, lX + 20, lY);
+
+            // ELECTRON FLOW
+            if (state.current > 0) {
+                const speed = state.current * 0.2;
+                const time = Date.now() * 0.001 * speed;
+
+                ctx.fillStyle = 'var(--accent)';
+                const dotCount = 20;
+                for (let i = 0; i < dotCount; i++) {
+                    let progress = (i / dotCount + time) % 1;
+                    let dotX, dotY;
+
+                    // CCW Flow logic
+                    if (progress < 0.25) { // Top
+                        dotX = x + cWidth * (1 - progress / 0.25);
+                        dotY = y;
+                    } else if (progress < 0.5) { // Left (Battery)
+                        dotX = x;
+                        dotY = y + cHeight * (progress - 0.25) / 0.25;
+                    } else if (progress < 0.75) { // Bottom
+                        dotX = x + cWidth * (progress - 0.5) / 0.25;
+                        dotY = y + cHeight;
+                    } else { // Right (Load)
+                        dotX = x + cWidth;
+                        dotY = y + cHeight * (1 - (progress - 0.75) / 0.25);
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(dotX, dotY, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            requestAnimationFrame(drawCircuit);
+        }
+
+        updatePhysics();
+        drawCircuit();
+
+        // NARRATIVE LOGIC
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+
+        function changeSlide(dir) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += dir;
+            slides[currentSlide].classList.add('active');
+
+            prevBtn.disabled = currentSlide === 0;
+            if (currentSlide === slides.length - 1) {
+                nextBtn.innerText = "Finish \u2192";
+                nextBtn.onclick = () => window.parent.location.href = '/lesson/chapter9/maximum_power';
+            } else {
+                nextBtn.innerText = "Next";
+                nextBtn.onclick = () => changeSlide(1);
+            }
+
+            // Visual hints for slides
+            const rGroup = rSlider.parentElement;
+            const riGroup = riSlider.parentElement;
+
+            rGroup.classList.remove('highlight-box');
+            riGroup.classList.remove('highlight-box');
+
+            if (currentSlide === 3) rGroup.classList.add('highlight-box');
+            if (currentSlide === 1) riGroup.classList.add('highlight-box');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Galvani: The Living Spark</title>
+    <!-- Load Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* Orange */
+            --accent-hover: #e58e3c;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        /* HEADER */
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* STORY CONTENT */
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .instruction-inline {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #181818;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 15px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            filter: grayscale(1);
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        button:disabled {
+            background: #222;
+            color: #444;
+            cursor: default;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+            color: #000;
+        }
+
+        .nav-btn.next:disabled {
+            background: #333;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: #151515;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Galvani's Lab</h1>
+            <div class="subtitle">Module: The Bio-Electric Spark</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <!-- Tool Selectors -->
+            <div class="control-row" id="ctrl-tools">
+                <label>1. Select Material</label>
+                <div style="display:flex; gap:10px;">
+                    <button id="btn-copper" style="border-color: var(--accent); color:white;">Brass Probe</button>
+                    <button id="btn-zinc" onclick="uiInfo()">Zinc Hook</button>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="control-row" id="ctrl-action">
+                <label>2. Experiment</label>
+                <button id="btn-action" onclick="uiAction()">Apply Probe</button>
+            </div>
+
+            <!-- Reset -->
+            <div class="control-row" id="ctrl-reset"
+                style="margin-top:10px; border-top:1px solid #333; padding-top:10px;">
+                <label>System</label>
+                <button onclick="resetScene()">Reset Lab</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <!-- Canvas renders here -->
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: THE 3D ENGINE (GALVANI LAB)
+        // ==========================================
+
+        const state = {
+            animState: 'IDLE', // IDLE, MOVE_IN, SHOCK, MOVE_OUT
+            timer: 0,
+            twitchIntensity: 0,
+            hasShocked: false
+        };
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x151515);
+
+        // Adjust camera for sidebar width
+        const sidebarWidth = 420;
+        const d = 10;
+        const aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+
+        // Isometric View - Optimized to see the contact point
+        camera.position.set(22, 22, 22);
+        camera.lookAt(0, 2, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // --- MATERIALS ---
+        const mats = {
+            skin: new THREE.MeshStandardMaterial({ color: 0xffccaa }),
+            coat: new THREE.MeshStandardMaterial({ color: 0x34495e }),
+            pants: new THREE.MeshStandardMaterial({ color: 0x5e3449 }),
+            wig: new THREE.MeshStandardMaterial({ color: 0xecf0f1 }),
+            wood: new THREE.MeshStandardMaterial({ color: 0x8B4513 }),
+            woodHandle: new THREE.MeshStandardMaterial({ color: 0x5D4037, roughness: 0.8 }),
+            metal: new THREE.MeshStandardMaterial({ color: 0xb5a642, metalness: 0.9, roughness: 0.2 }), // Brass
+            tip: new THREE.MeshStandardMaterial({ color: 0xc0c0c0, metalness: 1.0, roughness: 0.1 }), // Silver tip
+            frogGreen: new THREE.MeshStandardMaterial({ color: 0x558b2f }),
+            frogMeat: new THREE.MeshStandardMaterial({ color: 0xcc8899 }),
+            floor: new THREE.MeshStandardMaterial({ color: 0x222222 }),
+            brass: new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.7, roughness: 0.3 })
+        };
+
+        // --- HELPER: VOXEL BUILDER ---
+        function createBox(material, w, h, d, x, y, z, parent) {
+            const geo = new THREE.BoxGeometry(w, h, d);
+            const mesh = new THREE.Mesh(geo, material);
+            mesh.position.set(x, y, z);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            if (parent) parent.add(mesh);
+            else scene.add(mesh);
+            return mesh;
+        }
+
+        // --- SCENE OBJECTS ---
+
+        // 1. Floor
+        createBox(mats.floor, 100, 1, 100, 0, -0.5, 0);
+
+        // 2. Table
+        const tableGroup = new THREE.Group();
+        createBox(mats.wood, 8, 0.4, 5, 0, 3, 0, tableGroup); // Tabletop
+        // Legs
+        const legH = 3; const legY = 1.5;
+        createBox(mats.brass, 0.3, legH, 0.3, -3.6, legY, -2.1, tableGroup);
+        createBox(mats.brass, 0.3, legH, 0.3, 3.6, legY, -2.1, tableGroup);
+        createBox(mats.brass, 0.3, legH, 0.3, -3.6, legY, 2.1, tableGroup);
+        createBox(mats.brass, 0.3, legH, 0.3, 3.6, legY, 2.1, tableGroup);
+        scene.add(tableGroup);
+
+        // 3. Luigi Galvani
+        const luigiGroup = new THREE.Group();
+        luigiGroup.position.set(-0.5, 0.5, -5.9);
+        luigiGroup.rotation.y = 0.56;
+        scene.add(luigiGroup);
+
+        // Legs
+        createBox(mats.pants, 1, 3, 1.1, -0.7, 1.8, 0, luigiGroup);
+        createBox(mats.pants, 1, 3, 1.1, 0.7, 1.8, 0, luigiGroup);
+        // Body
+        createBox(mats.coat, 2.8, 3.2, 1.6, 0, 4.8, 0, luigiGroup);
+        // Head
+        const headGroup = new THREE.Group();
+        headGroup.position.set(0, 6.4, 0);
+        luigiGroup.add(headGroup);
+        createBox(mats.skin, 1.6, 1.8, 1.6, 0, 0.9, 0, headGroup);
+        // Wig
+        createBox(mats.wig, 2.0, 1.0, 2.0, 0, 1.8, -0.1, headGroup);
+        createBox(mats.wig, 0.6, 1.5, 2.0, -0.9, 0.8, 0.1, headGroup);
+        createBox(mats.wig, 0.6, 1.5, 2.0, 0.9, 0.8, 0.1, headGroup);
+
+        // --- ARMS ---
+
+        // RIGHT ARM (Active Pivot)
+        const armPivot = new THREE.Group();
+        // Moved from -1.6 to -1.75 to give clearance from body
+        armPivot.position.set(-1.75, 6.0, 0);
+        luigiGroup.add(armPivot);
+
+        const armMesh = new THREE.Group();
+        armMesh.position.set(0, -1.2, 0);
+        armPivot.add(armMesh);
+        createBox(mats.coat, 0.9, 2.8, 0.9, 0, 0, 0, armMesh); // Sleeve
+        createBox(mats.skin, 0.8, 0.8, 0.8, 0, -1.8, 0, armMesh); // Hand
+
+        // LEFT ARM (Passive/Static)
+        const leftArmPivot = new THREE.Group();
+        // Symmetric position
+        leftArmPivot.position.set(1.75, 6.0, 0);
+        luigiGroup.add(leftArmPivot);
+
+        const leftArmMesh = new THREE.Group();
+        leftArmMesh.position.set(0, -1.2, 0);
+        leftArmPivot.add(leftArmMesh);
+        createBox(mats.coat, 0.9, 2.8, 0.9, 0, 0, 0, leftArmMesh); // Sleeve
+        createBox(mats.skin, 0.8, 0.8, 0.8, 0, -1.8, 0, leftArmMesh); // Hand
+
+        // --- PROBE (Scientific Instrument) ---
+        // Attached to the Right Hand
+        const probeGroup = new THREE.Group();
+        probeGroup.position.set(0, -2.0, 0);
+        // Initial rotation in hand (holding it like a pen/tool)
+        probeGroup.rotation.x = -0.5;
+        armMesh.add(probeGroup);
+
+        // 1. Handle (Cylinder)
+        const handleGeo = new THREE.CylinderGeometry(0.15, 0.15, 1.5, 16);
+        const handleMesh = new THREE.Mesh(handleGeo, mats.woodHandle);
+        handleMesh.position.y = 0.5;
+        handleMesh.castShadow = true;
+        probeGroup.add(handleMesh);
+
+        // 2. Metal Rod (Thin Cylinder)
+        const rodGeo = new THREE.CylinderGeometry(0.04, 0.04, 2.5, 8);
+        const rodMesh = new THREE.Mesh(rodGeo, mats.metal);
+        rodMesh.position.y = -1.5; // Extending down from handle
+        rodMesh.castShadow = true;
+        probeGroup.add(rodMesh);
+
+        // 3. The Tip (Sphere - The contact point)
+        const tipGeo = new THREE.SphereGeometry(0.12, 16, 16);
+        const tipMesh = new THREE.Mesh(tipGeo, mats.tip);
+        tipMesh.position.y = -2.75; // End of rod
+        probeGroup.add(tipMesh);
+
+
+        // --- 4. THE FROG ---
+        const frogGroup = new THREE.Group();
+        // Positioned specifically for the animation to hit
+        frogGroup.position.set(0, 3.4, -1.5);
+        frogGroup.rotation.y = -1.84;
+        scene.add(frogGroup);
+
+        // The "Spine/Hip" (The connection point)
+        const spine = createBox(mats.frogMeat, 1.0, 0.3, 0.6, 0, 0, 0, frogGroup);
+
+        // Left Leg
+        const legL = new THREE.Group();
+        legL.position.set(-0.6, -0.1, 0.2);
+        frogGroup.add(legL);
+        // Thigh
+        createBox(mats.frogGreen, 0.5, 0.3, 1.4, -0.1, 0, 0.6, legL).rotation.y = -0.3;
+        // Calf
+        createBox(mats.frogGreen, 0.3, 0.2, 1.0, -0.2, -0.1, 1.7, legL).rotation.y = -0.5;
+
+        // Right Leg
+        const legR = new THREE.Group();
+        legR.position.set(0.6, -0.1, 0.2);
+        frogGroup.add(legR);
+        // Thigh
+        createBox(mats.frogGreen, 0.5, 0.3, 1.4, 0.1, 0, 0.6, legR).rotation.y = 0.3;
+        // Calf
+        createBox(mats.frogGreen, 0.3, 0.2, 1.0, 0.2, -0.1, 1.7, legR).rotation.y = 0.5;
+
+        // 5. Spark Effect
+        const sparkGeo = new THREE.SphereGeometry(0.2, 8, 8);
+        const sparkMat = new THREE.MeshBasicMaterial({ color: 0xffee00, wireframe: true });
+        const spark = new THREE.Mesh(sparkGeo, sparkMat);
+        spark.position.set(0, 3.6, -1.5); // Positioned exactly at contact point in world space
+        spark.visible = false;
+        scene.add(spark);
+        const sparkLight = new THREE.PointLight(0xffff00, 0, 4);
+        sparkLight.position.set(0, 4, -1.5);
+        scene.add(sparkLight);
+
+        // --- ANIMATION CONFIG ---
+
+        // Pose 1: Idle (Hanging naturally at sides)
+        const poseIdle = {
+            shoulderX: 0,
+            shoulderY: -0.2,
+            // Negative Z on Right arm rotates it OUTWARD (away from body)
+            shoulderZ: -0.15,
+            wristX: -0.5
+        };
+
+        // Pose 2: Touch (Precision Targeting)
+        // Calculated to land the probe tip exactly on (0, 3.4, -1.5)
+        const poseTouch = {
+            shoulderX: -0.65, // Swing forward
+            shoulderY: -0.85, // Rotate body slightly
+            shoulderZ: -0.30, // Swing inward
+            wristX: -0.2      // Tilt probe to point down at table
+        };
+
+        // Apply Initial Pose
+        armPivot.rotation.set(poseIdle.shoulderX, poseIdle.shoulderY, poseIdle.shoulderZ);
+        probeGroup.rotation.x = poseIdle.wristX;
+
+        // Set Left Arm Initial Pose (Static angled out slightly)
+        leftArmPivot.rotation.z = 0.15;
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            // 1. Luigi Idle Breathing
+            if (state.animState === 'IDLE') {
+                luigiGroup.position.y = 0.5 + Math.sin(time * 0.5) * 0.01;
+
+                // Right Arm Breathing
+                armPivot.rotation.z = poseIdle.shoulderZ + Math.sin(time) * 0.02;
+
+                // Left Arm Breathing (Inverse slight movement)
+                leftArmPivot.rotation.z = 0.15 - Math.sin(time) * 0.02;
+                leftArmPivot.rotation.x = Math.cos(time * 0.5) * 0.02;
+
+                // Reset positions slowly
+                armPivot.rotation.x = THREE.MathUtils.lerp(armPivot.rotation.x, poseIdle.shoulderX, 5 * delta);
+                armPivot.rotation.y = THREE.MathUtils.lerp(armPivot.rotation.y, poseIdle.shoulderY, 5 * delta);
+                probeGroup.rotation.x = THREE.MathUtils.lerp(probeGroup.rotation.x, poseIdle.wristX, 5 * delta);
+            }
+            else {
+                // Ensure left arm keeps breathing even during action
+                leftArmPivot.rotation.z = 0.15 - Math.sin(time) * 0.02;
+            }
+
+            // 2. Action Sequence: Move In
+            if (state.animState === 'MOVE_IN') {
+                // Smooth interpolation to target
+                armPivot.rotation.x = THREE.MathUtils.lerp(armPivot.rotation.x, poseTouch.shoulderX, 4 * delta);
+                armPivot.rotation.y = THREE.MathUtils.lerp(armPivot.rotation.y, poseTouch.shoulderY, 4 * delta);
+                armPivot.rotation.z = THREE.MathUtils.lerp(armPivot.rotation.z, poseTouch.shoulderZ, 4 * delta);
+
+                // Animate Wrist for natural movement
+                probeGroup.rotation.x = THREE.MathUtils.lerp(probeGroup.rotation.x, poseTouch.wristX, 4 * delta);
+
+                // Check distance to target rotation to trigger shock
+                if (Math.abs(armPivot.rotation.x - poseTouch.shoulderX) < 0.02) {
+                    state.animState = 'SHOCK';
+                    state.timer = 0;
+                    state.hasShocked = true;
+                    checkAdvance();
+                }
+            }
+            // 3. Shock Reaction
+            else if (state.animState === 'SHOCK') {
+                state.timer += delta;
+
+                // Spark Visuals
+                spark.visible = true;
+                spark.rotation.y += 10 * delta;
+                spark.scale.setScalar(1 + Math.sin(time * 30) * 0.5);
+                sparkLight.intensity = 2 + Math.random() * 2;
+
+                // Frog Twitching
+                const twitch = Math.sin(time * 60) * 0.6;
+
+                legL.rotation.x = -twitch * 0.5; // Kick up
+                legL.rotation.z = twitch;       // Kick out
+
+                legR.rotation.x = -twitch * 0.5;
+                legR.rotation.z = -twitch;
+
+                // Shake the spine slightly
+                frogGroup.position.y = 3.4 + Math.random() * 0.05;
+
+                // End Shock
+                if (state.timer > 1.5) {
+                    state.animState = 'MOVE_OUT';
+                    spark.visible = false;
+                    sparkLight.intensity = 0;
+
+                    // Reset Frog Physics
+                    legL.rotation.set(0, 0, 0);
+                    legR.rotation.set(0, 0, 0);
+                    legL.children[0].rotation.y = -0.3;
+                    legL.children[1].rotation.y = -0.5;
+                    legR.children[0].rotation.y = 0.3;
+                    legR.children[1].rotation.y = 0.5;
+                    frogGroup.position.y = 3.4;
+                }
+            }
+            // 4. Return to Idle
+            else if (state.animState === 'MOVE_OUT') {
+                armPivot.rotation.x = THREE.MathUtils.lerp(armPivot.rotation.x, poseIdle.shoulderX, 3 * delta);
+                armPivot.rotation.y = THREE.MathUtils.lerp(armPivot.rotation.y, poseIdle.shoulderY, 3 * delta);
+                armPivot.rotation.z = THREE.MathUtils.lerp(armPivot.rotation.z, poseIdle.shoulderZ, 3 * delta);
+                probeGroup.rotation.x = THREE.MathUtils.lerp(probeGroup.rotation.x, poseIdle.wristX, 3 * delta);
+
+                if (Math.abs(armPivot.rotation.x - poseIdle.shoulderX) < 0.05) {
+                    state.animState = 'IDLE';
+                    document.getElementById('btn-action').disabled = false;
+                    document.getElementById('btn-action').innerText = "Apply Probe Again";
+                    checkAdvance();
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+
+        // ==========================================
+        // PART 2: THE STORY ENGINE (UI)
+        // ==========================================
+
+        window.uiInfo = () => {
+            alert("For this demonstration, the standard Brass probe is sufficient.");
+        };
+
+        window.uiAction = () => {
+            if (state.animState === 'IDLE') {
+                state.animState = 'MOVE_IN';
+                document.getElementById('btn-action').disabled = true;
+                document.getElementById('btn-action').innerText = "Observing...";
+                checkAdvance();
+            }
+        };
+
+        window.resetScene = () => {
+            state.animState = 'IDLE';
+            state.hasShocked = false;
+            loadLesson(0);
+        }
+
+        // --- STORY CHAPTERS ---
+        let currentChapter = 0;
+
+        const lessons = [
+            {
+                title: "Prologue: The Laboratory",
+                text: "1780. Bologna, Italy.<br><br>Luigi Galvani stands before his workbench. He has prepared a specimen: <strong>severed frog legs</strong> with the crural nerves exposed at the spine.<br><br>He wonders: Is electricity a fluid in the air, or does it exist <em>within</em> living things?",
+                setup: () => {
+                    lockAll();
+                    state.hasShocked = false;
+                    document.getElementById('btn-action').innerText = "Prepare Probe";
+                },
+                check: () => true
+            },
+            {
+                title: "Step 1: The Connection",
+                text: "The legs are severed from the body. The goal is to bridge the gap between the exposed nerve (spine) and the muscle.<br><br>Galvani holds a <strong>Brass Conducting Probe</strong>.<br><br><span class='instruction-inline'>Click 'APPLY PROBE'</span> to complete the circuit.",
+                setup: () => {
+                    unlock('ctrl-action');
+                    document.getElementById('btn-action').innerText = "Apply Probe";
+                },
+                check: () => state.animState !== 'IDLE' || state.hasShocked
+            },
+            {
+                title: "Step 2: Animal Electricity",
+                text: "Watch closely.<br><br>As the metal tip touches the spinal nerve, the circuit is completed. Violent contractions occur! The dead legs kick outwards!<br><br>Galvani calls this <strong>'Animal Electricity'</strong>.",
+                setup: () => {
+                    // Logic handled in animate loop
+                },
+                check: () => state.hasShocked
+            },
+            {
+                title: "Conclusion",
+                text: "Galvani believed the electricity came from the frog. However, Alessandro Volta later proved it was the interaction between <strong>Dissimilar Metals</strong> (Copper and Zinc) (the probe is made of Bronze) acting on the wet tissue.<br><br>This wasn't just biology—it was <strong>Electron Flow</strong>.<br><br>Let us now leave the biological world and zoom into the atomic level to see how electrons actually move in metals.",
+                setup: () => {
+                    document.getElementById('btn-action').innerText = "Experiment Complete";
+                    lockAll();
+                    document.getElementById('btn-next').innerText = "Start Induction Module";
+                },
+                check: () => true
+            }
+        ];
+
+        // --- NAVIGATION LOGIC ---
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+
+            document.querySelector('header .subtitle').innerText = `Module 1: Chapter 1 - Step ${idx + 1} of ${lessons.length}`;
+            const container = document.getElementById('chapter-content');
+            container.innerHTML = `<div class="chapter-title">${l.title}</div><div class="story-text">${l.text}</div>`;
+
+            const nextBtn = document.getElementById('btn-next');
+
+            if (idx === lessons.length - 1) {
+                nextBtn.innerText = "Next Chapter \u2192";
+            } else {
+                nextBtn.innerText = "Next \u2192";
+            }
+
+            if (l.check()) {
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.disabled = true;
+            }
+
+            l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter === lessons.length - 1) {
+                // Navigate to Metal Induction via React route
+                window.parent.location.href = '/lesson/metal_induction';
+            } else {
+                if (currentChapter < lessons.length - 1) loadLesson(currentChapter + 1);
+            }
+        }
+
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+
+        function checkAdvance() {
+            const btn = document.getElementById('btn-next');
+            if (lessons[currentChapter].check()) {
+                btn.disabled = false;
+            }
+        }
+
+        function lockAll() { document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active')); }
+        function unlock(id) { document.getElementById(id).classList.add('active'); }
+
+        // Init
+        loadLesson(0);
+
+        // Window Resize
+        window.addEventListener('resize', () => {
+            const newAspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -d * newAspect; camera.right = d * newAspect;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+
+</html>

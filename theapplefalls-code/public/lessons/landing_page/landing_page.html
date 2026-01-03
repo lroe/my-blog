@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immersive Robotics - From Code to Hardware</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #ffffff;
+            --accent-color: #3b82f6;
+            /* Electric Blue */
+            --accent-hover: #2563eb;
+            --secondary-text: #a1a1aa;
+            --font-main: 'Inter', sans-serif;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            max-width: 1400px;
+            width: 90%;
+            min-height: 90vh;
+            align-items: center;
+            padding: 4rem 0;
+        }
+        /* Left Column */
+        .content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 2rem;
+        }
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p.description {
+            font-size: 1.25rem;
+            line-height: 1.6;
+            color: var(--secondary-text);
+            margin-bottom: 3rem;
+            max-width: 500px;
+        }
+        .buttons {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .btn {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.23);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-secondary:hover {
+            border-color: white;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        /* Right Column */
+        .visual {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .threejs-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Glow effect behind the threejs */
+        .glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+            filter: blur(60px);
+        }
+        /* Responsive */
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+                height: auto;
+                padding: 4rem 0;
+            }
+            .content {
+                padding-right: 0;
+                text-align: center;
+                align-items: center;
+                margin-bottom: 3rem;
+            }
+            h1 {
+                font-size: 3rem;
+            }
+            .visual {
+                height: auto;
+            }
+            .threejs-container {
+                height: 400px;
+            }
+        }
+        /* Roadmap Section */
+        #roadmap {
+            width: 100%;
+            padding: 6rem 0;
+            background-color: #050505;
+            display: flex;
+            justify-content: center;
+        }
+        .roadmap-container {
+            max-width: 1200px;
+            width: 90%;
+        }
+        .section-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 4rem;
+            text-align: center;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .chapter {
+            margin-bottom: 5rem;
+        }
+        .chapter-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+        .chapter-number {
+            font-size: 4rem;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.05);
+            line-height: 1;
+        }
+        .chapter-header h3 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        .lesson-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .lesson-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .lesson-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        .lesson-number {
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .lesson-card h4 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin: 0;
+        }
+        .lesson-card p {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            margin: 0;
+            line-height: 1.4;
+        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <h1>From Code to Circuits</h1>
+            <p class="description">
+                Empower software engineers to master robotics and hardware through immersive, hands-on simulations—from scratch.
+            </p>
+            <div class="buttons">
+                <a href="#" class="btn btn-primary">Get Started</a>
+                <a href="#" class="btn btn-secondary">Join Waitlist</a>
+            </div>
+        </div>
+        <div class="visual">
+            <div class="glow"></div>
+            <div class="threejs-container" id="threejs-container"></div>
+        </div>
+    </div>
+    <!-- Roadmap Section -->
+    <section id="roadmap">
+        <div class="roadmap-container">
+            <h2 class="section-title">Learning Path</h2>
+            <div class="chapter">
+                <div class="chapter-header">
+                    <span class="chapter-number">01</span>
+                    <h3>Mechanics Fundamentals</h3>
+                </div>
+                <div class="lesson-grid">
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">1.1</span>
+                        <h4>Kinematics Basics</h4>
+                        <p>Motion without forces.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">1.2</span>
+                        <h4>Links and Joints</h4>
+                        <p>Building robot arms.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">1.3</span>
+                        <h4>Forward Kinematics</h4>
+                        <p>Predicting end-effector position.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">1.4</span>
+                        <h4>Inverse Kinematics</h4>
+                        <p>Solving for joint angles.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">1.5</span>
+                        <h4>Trajectory Planning</h4>
+                        <p>Smooth paths in space.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">1.6</span>
+                        <h4>Dynamics Intro</h4>
+                        <p>Forces and torques.</p>
+                    </a>
+                </div>
+            </div>
+            <div class="chapter">
+                <div class="chapter-header">
+                    <span class="chapter-number">02</span>
+                    <h3>Sensors and Control</h3>
+                </div>
+                <div class="lesson-grid">
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">2.1</span>
+                        <h4>Encoders and IMUs</h4>
+                        <p>Tracking motion.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">2.2</span>
+                        <h4>Force Sensors</h4>
+                        <p>Feeling the world.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">2.3</span>
+                        <h4>PID Controllers</h4>
+                        <p>Stable feedback loops.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">2.4</span>
+                        <h4>Motor Drivers</h4>
+                        <p>Powering actuators.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">2.5</span>
+                        <h4>Gripper Design</h4>
+                        <p>Grasping strategies.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">2.6</span>
+                        <h4>ROS Basics</h4>
+                        <p>Robot Operating System.</p>
+                    </a>
+                    <a href="#" class="lesson-card">
+                        <span class="lesson-number">2.7</span>
+                        <h4>Simulation Environments</h4>
+                        <p>Virtual testing grounds.</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        // Three.js Dancing Robot Setup
+        const container = document.getElementById('threejs-container');
+        const scene = new THREE.Scene();
+        // Light background
+        scene.background = new THREE.Color(0x2a2a2a);
+        scene.fog = new THREE.Fog(0x2a2a2a, 10, 50);
+        const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+        // OrbitControls for interactivity
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 5;
+        controls.maxDistance = 50;
+        controls.maxPolarAngle = Math.PI;
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(5, 10, 7);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        scene.add(dirLight);
+        // Nice Floor: Enhanced Grid with lighter colors and a subtle plane
+        const gridHelper = new THREE.GridHelper(30, 30, 0x666666, 0x888888);
+        gridHelper.material.opacity = 0.6;
+        gridHelper.material.transparent = true;
+        scene.add(gridHelper);
+        // Add a subtle floor plane for depth
+        const floorGeo = new THREE.PlaneGeometry(30, 30);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8, metalness: 0.2 });
+        const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+        floorMesh.rotation.x = -Math.PI / 2;
+        floorMesh.position.y = -0.1;
+        floorMesh.receiveShadow = true;
+        scene.add(floorMesh);
+        // Materials (Shiny metal theme - silver/chrome)
+        const metalMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.1, metalness: 0.9 });
+        const jointMat = new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.2, metalness: 0.8 });
+        const highlightMat = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.05, metalness: 0.95 });
+        // Dimensions
+        const BASE_HEIGHT = 1;
+        const ARM_L1 = 3.5; // Upper arm length
+        const ARM_L2 = 3.0; // Forearm length
+        // 1. Fixed Base
+        const baseGeo = new THREE.CylinderGeometry(1, 1.2, BASE_HEIGHT, 32);
+        const baseMesh = new THREE.Mesh(baseGeo, metalMat);
+        baseMesh.position.y = BASE_HEIGHT / 2;
+        baseMesh.castShadow = true;
+        baseMesh.receiveShadow = true;
+        scene.add(baseMesh);
+        // 2. Turret (Rotates Y - Yaw)
+        const turretPivot = new THREE.Group();
+        turretPivot.position.y = BASE_HEIGHT; // Sit on top of base
+        scene.add(turretPivot);
+        const turretGeo = new THREE.BoxGeometry(1.5, 0.5, 1.5);
+        const turretMesh = new THREE.Mesh(turretGeo, jointMat);
+        turretMesh.position.y = 0.25;
+        turretMesh.castShadow = true;
+        turretMesh.receiveShadow = true;
+        turretPivot.add(turretMesh);
+        // 3. Upper Arm (Rotates X - Pitch)
+        const arm1Pivot = new THREE.Group();
+        arm1Pivot.position.set(0, 0.5, 0); // Relative to turret
+        turretPivot.add(arm1Pivot);
+        // Visual Upper Arm
+        const arm1Geo = new THREE.BoxGeometry(0.6, ARM_L1, 0.6);
+        const arm1Mesh = new THREE.Mesh(arm1Geo, metalMat);
+        arm1Mesh.position.y = ARM_L1 / 2; // Offset so pivot is at bottom
+        arm1Mesh.castShadow = true;
+        arm1Mesh.receiveShadow = true;
+        arm1Pivot.add(arm1Mesh);
+        // Joint visual
+        const joint1Geo = new THREE.CylinderGeometry(0.4, 0.4, 1.8, 16);
+        joint1Geo.rotateZ(Math.PI / 2);
+        const joint1Mesh = new THREE.Mesh(joint1Geo, jointMat);
+        arm1Pivot.add(joint1Mesh);
+        // 4. Forearm (Rotates X - Pitch)
+        const arm2Pivot = new THREE.Group();
+        arm2Pivot.position.y = ARM_L1; // At end of Upper Arm
+        arm1Pivot.add(arm2Pivot);
+        // Visual Forearm
+        const arm2Geo = new THREE.BoxGeometry(0.5, ARM_L2, 0.5);
+        const arm2Mesh = new THREE.Mesh(arm2Geo, metalMat);
+        arm2Mesh.position.y = ARM_L2 / 2;
+        arm2Mesh.castShadow = true;
+        arm2Mesh.receiveShadow = true;
+        arm2Pivot.add(arm2Mesh);
+        // Elbow joint visual
+        const joint2Mesh = new THREE.Mesh(joint1Geo, jointMat); // Reuse geometry
+        arm2Pivot.add(joint2Mesh);
+        // 5. Gripper / Hand
+        const handPivot = new THREE.Group();
+        handPivot.position.y = ARM_L2;
+        arm2Pivot.add(handPivot);
+        // Wrist visual
+        const wristMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.8, 16).rotateZ(Math.PI/2), jointMat);
+        handPivot.add(wristMesh);
+        // Claw parts - now three claws horizontally aligned
+        const clawGeo = new THREE.BoxGeometry(0.08, 0.8, 0.4);
+        const leftClaw = new THREE.Mesh(clawGeo, highlightMat);
+        leftClaw.position.set(0.3, 0.4, 0);
+        handPivot.add(leftClaw);
+        const rightClaw = new THREE.Mesh(clawGeo, highlightMat);
+        rightClaw.position.set(-0.3, 0.4, 0);
+        handPivot.add(rightClaw);
+        const middleClaw = new THREE.Mesh(clawGeo, highlightMat);
+        middleClaw.position.set(0, 0.4, 0);
+        handPivot.add(middleClaw);
+        // Camera setup: Isometric view, zoomed out
+        camera.position.set(15, 15, 15);
+        camera.lookAt(0, 3, 0);
+        // Animation variables
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.02;
+            // Enhanced dance: more dynamic movements
+            // Turret rotation with groove
+            turretPivot.rotation.y = Math.sin(time * 0.8) * 0.3;
+            // Upper arm swing with bounce
+            arm1Pivot.rotation.y = Math.sin(time * 2.5) * 0.6;
+            arm1Pivot.rotation.x = Math.sin(time * 1.5) * 0.2;
+            // Forearm flex and twist
+            arm2Pivot.rotation.y = Math.sin(time * 2.5 + Math.PI / 2) * 0.4;
+            arm2Pivot.rotation.x = Math.cos(time * 3) * 0.3;
+            // Hand tilt and bob
+            handPivot.rotation.z = Math.sin(time * 4) * 0.3;
+            handPivot.position.y = ARM_L2 + Math.sin(time * 3) * 0.1;
+            // Claw open/close for dance flair - adjusted for horizontal alignment
+            const clawOffset = Math.sin(time * 5) * 0.1;
+            leftClaw.position.x = 0.3 + clawOffset;
+            rightClaw.position.x = -0.3 - clawOffset;
+            middleClaw.position.x = 0 + Math.sin(time * 5 + Math.PI) * 0.05; // Small middle movement
+            leftClaw.position.z = Math.abs(clawOffset) * 0.5;
+            rightClaw.position.z = -Math.abs(clawOffset) * 0.5;
+            middleClaw.position.z = 0;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+        // Handle resize
+        window.addEventListener('resize', () => {
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        });
+    </script>
+</body>
+</html>

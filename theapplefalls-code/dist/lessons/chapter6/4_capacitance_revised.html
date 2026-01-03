@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Two Conductors</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #111;
+            --panel: #1a1a1a;
+            --text: #ddd;
+            --accent: #ff9f43;
+            --danger: #e74c3c;
+            --charge-pos: #e74c3c;
+            --charge-neg: #3498db;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: 450px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 14px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #ccc;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+
+        strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* KaTeX Corrections */
+        .katex-display {
+            margin: 1em 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* --- CONTROLS --- */
+        #controls {
+            background: #000;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        button {
+            background: #252525;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 12px;
+            margin-top: 15px;
+            letter-spacing: 1px;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        button.pump-btn {
+            border-color: var(--charge-pos);
+            color: var(--charge-pos);
+        }
+
+        button.pump-btn:hover {
+            background: var(--charge-pos);
+            color: #fff;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888;
+            display: block;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #080808;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            margin: 0;
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        .next-btn:hover {
+            background: #ffb875;
+        }
+
+        /* --- VIEWPORT --- */
+        main {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #222 0%, #000 90%);
+        }
+
+        #flash-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.05s;
+        }
+
+        #legend {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 15px;
+            border: 1px solid #333;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .glow-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e74c3c;
+            box-shadow: 0 0 10px #e74c3c;
+        }
+
+        #status-light {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #333;
+            box-shadow: 0 0 5px #000;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+
+        .value-display {
+            font-family: monospace;
+            color: var(--accent);
+            font-size: 14px;
+            float: right;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 6: The Two Conductors</div>
+        </header>
+
+        <div id="story-container"></div>
+
+        <div id="controls">
+            <div id="dynamic-controls"></div>
+        </div>
+        <div id="nav">
+            <button class="nav-btn" onclick="prevStep()">Back</button>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <div id="status-light"></div>
+        <div id="legend">
+            <div class="glow-dot"></div>
+            <span>Red Glow = Potential Difference ($\Delta V$)</span>
+        </div>
+        <div id="flash-overlay"></div>
+    </main>
+
+    <script>
+        // --- AUDIO SYSTEM ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function initAudio() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSparkSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(1.0, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        // --- THREE.JS SETUP ---
+        const viewport = document.getElementById('viewport');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, viewport.offsetWidth / viewport.offsetHeight, 0.1, 100);
+        camera.position.set(0, 5, 12);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        viewport.appendChild(renderer.domElement);
+
+        const orbit = new THREE.OrbitControls(camera, renderer.domElement);
+        orbit.enableDamping = true; orbit.enablePan = false;
+        orbit.minDistance = 5; orbit.maxDistance = 20;
+
+        // --- OBJECTS ---
+        const grid = new THREE.GridHelper(50, 50, 0x333333, 0x080808);
+        grid.position.y = -2; scene.add(grid);
+
+        // Conductor A (+Q)
+        const sphereGeo = new THREE.SphereGeometry(1, 32, 32);
+        const matA = new THREE.MeshPhysicalMaterial({
+            color: 0x555555, metalness: 0.8, roughness: 0.2,
+            emissive: 0xe74c3c, emissiveIntensity: 0
+        });
+        const conductorA = new THREE.Mesh(sphereGeo, matA);
+        conductorA.position.set(-2, 0, 0);
+        scene.add(conductorA);
+
+        // Glow Halo A
+        const haloGeo = new THREE.SphereGeometry(1.2, 32, 32);
+        const haloMatA = new THREE.MeshBasicMaterial({
+            color: 0xe74c3c, transparent: true, opacity: 0.0, side: THREE.BackSide, blending: THREE.AdditiveBlending
+        });
+        const haloA = new THREE.Mesh(haloGeo, haloMatA);
+        conductorA.add(haloA);
+
+        // Conductor B (-Q)
+        const matB = new THREE.MeshPhysicalMaterial({
+            color: 0x555555, metalness: 0.8, roughness: 0.2,
+            emissive: 0x3498db, emissiveIntensity: 0
+        });
+        const conductorB = new THREE.Mesh(sphereGeo, matB);
+        conductorB.position.set(2, 0, 0);
+        scene.add(conductorB);
+
+        // Glow Halo B
+        const haloMatB = new THREE.MeshBasicMaterial({
+            color: 0x3498db, transparent: true, opacity: 0.0, side: THREE.BackSide, blending: THREE.AdditiveBlending
+        });
+        const haloB = new THREE.Mesh(haloGeo, haloMatB);
+        conductorB.add(haloB);
+
+        // Connector Line (Field approximation)
+        const lineGeo = new THREE.BufferGeometry();
+        const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+        const connector = new THREE.Line(lineGeo, lineMat);
+        scene.add(connector);
+
+        // Spark
+        const sparkGeo = new THREE.BufferGeometry();
+        const sparkMat = new THREE.LineBasicMaterial({ color: 0xffffaa, linewidth: 4 });
+        const spark = new THREE.Line(sparkGeo, sparkMat);
+        spark.visible = false; scene.add(spark);
+
+        // --- LABELS ---
+        function createLabelSprite() {
+            // Set transparent to true and make it initially invisible to avoid white box
+            const mat = new THREE.SpriteMaterial({ color: 0xffffff, transparent: true, opacity: 1 });
+            const sprite = new THREE.Sprite(mat);
+            sprite.scale.set(3, 1.5, 1);
+            sprite.position.y = 1.8;
+            sprite.visible = false; // Hide until texture is ready
+            return sprite;
+        }
+
+        function updateLabelTexture(sprite, text, colorStr) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+
+            // Explicitly clear canvas to ensure transparency
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Text Style
+            ctx.font = "Bold 50px Arial";
+            ctx.fillStyle = colorStr;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            // Shadow for readability
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 4;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+
+            ctx.fillText(text, 128, 64);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            sprite.material.map = texture;
+            sprite.material.needsUpdate = true;
+            sprite.visible = true; // Show now that texture is loaded
+        }
+
+        const labelA = createLabelSprite();
+        conductorA.add(labelA);
+
+        const labelB = createLabelSprite();
+        conductorB.add(labelB);
+
+        const light = new THREE.PointLight(0xffffff, 1, 50);
+        light.position.set(0, 10, 5); scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        // --- SIMULATION LOGIC ---
+        let sim = {
+            charge: 0,      // Q
+            separation: 6,  // Distance between centers
+            potentialDiff: 0, // V_a - V_b
+            fieldStress: 0  // E field between them
+        };
+        let isBroken = false;
+        const RADIUS = 1.0;
+
+        function updatePhysics() {
+            // Position spheres
+            conductorA.position.x = -sim.separation / 2;
+            conductorB.position.x = sim.separation / 2;
+
+            // Update Labels
+            updateLabelTexture(labelA, `+${sim.charge} Q`, "#e74c3c");
+            updateLabelTexture(labelB, `-${sim.charge} Q`, "#3498db");
+
+            // Calculate Physics
+            const k = 1.0;
+            const d = sim.separation;
+
+            const term = (1 / RADIUS) - (1 / Math.max(d, 2.1));
+            sim.potentialDiff = 2 * k * sim.charge * term;
+
+            // Field Stress (Trigger for breakdown)
+            const gap = Math.max(0.1, d - 2 * RADIUS);
+            sim.fieldStress = sim.potentialDiff / gap;
+
+            // Visuals
+            const glow = Math.min(sim.potentialDiff * 0.3, 1.5);
+            conductorA.material.emissiveIntensity = glow;
+            haloA.material.opacity = glow * 0.4;
+            conductorB.material.emissiveIntensity = glow;
+            haloB.material.opacity = glow * 0.4;
+
+            // Connector line
+            const points = [conductorA.position.clone(), conductorB.position.clone()];
+            lineGeo.setFromPoints(points);
+            lineMat.opacity = Math.min(sim.charge * 0.1, 0.5);
+
+            // Status Light
+            const status = document.getElementById('status-light');
+            const danger = sim.fieldStress;
+
+            if (danger > 1.8) {
+                status.style.background = '#e74c3c';
+                status.style.boxShadow = '0 0 15px #e74c3c';
+            } else {
+                status.style.background = '#333';
+                status.style.boxShadow = 'none';
+            }
+
+            // Breakdown Threshold
+            if (sim.fieldStress > 2.0 && !isBroken) triggerBreakdown();
+
+            const readout = document.getElementById('volts-readout');
+            if (readout) readout.innerText = sim.potentialDiff.toFixed(2) + " V";
+        }
+
+        function triggerBreakdown() {
+            isBroken = true;
+            playSparkSound();
+            const flash = document.getElementById('flash-overlay');
+            flash.style.opacity = 0.8;
+            setTimeout(() => flash.style.opacity = 0, 100);
+
+            // Jagged line logic
+            const points = [];
+            const start = conductorA.position.clone();
+            const end = conductorB.position.clone();
+            const vector = end.clone().sub(start);
+            const steps = 8;
+
+            points.push(start);
+            for (let i = 1; i < steps; i++) {
+                const t = i / steps;
+                const pt = start.clone().add(vector.clone().multiplyScalar(t));
+                pt.y += (Math.random() - 0.5) * 1.5;
+                pt.z += (Math.random() - 0.5) * 1.5;
+                points.push(pt);
+            }
+            points.push(end);
+
+            sparkGeo.setFromPoints(points);
+            spark.visible = true;
+
+            setTimeout(() => {
+                sim.charge = 0;
+                spark.visible = false;
+                isBroken = false;
+                updatePhysics();
+                if (currentStep === 2) document.getElementById('btn-next').disabled = false;
+            }, 300);
+        }
+
+        function addCharge() {
+            initAudio();
+            sim.charge += 1.0;
+            updatePhysics();
+        }
+
+        function setSeparation(val) {
+            sim.separation = parseFloat(val);
+            updatePhysics();
+        }
+
+        // --- LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+            orbit.update();
+            if (spark.visible) spark.material.opacity = Math.random();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- NARRATIVE CONTENT ---
+        const steps = [
+            {
+                title: "Two Conductors",
+                text: `In practical circuits, we don't just push charge onto a single isolated object. We move charge from one conductor to another.
+            <br><br>
+            Here we have two spheres. We will move electrons from the Red sphere to the Blue one. 
+            <br><br>
+            One becomes <strong>Positive ($+Q$)</strong>, the other <strong>Negative ($-Q$)</strong>.`,
+                controls: `
+                <button class="pump-btn" onclick="addCharge()">Separate Charge (+Q / -Q)</button>
+            `,
+                setup: () => {
+                    sim.charge = 0; sim.separation = 6; isBroken = false;
+                    updatePhysics();
+                    document.getElementById('btn-next').disabled = false;
+                }
+            },
+            {
+                title: "Defining Capacitance",
+                text: `As we separate charge, a <strong>Potential Difference ($\Delta V$)</strong> builds up between the spheres. This is the "Voltage" (represented by the red/blue glow intensity).
+            <br><br>
+            The new definition of Capacitance is:
+            $$ C = \\frac{Q}{\\Delta V} $$
+            <br>
+            Ideally, we want high Capacity ($C$). This means we want to store a lot of Charge ($Q$) while keeping the Voltage ($\Delta V$) low, so it doesn't fight back as hard.`,
+                controls: `
+                <div style="margin-bottom:10px;">
+                    Current Potential ($\Delta V$): <span id="volts-readout" class="value-display">0.00 V</span>
+                </div>
+                <button class="pump-btn" onclick="addCharge()">Increase Charge ($Q$)</button>
+            `,
+                setup: () => {
+                    if (sim.charge < 1) sim.charge = 2;
+                    updatePhysics();
+                }
+            },
+            {
+                title: "The Effect of Proximity",
+                text: `Here is the key insight. The potential of the positive sphere is lowered by the presence of the nearby negative sphere (opposites attract, reducing the "pressure" to escape).
+            <br><br>
+            <strong>Experiment:</strong>
+            1. Note the Glow/Voltage intensity.
+            2. <strong>Drag the slider</strong> to bring the spheres closer.
+            <br><br>
+            Notice that as distance decreases, the Voltage ($\Delta V$) drops significantly, even though Charge ($Q$) is constant!
+            <br><br>
+            $$ \\text{Lower } \\Delta V \\implies \\text{Higher } C $$`,
+                controls: `
+                <label>Distance between Spheres</label>
+                <input type="range" min="2.5" max="10.0" step="0.1" value="6.0" oninput="setSeparation(this.value)">
+                <button class="pump-btn" onclick="addCharge()">Add More Charge</button>
+            `,
+                setup: () => {
+                    sim.charge = 4.0;
+                    sim.separation = 6.0;
+                    updatePhysics();
+                }
+            },
+            {
+                title: "Conclusion",
+                text: `If bringing them closer increases Capacitance, why not let them touch?
+            <br><br>
+            <strong>Dielectric Breakdown:</strong>
+            While the Voltage ($\Delta V$) drops as they get closer, the electric field <em>between</em> them ($E \\approx \\Delta V / d$) actually increases.
+            <br><br>
+            If they get too close for the amount of charge held, the air insulation fails. 
+            <br><br>
+            This explains why we want large plates close together. Small distance means huge Capacity, but lower breakdown voltage.`,
+                controls: `
+                <label>Distance (Risk Breakdown)</label>
+                <input type="range" min="2.2" max="6.0" step="0.1" value="3.0" oninput="setSeparation(this.value)">
+                <button class="pump-btn" onclick="addCharge()">Test Limits</button>
+            `,
+                setup: () => {
+                    sim.charge = 5.0;
+                    sim.separation = 4.0;
+                    updatePhysics();
+                    document.getElementById('btn-next').innerText = "Next Lesson";
+                    document.getElementById('btn-next').disabled = false;
+                }
+            }
+        ];
+
+        let currentStep = 0;
+
+        function loadStep(idx) {
+            currentStep = idx;
+            const s = steps[idx];
+
+            document.getElementById('story-container').innerHTML = `
+            <div class="chapter-title">${s.title}</div>
+            <div>${s.text}</div>
+        `;
+            document.getElementById('dynamic-controls').innerHTML = s.controls;
+
+            renderMathInElement(document.getElementById('story-container'), {
+                delimiters: [{ left: "$$", right: "$$", display: true }, { left: "$", right: "$", display: false }]
+            });
+
+            if (s.setup) s.setup();
+
+            const btn = document.getElementById('btn-next');
+            if (currentStep === steps.length - 1) {
+                btn.innerHTML = "Next Lesson";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next";
+                btn.disabled = false;
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                loadStep(currentStep + 1);
+            } else {
+                window.parent.location.href = '/lesson/chapter6/parallel_plate';
+            }
+        }
+        function prevStep() { if (currentStep > 0) loadStep(currentStep - 1); }
+
+        loadStep(0);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = viewport.offsetWidth / viewport.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
+        });
+
+    </script>
+</body>
+
+</html>
