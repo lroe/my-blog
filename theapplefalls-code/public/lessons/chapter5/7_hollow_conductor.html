@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hollow Conductors & Shielding</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        /* --- STYLING FROM THE "GRADIENT" SCRIPT --- */
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* Orange Accent from Reference */
+            --accent-hover: #e58e3c;
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 24px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .story-text em {
+            color: var(--accent);
+            font-style: normal;
+        }
+
+        #controls-area {
+            background: #181818;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 15px;
+            transition: 0.3s;
+            filter: grayscale(0);
+            opacity: 1;
+        }
+
+        /* Adapted logic: The gradient script used .active to show, 
+           this script uses .disabled to hide. Styling adapted to match visual result. */
+        .control-row.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        button {
+            background: #333;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        button:hover {
+            background: #444;
+            color: #fff;
+        }
+
+        /* Primary button style using the new Orange accent */
+        button.primary {
+            background: #2a2a2a;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        button.primary:hover {
+            background: var(--accent);
+            color: #111;
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+
+        #nav-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #222;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #333;
+            color: #fff;
+            border: none;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+        }
+
+        .nav-btn.next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #444;
+            color: #888;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+        }
+
+        .scene-tag {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 5: Hollow Conductors</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content"></div>
+        </div>
+
+        <div id="controls-area">
+            <!-- View Control -->
+            <div class="control-row">
+                <label>View Options</label>
+                <button class="primary" onclick="toggleCut()">Toggle Cutaway View</button>
+            </div>
+
+            <!-- Combined Insertion and Induction -->
+            <div class="control-row disabled" id="ctrl-place">
+                <label>Step 1: Introduction</label>
+                <button onclick="insertCharge()">Insert +Q Charge</button>
+            </div>
+
+            <div class="control-row disabled" id="ctrl-move">
+                <label>Step 2: Experimentation</label>
+                <input type="range" id="charge-pos" min="-4" max="4" value="0" step="0.1">
+                <div style="font-size: 10px; color: #555; margin-top: 5px;">Internal Charge Position</div>
+            </div>
+
+            <div class="control-row" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;">
+                <button onclick="resetSim()">Reset Experiment</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div class="scene-tag" style="top: 20px; right: 20px;">Electrostatics Lab</div>
+    </main>
+
+    <script>
+        // --- 1. Scene Setup ---
+        const state = {
+            isCut: false, // Starts as full sphere
+            chargePlaced: false,
+            sourcePos: 0,
+            time: 0
+        };
+
+        const scene = new THREE.Scene();
+        const sidebarWidth = 420;
+        let aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const viewSize = 35;
+
+        const camera = new THREE.OrthographicCamera(
+            -viewSize * aspect / 2, viewSize * aspect / 2,
+            viewSize / 2, -viewSize / 2,
+            1, 1000
+        );
+        camera.position.set(20, 20, 20);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        dirLight.position.set(10, 20, 10);
+        scene.add(dirLight);
+
+        // Background color handled by CSS (radial gradient), but we set clear color for alpha
+        // scene.background = new THREE.Color(0x151515); // Removed to let CSS gradient show through
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // --- 2. Geometry Construction ---
+
+        const R_inner = 8;
+        const R_outer = 11;
+        const CUT_ANGLE = Math.PI * 1.5;
+
+        // Materials
+        const metalMaterial = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            metalness: 0.7,
+            roughness: 0.2,
+            side: THREE.DoubleSide
+        });
+
+        const cutFaceMaterial = new THREE.MeshStandardMaterial({
+            color: 0x555555,
+            metalness: 0.5,
+            roughness: 0.6,
+            side: THREE.DoubleSide
+        });
+
+        const conductorGroup = new THREE.Group();
+        const geometryContainer = new THREE.Group();
+        conductorGroup.add(geometryContainer);
+        scene.add(conductorGroup);
+
+        conductorGroup.rotation.y = -Math.PI / 4;
+
+        function updateConductorGeometry() {
+            while (geometryContainer.children.length > 0) {
+                geometryContainer.remove(geometryContainer.children[0]);
+            }
+
+            const phiLen = state.isCut ? CUT_ANGLE : Math.PI * 2;
+
+            // Outer Shell
+            const outGeo = new THREE.SphereGeometry(R_outer, 48, 48, 0, phiLen);
+            const outMesh = new THREE.Mesh(outGeo, metalMaterial);
+            geometryContainer.add(outMesh);
+
+            // Inner Shell (BackSide for interior)
+            const inGeo = new THREE.SphereGeometry(R_inner, 48, 48, 0, phiLen);
+            const inMat = metalMaterial.clone();
+            inMat.side = THREE.BackSide;
+            const inMesh = new THREE.Mesh(inGeo, inMat);
+            geometryContainer.add(inMesh);
+
+            // Side Walls
+            if (state.isCut) {
+                const capGeo = new THREE.RingGeometry(R_inner, R_outer, 32, 1, 0, Math.PI);
+
+                const cap1 = new THREE.Mesh(capGeo, cutFaceMaterial);
+                cap1.rotation.y = Math.PI / 2;
+                cap1.rotation.z = Math.PI / 2;
+                geometryContainer.add(cap1);
+
+                const cap2 = new THREE.Mesh(capGeo, cutFaceMaterial);
+                cap2.rotation.y = Math.PI / 2 + CUT_ANGLE;
+                cap2.rotation.z = Math.PI / 2;
+                geometryContainer.add(cap2);
+            }
+        }
+
+        updateConductorGeometry();
+
+        // --- 3. Charges Setup ---
+
+        const chargesContainer = new THREE.Group();
+        conductorGroup.add(chargesContainer);
+
+        // Source Charge (+Q) - RED
+        const sourceGeo = new THREE.SphereGeometry(1.5);
+        const sourceMat = new THREE.MeshStandardMaterial({ color: 0xff4444, emissive: 0x550000 });
+        const sourceCharge = new THREE.Mesh(sourceGeo, sourceMat);
+        sourceCharge.visible = false;
+        scene.add(sourceCharge);
+
+        // Induced Charges Arrays
+        const innerCharges = [];
+        const outerCharges = [];
+        const chargeCount = 60;
+
+        // Materials for small charges
+        // MODIFICATION: Changed electron color to Blue (0x2980b9) instead of Cyan
+        const negMat = new THREE.MeshStandardMaterial({ color: 0x2980b9, emissive: 0x003366 });
+        const posMat = new THREE.MeshStandardMaterial({ color: 0xff6b6b, emissive: 0x550000 });
+
+        for (let i = 0; i < chargeCount; i++) {
+            const u = Math.random();
+            const v = Math.random();
+            const theta_g = 2 * Math.PI * u;
+            const phi_g = Math.acos(2 * v - 1);
+
+            const dir = new THREE.Vector3(
+                Math.sin(phi_g) * Math.cos(theta_g),
+                Math.cos(phi_g),
+                Math.sin(phi_g) * Math.sin(theta_g)
+            );
+
+            // Inner Charge (Electrons - Blue)
+            const nC = new THREE.Mesh(new THREE.SphereGeometry(0.35), negMat);
+            nC.userData = { dir: dir.clone() };
+            chargesContainer.add(nC);
+            innerCharges.push(nC);
+
+            // Outer Charge (Positive - Red)
+            const pC = new THREE.Mesh(new THREE.SphereGeometry(0.35), posMat);
+            pC.userData = { dir: dir.clone() };
+            chargesContainer.add(pC);
+            outerCharges.push(pC);
+        }
+
+        // Hide initially
+        innerCharges.forEach(c => c.visible = false);
+        outerCharges.forEach(c => c.visible = false);
+
+        // --- 4. Logic & Animation ---
+
+        function updateCharges() {
+            if (!state.chargePlaced) return;
+
+            // Source position in world space
+            const sourcePosWorld = new THREE.Vector3(state.sourcePos, 0, 0);
+            const invRot = conductorGroup.quaternion.clone().invert();
+            const localSource = sourcePosWorld.clone().applyQuaternion(invRot);
+
+            // 1. Update Inner Negative Charges (React to Source)
+            innerCharges.forEach(c => {
+                // Cut visibility logic
+                const angle = Math.atan2(c.userData.dir.z, c.userData.dir.x);
+                let normAngle = angle; if (normAngle < 0) normAngle += Math.PI * 2;
+
+                if (state.isCut && normAngle > CUT_ANGLE) {
+                    c.visible = false;
+                } else {
+                    c.visible = true;
+                }
+
+                // Physics: Inner charges attract to source
+                // Calculate vector from center to surface
+                let basePos = c.userData.dir.clone();
+                // Calculate vector from source to this point on surface
+                let surfacePoint = basePos.clone().multiplyScalar(R_inner);
+                let dist = surfacePoint.distanceTo(localSource);
+
+                // Simple visual approximation of induction concentration
+                // The closer the source is to the wall, the more charges bunch there
+                let weight = 1 / (dist * dist + 0.1);
+
+                // Move the charge along the sphere surface towards the source projection
+                let toSource = new THREE.Vector3().subVectors(localSource, new THREE.Vector3(0, 0, 0)).normalize();
+
+                // Interpolate between original random position and source direction
+                // Strength of pull depends on how close source is to the wall
+                const pullStrength = (Math.abs(state.sourcePos) / 5) * 0.8;
+
+                const finalDir = new THREE.Vector3().lerpVectors(c.userData.dir, toSource, pullStrength).normalize();
+
+                c.position.copy(finalDir).multiplyScalar(R_inner - 0.4);
+            });
+
+            // 2. Update Outer Positive Charges (Shielded)
+            outerCharges.forEach(c => {
+                const angle = Math.atan2(c.userData.dir.z, c.userData.dir.x);
+                let normAngle = angle; if (normAngle < 0) normAngle += Math.PI * 2;
+                if (state.isCut && normAngle > CUT_ANGLE) {
+                    c.visible = false;
+                } else {
+                    c.visible = true;
+                }
+
+                // Physics: Outer charges stay uniform because E-field inside metal is 0.
+                // The outer charges repel each other equally.
+                c.position.copy(c.userData.dir).multiplyScalar(R_outer + 0.4);
+            });
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            state.time += 0.01;
+            controls.update();
+
+            if (state.chargePlaced) {
+                updateCharges();
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- 5. Interactions ---
+
+        function toggleCut() {
+            state.isCut = !state.isCut;
+            updateConductorGeometry();
+        }
+
+        function insertCharge() {
+            state.chargePlaced = true;
+            sourceCharge.scale.set(0, 0, 0);
+            sourceCharge.visible = true;
+
+            // Auto-switch to cut view if not already, so they see the effect
+            if (!state.isCut) {
+                toggleCut();
+            }
+
+            // Pop in animation for central charge
+            let s = 0;
+            const id = setInterval(() => {
+                s += 0.1;
+                sourceCharge.scale.set(s, s, s);
+                if (s >= 1) clearInterval(id);
+            }, 16);
+
+            // Pop in animation for induced charges (they appear instantly)
+            updateCharges();
+
+            document.querySelector('button[onclick="insertCharge()"]').parentElement.classList.add('disabled');
+            checkAdvance();
+        }
+
+        document.getElementById('charge-pos').addEventListener('input', (e) => {
+            state.sourcePos = parseFloat(e.target.value);
+            sourceCharge.position.x = state.sourcePos;
+            checkAdvance();
+        });
+
+        // --- 6. Story Engine (Updated Narration) ---
+
+        let currentChapter = 0;
+        const lessons = [
+            {
+                title: "The Conductor",
+                text: "Welcome to the Electrostatics Lab. Before you is a hollow metallic sphere.<br><br><strong>Physics Principle:</strong> Metals are full of 'free electrons'. These electrons can move around easily, like a fluid.<br><br>Currently, the sphere is <em>neutral</em>. The positive nuclei and negative electrons are perfectly balanced everywhere. Click <strong>Toggle Cutaway View</strong> to inspect the interior.",
+                setup: () => {
+                    lockAll();
+                    document.getElementById('ctrl-place').classList.remove('disabled');
+                },
+                check: () => state.chargePlaced
+            },
+            {
+                title: "Induction",
+                text: "You have placed a positive charge <strong>+Q (Red)</strong> inside. Look what happened immediately!<br><br><strong>1. Attraction:</strong> The +Q attracts the metal's free electrons (Blue) to the <em>inner surface</em>. They want to get as close to +Q as possible.<br><br><strong>2. Conservation:</strong> Since the metal was neutral, moving electrons to the inside leaves a deficit on the outside. This creates a net <strong>Positive Charge (Red)</strong> on the <em>outer surface</em>.<br><br>This separation of charge is called <em>Electrostatic Induction</em>.",
+                setup: () => {
+                    // Nothing to unlock, just reading
+                },
+                check: () => true
+            },
+            {
+                title: "Conclusion",
+                text: "Now, use the slider to <strong>Move the Internal Charge</strong> off-center.<br><br>Observe carefully:<br>1. The <strong>inner blue electrons</strong> shift to follow the +Q source.<br>2. The <strong>outer red charges</strong> <em>do not move</em>. They stay perfectly uniform.<br><br><strong>Why?</strong> The electric field inside the metal wall must be zero. The inner electrons adjust perfectly to cancel the source's field. The outside world is completely 'shielded' from what is happening in the cavity.",
+                setup: () => {
+                    document.getElementById('ctrl-move').classList.remove('disabled');
+                    document.getElementById('btn-next').innerText = "Next Lesson";
+                },
+                check: () => Math.abs(state.sourcePos) > 2.5
+            }
+        ];
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+            document.querySelector('header .subtitle').innerText = `Topic: ${l.title}`;
+            document.getElementById('chapter-content').innerHTML =
+                `<div class="chapter-title">${l.title}</div><div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+            if (currentChapter === lessons.length - 1) {
+                btn.innerHTML = "Next Lesson";
+                btn.disabled = !l.check();
+            } else {
+                btn.innerHTML = "Next Explanation &rarr;";
+                btn.disabled = !l.check();
+            }
+            if (l.setup) l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                window.parent.location.href = '/lesson/chapter5/faraday_cage';
+            }
+        }
+
+        function prevLesson() {
+            if (currentChapter > 0) loadLesson(currentChapter - 1);
+        }
+
+        function checkAdvance() {
+            if (currentChapter >= lessons.length - 1) return;
+            if (lessons[currentChapter].check()) {
+                document.getElementById('btn-next').disabled = false;
+            }
+        }
+
+        function lockAll() {
+            document.getElementById('ctrl-place').classList.add('disabled');
+            document.getElementById('ctrl-move').classList.add('disabled');
+        }
+
+        function resetSim() {
+            state.chargePlaced = false;
+            state.sourcePos = 0;
+            state.isCut = false;
+            updateConductorGeometry();
+
+            sourceCharge.position.x = 0;
+            sourceCharge.visible = false;
+
+            innerCharges.forEach(c => c.visible = false);
+            outerCharges.forEach(c => c.visible = false);
+
+            document.getElementById('charge-pos').value = 0;
+            document.querySelector('button[onclick="insertCharge()"]').parentElement.classList.remove('disabled');
+
+            loadLesson(0);
+        }
+
+        loadLesson(0);
+
+        window.addEventListener('resize', () => {
+            aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -viewSize * aspect / 2;
+            camera.right = viewSize * aspect / 2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Apple Falls | Cosmic Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --accent: #a29bfe;
+            --accent-glow: #6c5ce7;
+            --text: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* NAVIGATION */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 25px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(5, 5, 5, 0.2);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 24px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fff, #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* HERO SECTION */
+        #hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            pointer-events: none;
+            /* Let clicks pass through to canvas if needed, but buttons need pointer-events: auto */
+        }
+
+        #hero>* {
+            pointer-events: auto;
+        }
+
+        #hero h1 {
+            font-size: 90px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(to bottom, #fff, #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            transform: translateY(30px);
+            text-shadow: 0 0 30px rgba(162, 155, 254, 0.3);
+        }
+
+        #hero p {
+            font-size: 22px;
+            color: var(--text-dim);
+            max-width: 700px;
+            margin-bottom: 50px;
+            opacity: 0;
+            transform: translateY(30px);
+            font-weight: 300;
+        }
+
+        .cta-button {
+            padding: 18px 50px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-weight: 600;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0;
+            transform: translateY(30px);
+            backdrop-filter: blur(10px);
+            font-size: 16px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .cta-button:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            box-shadow: 0 0 40px var(--accent-glow);
+            transform: scale(1.05);
+        }
+
+        /* BACKGROUND CANVAS */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* SECTIONS */
+        section {
+            position: relative;
+            z-index: 10;
+            padding: 120px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            margin-bottom: 80px;
+            text-align: center;
+        }
+
+        .section-header h2 {
+            font-size: 48px;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, #fff, #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-header p {
+            color: var(--text-dim);
+            font-size: 18px;
+        }
+
+        /* CARDS */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+            transform: translateX(-100%);
+            transition: 0.5s;
+        }
+
+        .card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-number {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 20px;
+            display: inline-block;
+            padding: 5px 12px;
+            background: rgba(162, 155, 254, 0.1);
+            border-radius: 20px;
+            border: 1px solid rgba(162, 155, 254, 0.2);
+        }
+
+        .card h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .card p {
+            color: var(--text-dim);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .card-link {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .card:hover .card-link {
+            opacity: 1;
+        }
+
+        .card-link::after {
+            content: '→';
+            transition: transform 0.3s;
+        }
+
+        .card:hover .card-link::after {
+            transform: translateX(5px);
+        }
+
+        /* FOOTER */
+        footer {
+            position: relative;
+            z-index: 10;
+            padding: 80px 40px;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-dim);
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            #hero h1 {
+                font-size: 50px;
+            }
+
+            nav {
+                padding: 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <nav>
+        <div class="logo">The Apple Falls</div>
+        <div class="nav-links">
+            <a href="#hero">Cosmos</a>
+            <a href="#modules">Simulations</a>
+            <a href="#">Journal</a>
+        </div>
+    </nav>
+
+    <header id="hero">
+        <h1>Physics from<br>Stardust.</h1>
+        <p>Explore the fundamental forces that bind the galaxy together. <br>Interactive simulations powered by first
+            principles.</p>
+        <button class="cta-button"
+            onclick="document.getElementById('modules').scrollIntoView({behavior: 'smooth'})">Begin Journey</button>
+    </header>
+
+    <section id="modules">
+        <div class="section-header">
+            <h2>Exploration Modules</h2>
+            <p>Choose your destination in the electromagnetic spectrum.</p>
+        </div>
+
+        <div class="grid">
+            <!-- Card 1 -->
+            <div class="card" onclick="window.location.href='intro_to_electricfeld.html'">
+                <span class="card-number">01</span>
+                <h3>Electric Fields</h3>
+                <p>Visualize the invisible web of forces. Interactive Coulomb's Law and superposition experiments.</p>
+                <div class="card-link">Launch Simulation</div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card" onclick="window.location.href='vec_addition.html'">
+                <span class="card-number">02</span>
+                <h3>Vector Math</h3>
+                <p>Master the language of space. 3D vector addition and manipulation tools.</p>
+                <div class="card-link">Launch Simulation</div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card" onclick="window.location.href='4_field_lines.html'">
+                <span class="card-number">03</span>
+                <h3>Field Lines</h3>
+                <p>Trace the flow of power. Complex charge distributions and field mapping.</p>
+                <div class="card-link">Launch Simulation</div>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="card" onclick="window.location.href='6_dipole.html'">
+                <span class="card-number">04</span>
+                <h3>The Dipole</h3>
+                <p>The duality of nature. Explore the fundamental building block of matter.</p>
+                <div class="card-link">Launch Simulation</div>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="card" onclick="window.location.href='7_creating_a_dipole(induction).html'">
+                <span class="card-number">05</span>
+                <h3>Induction</h3>
+                <p>Action at a distance. How conductors respond to external fields.</p>
+                <div class="card-link">Launch Simulation</div>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="card" onclick="window.location.href='8_dipole_on_vandeGraff.html'">
+                <span class="card-number">06</span>
+                <h3>Van de Graaff</h3>
+                <p>High voltage phenomena. Breakdown, discharge, and electrostatic limits.</p>
+                <div class="card-link">Launch Simulation</div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        &copy; 2025 The Apple Falls. <br>Designed for the curious mind.
+    </footer>
+
+    <script>
+        // ==========================================
+        // GALAXY BACKGROUND (Three.js)
+        // ==========================================
+        const canvas = document.getElementById('bg-canvas');
+        const scene = new THREE.Scene();
+
+        // Fog for depth
+        scene.fog = new THREE.FogExp2(0x050505, 0.05);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // GALAXY PARAMETERS
+        const parameters = {
+            count: 15000,
+            size: 0.01,
+            radius: 5,
+            branches: 3,
+            spin: 1,
+            randomness: 0.2,
+            randomnessPower: 3,
+            insideColor: '#ff6030',
+            outsideColor: '#1b3984'
+        };
+
+        let geometry = null;
+        let material = null;
+        let points = null;
+
+        const generateGalaxy = () => {
+            if (points !== null) {
+                geometry.dispose();
+                material.dispose();
+                scene.remove(points);
+            }
+
+            geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(parameters.count * 3);
+            const colors = new Float32Array(parameters.count * 3);
+
+            const colorInside = new THREE.Color(parameters.insideColor);
+            const colorOutside = new THREE.Color(parameters.outsideColor);
+
+            for (let i = 0; i < parameters.count; i++) {
+                const i3 = i * 3;
+
+                // Position
+                const radius = Math.random() * parameters.radius;
+                const spinAngle = radius * parameters.spin;
+                const branchAngle = (i % parameters.branches) / parameters.branches * Math.PI * 2;
+
+                const randomX = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+                const randomY = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+                const randomZ = Math.pow(Math.random(), parameters.randomnessPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius;
+
+                positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX;
+                positions[i3 + 1] = randomY; // Flattened galaxy
+                positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ;
+
+                // Color
+                const mixedColor = colorInside.clone();
+                mixedColor.lerp(colorOutside, radius / parameters.radius);
+
+                colors[i3] = mixedColor.r;
+                colors[i3 + 1] = mixedColor.g;
+                colors[i3 + 2] = mixedColor.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            material = new THREE.PointsMaterial({
+                size: parameters.size,
+                sizeAttenuation: true,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                vertexColors: true
+            });
+
+            points = new THREE.Points(geometry, material);
+            scene.add(points);
+        };
+
+        generateGalaxy();
+
+        // Stars Background
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 2000;
+        const starsPos = new Float32Array(starsCount * 3);
+
+        for (let i = 0; i < starsCount * 3; i++) {
+            starsPos[i] = (Math.random() - 0.5) * 30;
+        }
+
+        starsGeometry.setAttribute('position', new THREE.BufferAttribute(starsPos, 3));
+        const starsMaterial = new THREE.PointsMaterial({
+            size: 0.02,
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.4
+        });
+        const stars = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(stars);
+
+
+        camera.position.x = 0;
+        camera.position.y = 3;
+        camera.position.z = 4;
+        camera.lookAt(0, 0, 0);
+
+        // Mouse Interaction
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX);
+            mouseY = (event.clientY - windowHalfY);
+        });
+
+        // Animation
+        const clock = new THREE.Clock();
+
+        function animate() {
+            const elapsedTime = clock.getElapsedTime();
+
+            // Rotate Galaxy
+            points.rotation.y = elapsedTime * 0.05;
+            stars.rotation.y = elapsedTime * 0.01;
+
+            // Mouse Parallax
+            targetX = mouseX * 0.001;
+            targetY = mouseY * 0.001;
+
+            points.rotation.x += 0.05 * (targetY - points.rotation.x);
+            points.rotation.y += 0.05 * (targetX - points.rotation.y);
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+
+        // ==========================================
+        // GSAP ANIMATIONS
+        // ==========================================
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Hero Animations
+        const tl = gsap.timeline();
+        tl.to("#hero h1", { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" })
+            .to("#hero p", { opacity: 1, y: 0, duration: 1, ease: "power3.out" }, "-=0.8")
+            .to(".cta-button", { opacity: 1, y: 0, duration: 1, ease: "back.out(1.7)" }, "-=0.6");
+
+        // Scroll Animations
+        gsap.utils.toArray('.card').forEach((card, i) => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 95%",
+                },
+                opacity: 0,
+                y: 50,
+                duration: 0.8,
+                delay: i * 0.1,
+                ease: "power2.out"
+            });
+        });
+
+    </script>
+</body>
+
+</html>

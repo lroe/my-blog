@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Household Power & Energy - The Apple Falls</title>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #151515;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* Standard Orange */
+            --danger: #ff4757;
+            --border: #333;
+            --outlet: #2a2a2a;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        header {
+            padding: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent);
+        }
+
+        #narrative-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 28px;
+            font-weight: 300;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.8;
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+
+        .formula {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid var(--accent);
+        }
+
+        .nav-footer {
+            padding: 30px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background: #222;
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 12px 24px;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            flex: 1;
+            text-transform: uppercase;
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        button:disabled {
+            opacity: 0.3;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            background: #050505;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* DORM ROOM UI */
+        #room-view {
+            flex: 1;
+            position: relative;
+        }
+
+        #wall-outlet {
+            position: absolute;
+            top: 50%;
+            left: 150px;
+            transform: translateY(-50%);
+            width: 80px;
+            height: 120px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .socket {
+            width: 40px;
+            height: 40px;
+            background: #ddd;
+            border-radius: 50%;
+            position: relative;
+            border: 1px solid #bbb;
+        }
+
+        .socket::before,
+        .socket::after {
+            content: '';
+            position: absolute;
+            background: #555;
+            width: 4px;
+            height: 12px;
+            top: 14px;
+        }
+
+        .socket::before {
+            left: 12px;
+        }
+
+        .socket::after {
+            right: 12px;
+        }
+
+        /* APPLIANCES */
+        .appliance {
+            position: absolute;
+            width: 120px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+
+        .appliance:hover {
+            transform: scale(1.05);
+        }
+
+        .appliance-img {
+            width: 100%;
+            height: 80px;
+            background: #222;
+            border: 2px solid #444;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            position: relative;
+        }
+
+        .appliance.plugged .appliance-img {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .appliance-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+        }
+
+        .appliance-power {
+            font-size: 10px;
+            color: var(--accent);
+        }
+
+        /* DASHBOARD */
+        #dashboard {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .meter-panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .meter-title {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .meter-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+        }
+
+        .meter-unit {
+            font-size: 14px;
+            color: #888;
+            margin-left: 5px;
+        }
+
+        #breaker-box {
+            padding: 15px;
+            border-radius: 8px;
+            background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 2px solid #444;
+        }
+
+        #breaker-box.tripped {
+            border-color: var(--danger);
+            background: rgba(255, 71, 87, 0.1);
+        }
+
+        #breaker-status {
+            font-weight: bold;
+            color: #2ed573;
+        }
+
+        #breaker-box.tripped #breaker-status {
+            color: var(--danger);
+        }
+
+        #reset-btn {
+            background: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            visibility: hidden;
+        }
+
+        #breaker-box.tripped #reset-btn {
+            visibility: visible;
+        }
+
+        /* WIRE VISUAL */
+        #cables-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Chapter 9: Household Power & Energy</h1>
+        </header>
+        <div id="narrative-container">
+            <div class="slide active" id="slide-0">
+                <h2>Behind the Walls</h2>
+                <p>Every appliance in your home is part of a massive <strong>parallel circuit</strong> connected to the
+                    city's power grid.</p>
+                <p><strong>Quest:</strong> Drag appliances from the right and "plug" them into the wall outlet. Watch
+                    the total current increase as you add more load.</p>
+            </div>
+            <div class="slide" id="slide-1">
+                <h2>The Breaker Limit</h2>
+                <p>Standard household outlets are limited by a <strong>Circuit Breaker</strong>. If you try to pull too
+                    much current through one wire, it will melt!</p>
+                <p><strong>Warning:</strong> Most home breakers trip at <strong>15 Amps</strong>. Try plugging in both
+                    the Heater and the Kettle at once.</p>
+            </div>
+            <div class="slide" id="slide-2">
+                <h2>Wattage vs. Current</h2>
+                <p>Appliances are labeled by <strong>Power (Watts)</strong>, not Current. In the US, the supply is a
+                    steady <strong>120 Volts</strong>.</p>
+                <div class="formula">
+                    \(I = \frac{P}{V}\)
+                </div>
+                <p>A 1500W heater pulls \(1500 / 120 = 12.5\) Amps. That's almost the entire capacity of one circuit!
+                </p>
+            </div>
+            <div class="slide" id="slide-3">
+                <h2>Conclusion</h2>
+                <p>You don't pay for Current; you pay for <strong>Energy</strong>. Energy is Power multiplied by Time.
+                </p>
+                <div class="formula">
+                    \(Energy (kWh) = \frac{Watts \times Hours}{1000}\)
+                </div>
+                <p>Check the "Electric Bill" meter. It shows how much you're spending per hour at a rate of
+                    <strong>$0.15 per kWh</strong>.
+                </p>
+            </div>
+        </div>
+        <div class="nav-footer">
+            <button id="prevBtn" onclick="changeSlide(-1)" disabled>Back</button>
+            <button id="nextBtn" onclick="changeSlide(1)" class="primary">Next</button>
+        </div>
+    </aside>
+
+    <main>
+        <canvas id="cables-canvas"></canvas>
+
+        <div id="room-view">
+            <div id="wall-outlet">
+                <div class="socket"></div>
+                <div class="socket"></div>
+            </div>
+
+            <!-- Draggable Appliances -->
+            <div id="app-heater" class="appliance" style="top: 150px; right: 350px;">
+                <div class="appliance-img">🔥</div>
+                <div class="appliance-label">SPACE HEATER</div>
+                <div class="appliance-power">1500W</div>
+            </div>
+
+            <div id="app-kettle" class="appliance" style="top: 300px; right: 350px;">
+                <div class="appliance-img">☕</div>
+                <div class="appliance-label">ELECTRIC KETTLE</div>
+                <div class="appliance-power">1000W</div>
+            </div>
+
+            <div id="app-laptop" class="appliance" style="top: 450px; right: 350px;">
+                <div class="appliance-img">💻</div>
+                <div class="appliance-label">GAMING LAPTOP</div>
+                <div class="appliance-power">240W</div>
+            </div>
+
+            <div id="app-bulb" class="appliance" style="top: 600px; right: 350px;">
+                <div class="appliance-img">💡</div>
+                <div class="appliance-label">LED BULB</div>
+                <div class="appliance-power">10W</div>
+            </div>
+        </div>
+
+        <div id="dashboard">
+            <div class="meter-panel">
+                <div class="meter-title">Total Current</div>
+                <div id="current-meter" class="meter-value">0.00 <span class="meter-unit">AMPS</span></div>
+            </div>
+
+            <div id="breaker-box">
+                <div>
+                    <div style="font-size: 10px; opacity: 0.6;">BREAKER STATUS</div>
+                    <div id="breaker-status">CLOSED</div>
+                </div>
+                <button id="reset-btn" onclick="resetBreaker()">FLIP SWITCH</button>
+            </div>
+
+            <div class="meter-panel">
+                <div class="meter-title">Estimated Bill</div>
+                <div id="cost-meter" class="meter-value" style="color: var(--accent);">$0.00 <span class="meter-unit">/
+                        HR</span></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('cables-canvas');
+        const ctx = canvas.getContext('2d');
+        const VOLTAGE = 120; // US Standard
+        const RATE = 0.15; // $ per kWh
+        const BREAKER_LIMIT = 15; // Amps
+
+        let state = {
+            isTripped: false,
+            appliances: [
+                { id: 'app-heater', p: 1500, x: 0, y: 0, plugged: false, originalX: 0, originalY: 0 },
+                { id: 'app-kettle', p: 1000, x: 0, y: 0, plugged: false, originalX: 0, originalY: 0 },
+                { id: 'app-laptop', p: 240, x: 0, y: 0, plugged: false, originalX: 0, originalY: 0 },
+                { id: 'app-bulb', p: 10, x: 0, y: 0, plugged: false, originalX: 0, originalY: 0 }
+            ],
+            dragTarget: null
+        };
+
+        function init() {
+            state.appliances.forEach(app => {
+                const el = document.getElementById(app.id);
+                const rect = el.getBoundingClientRect();
+                const mainRect = document.querySelector('main').getBoundingClientRect();
+                app.x = rect.left - mainRect.left;
+                app.y = rect.top - mainRect.top;
+                app.originalX = app.x;
+                app.originalY = app.y;
+
+                el.addEventListener('mousedown', (e) => {
+                    state.dragTarget = app;
+                    e.preventDefault();
+                });
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (state.dragTarget) {
+                    const mainRect = document.querySelector('main').getBoundingClientRect();
+                    state.dragTarget.x = e.clientX - mainRect.left - 60;
+                    state.dragTarget.y = e.clientY - mainRect.top - 60;
+
+                    const el = document.getElementById(state.dragTarget.id);
+                    el.style.left = state.dragTarget.x + 'px';
+                    el.style.top = state.dragTarget.y + 'px';
+
+                    checkPlug(state.dragTarget);
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (state.dragTarget) {
+                    if (!state.dragTarget.plugged) {
+                        // Return to original pos
+                        const el = document.getElementById(state.dragTarget.id);
+                        el.style.transition = 'all 0.3s ease';
+                        state.dragTarget.x = state.dragTarget.originalX;
+                        state.dragTarget.y = state.dragTarget.originalY;
+                        el.style.left = state.dragTarget.x + 'px';
+                        el.style.top = state.dragTarget.y + 'px';
+                        setTimeout(() => el.style.transition = '', 300);
+                    }
+                    state.dragTarget = null;
+                }
+            });
+
+            resize();
+            draw();
+        }
+
+        function resize() {
+            canvas.width = canvas.parentElement.offsetWidth;
+            canvas.height = canvas.parentElement.offsetHeight;
+        }
+
+        function checkPlug(app) {
+            const outlet = document.getElementById('wall-outlet').getBoundingClientRect();
+            const mainRect = document.querySelector('main').getBoundingClientRect();
+            const outletCenterX = outlet.left - mainRect.left + outlet.width / 2;
+            const outletCenterY = outlet.top - mainRect.top + outlet.height / 2;
+
+            const dist = Math.hypot(app.x + 60 - outletCenterX, app.y + 60 - outletCenterY);
+
+            const wasPlugged = app.plugged;
+            app.plugged = dist < 100;
+
+            if (wasPlugged !== app.plugged) {
+                const el = document.getElementById(app.id);
+                if (app.plugged) el.classList.add('plugged');
+                else el.classList.remove('plugged');
+                updateCalculations();
+            }
+        }
+
+        function updateCalculations() {
+            if (state.isTripped) return;
+
+            let totalPower = 0;
+            state.appliances.forEach(app => {
+                if (app.plugged) totalPower += app.p;
+            });
+
+            const current = totalPower / VOLTAGE;
+
+            if (current > BREAKER_LIMIT) {
+                tripBreaker();
+            } else {
+                document.getElementById('current-meter').innerText = current.toFixed(2) + " AMPS";
+                const cost = (totalPower / 1000) * RATE;
+                document.getElementById('cost-meter').innerText = "$" + cost.toFixed(2) + " / HR";
+            }
+        }
+
+        function tripBreaker() {
+            state.isTripped = true;
+            document.getElementById('breaker-box').classList.add('tripped');
+            document.getElementById('breaker-status').innerText = "TRIPPED";
+            document.getElementById('current-meter').innerText = "0.00 AMPS";
+            document.getElementById('cost-meter').innerText = "$0.00 / HR";
+
+            // Visual feedback: brief flash
+            document.querySelector('main').style.background = '#333';
+            setTimeout(() => document.querySelector('main').style.background = '#050505', 100);
+        }
+
+        function resetBreaker() {
+            state.isTripped = false;
+            document.getElementById('breaker-box').classList.remove('tripped');
+            document.getElementById('breaker-status').innerText = "CLOSED";
+            updateCalculations();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const outlet = document.getElementById('wall-outlet').getBoundingClientRect();
+            const mainRect = document.querySelector('main').getBoundingClientRect();
+            const outletX = outlet.left - mainRect.left + outlet.width / 2;
+            const outletY = outlet.top - mainRect.top + outlet.height / 2;
+
+            state.appliances.forEach(app => {
+                if (app.plugged) {
+                    ctx.strokeStyle = state.isTripped ? '#222' : 'var(--accent)';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(app.x + 60, app.y + 40);
+                    ctx.bezierCurveTo(app.x + 60, app.y + 150, outletX, outletY + 50, outletX, outletY);
+                    ctx.stroke();
+
+                    // Current "flow" dots
+                    if (!state.isTripped) {
+                        ctx.fillStyle = '#fff';
+                        const time = Date.now() / 200;
+                        const dots = 5;
+                        for (let i = 0; i < dots; i++) {
+                            const t = ((time + i / dots) % 1);
+                            const pos = getBezierPoint(t, { x: app.x + 60, y: app.y + 40 }, { x: app.x + 60, y: app.y + 150 }, { x: outletX, y: outletY + 50 }, { x: outletX, y: outletY });
+                            ctx.beginPath();
+                            ctx.arc(pos.x, pos.y, 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                }
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        function getBezierPoint(t, p0, p1, p2, p3) {
+            const cx = 3 * (p1.x - p0.x);
+            const bx = 3 * (p2.x - p1.x) - cx;
+            const ax = p3.x - p0.x - cx - bx;
+            const cy = 3 * (p1.y - p0.y);
+            const by = 3 * (p2.y - p1.y) - cy;
+            const ay = p3.y - p0.y - cy - by;
+            const t2 = t * t;
+            const t3 = t2 * t;
+            return {
+                x: (ax * t3) + (bx * t2) + (cx * t) + p0.x,
+                y: (ay * t3) + (by * t2) + (cy * t) + p0.y
+            };
+        }
+
+        // Narrative Control
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+
+        function changeSlide(dir) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide += dir;
+            slides[currentSlide].classList.add('active');
+
+            prevBtn.disabled = currentSlide === 0;
+            if (currentSlide === slides.length - 1) {
+                nextBtn.innerText = "Next Lesson →";
+                nextBtn.onclick = () => window.parent.location.href = '/lesson/chapter9/kelvin_dropper';
+            } else {
+                nextBtn.innerText = "Next";
+                nextBtn.onclick = () => changeSlide(1);
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>

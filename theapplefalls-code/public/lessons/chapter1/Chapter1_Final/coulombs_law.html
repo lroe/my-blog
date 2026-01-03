@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Coulomb's Torsion Balance Experiment</title>
+    <!-- Using Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        /* --- THEME & LAYOUT --- */
+        :root {
+            --bg: #0f1014;
+            --panel: #181a1f;
+            --text: #e0e6ed;
+            --accent: #ff9f43;
+            /* Warm Orange */
+            --accent-hover: #ffb773;
+            --border: #2c313a;
+            --electron: #00d2d3;
+            /* Cyan */
+            --proton: #ff6b6b;
+            /* Red */
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 22px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8892b0;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chapter-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--accent);
+            padding-left: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .story-text {
+            line-height: 1.8;
+            font-size: 15px;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        .story-text strong {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* CONTROLS AREA */
+        #controls-area {
+            background: #131519;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+        }
+
+        .control-row {
+            margin-bottom: 20px;
+            opacity: 0.4;
+            pointer-events: none;
+            transition: 0.4s;
+            filter: grayscale(1);
+            position: relative;
+        }
+
+        .control-row.active {
+            opacity: 1;
+            pointer-events: all;
+            filter: grayscale(0);
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        label span {
+            color: var(--accent);
+        }
+
+        button {
+            background: #2c313a;
+            color: #aaa;
+            border: 1px solid #3d4450;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            background: #3d4450;
+            color: #fff;
+            border-color: #555;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+        }
+
+        /* NAVIGATION FOOTER */
+        #nav-footer {
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+            background: #111;
+        }
+
+        .nav-btn {
+            width: 48%;
+            background: #222;
+            color: #fff;
+            border: none;
+        }
+
+        .nav-btn.next {
+            background: var(--accent);
+            color: #151515;
+            font-weight: 800;
+        }
+
+        .nav-btn.next:hover {
+            background: var(--accent-hover);
+            color: #000;
+            box-shadow: 0 0 15px rgba(255, 159, 67, 0.4);
+        }
+
+        .nav-btn.next:disabled {
+            background: #222;
+            color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none;
+        }
+
+        /* MAIN CANVAS */
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #23252e 0%, #0f1014 100%);
+            overflow: hidden;
+        }
+
+        .scene-tag {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            pointer-events: none;
+        }
+
+        /* DATA DISPLAY OVERLAY */
+        #data-overlay {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: #aaa;
+            font-family: monospace;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            width: 220px;
+            margin-bottom: 5px;
+        }
+
+        .data-val {
+            color: #fff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Charles Coulomb</h1>
+            <div class="subtitle">Deriving the Law</div>
+        </header>
+
+        <div id="story-container">
+            <div id="chapter-content">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+
+        <div id="controls-area">
+            <!-- Control 1: Charge Q1 -->
+            <div class="control-row" id="ctrl-q1">
+                <label>Fixed Sphere Charge (Q1) <span id="val-q1">0 µC</span></label>
+                <input type="range" id="slider-q1" min="-50" max="50" value="0" step="1">
+            </div>
+
+            <!-- Control 2: Charge Q2 -->
+            <div class="control-row" id="ctrl-q2">
+                <label>Beam Sphere Charge (Q2) <span id="val-q2">0 µC</span></label>
+                <input type="range" id="slider-q2" min="-50" max="50" value="0" step="1">
+            </div>
+
+            <!-- Control 3: Distance -->
+            <div class="control-row" id="ctrl-dist">
+                <label>Probe Distance (r) <span id="val-dist">21 cm</span></label>
+                <input type="range" id="slider-dist" min="21" max="40" value="21" step="0.5">
+            </div>
+
+            <!-- Reset -->
+            <div class="control-row active" id="ctrl-reset"
+                style="margin-top:10px; border-top:1px solid #2c313a; padding-top:15px; opacity: 1; filter: grayscale(0);">
+                <button onclick="resetSim()">Reset Experiment</button>
+            </div>
+        </div>
+
+        <div id="nav-footer">
+            <button class="nav-btn" onclick="prevLesson()">Back</button>
+            <button class="nav-btn next" id="btn-next" onclick="nextLesson()">Next &rarr;</button>
+        </div>
+    </aside>
+
+    <main id="world">
+        <div class="scene-tag" style="top: 20px; right: 20px;">Laboratory View</div>
+        <!-- Data Overlay Removed -->
+    </main>
+
+    <script>
+        // ==========================================
+        // PART 1: SIMULATION STATE & VARIABLES
+        // ==========================================
+
+        // CALIBRATED CONFIGURATION
+        // We adjust constants so that:
+        // 1. Q=20, Q=20, Dist=21 -> Angle approx 35 deg
+        // 2. Q=20, Q=40, Dist=21 -> Angle approx 70 deg (Doubling)
+        const config = {
+            charge1: 0,
+            charge2: 0,
+            distance: 21,
+            k: 3.5,          // Adjusted for linear response
+            torsionK: 50,    // Adjusted stiffness
+            damping: 0.94,
+            angle: 0,
+            velocity: 0
+        };
+
+        let currentChapter = 0;
+
+        function lockAll() { document.querySelectorAll('.control-row').forEach(r => r.classList.remove('active')); }
+        function unlock(id) { document.getElementById(id).classList.add('active'); }
+
+        const lessons = [
+            {
+                title: "1: The Measurement Tool",
+                text: "We want to find the equation for electric force. But we cannot see force directly.<br><br>This apparatus uses a wire that resists twisting. <strong>Hooke's Law</strong> tells us that the angle of twist (θ) is directly proportional to the Force.<br><br>Therefore: <strong>If the angle doubles, the Force has doubled.</strong><br><br>Click Next to begin the derivation.",
+                setup: () => {
+                    lockAll();
+                    unlock('ctrl-reset');
+                },
+                check: () => true
+            },
+            {
+                title: "2: Establishing a Baseline",
+                text: "First, let's create a baseline measurement.<br><br>1. Ensure Distance is at <strong>21 cm</strong>.<br>2. Set Fixed Sphere (Q1) to <strong>+20 µC</strong>.<br>3. Set Beam Sphere (Q2) to <strong>+20 µC</strong>.<br><br>Wait for the beam to settle. The angle should appear in the <strong>30° to 40°</strong> range.",
+                setup: () => {
+                    unlock('ctrl-q1');
+                    unlock('ctrl-q2');
+                },
+                check: () => config.charge1 === 20 && config.charge2 === 20 && config.distance === 21
+            },
+            {
+                title: "3: Testing Charge (q)",
+                text: "Now, let's discover how Charge affects Force.<br><br>Keep the distance fixed at 21cm. <strong>Double</strong> the Beam Sphere (Q2) charge to <strong>+40 µC</strong>.<br><br>Look at the new Angle. It should now be in the <strong>65° to 75°</strong> range.<br><br>Because the angle roughly doubled when the charge doubled, we know that Force is directly proportional to Charge.",
+                setup: () => {
+                    unlock('ctrl-q2');
+                    document.getElementById('ctrl-q1').classList.remove('active');
+                    document.getElementById('ctrl-dist').classList.remove('active');
+                },
+                check: () => config.charge2 >= 40
+            },
+            {
+                title: "4: Testing Distance (r)",
+                text: "Now for the critical discovery. Reset charges to <strong>+40 µC</strong> and <strong>+40 µC</strong>.<br><br>Currently, Distance is 21cm. Slowly increase the distance slider to <strong>30cm or 40cm</strong>.<br><br>Observe the Angle. Does it drop linearly? No, it plummets rapidly.<br><br><em>Observation: Force drops by the square of the distance (1/r²).</em>",
+                setup: () => {
+                    unlock('ctrl-q1');
+                    unlock('ctrl-q2');
+                    unlock('ctrl-dist');
+                },
+                check: () => config.distance > 30 && config.charge1 > 30 && config.charge2 > 30
+            },
+            {
+                title: "5: The Equation",
+                text: "By combining your two observations, you have derived Coulomb's Law:<br><br>1. Force $\\propto$ $(q1 \\cdot q2)$<br>2. Force $\\propto$ $1/r^2$<br><br>Putting it together:<br><strong>F = k · (q1 · q2) / r²</strong><br><br>Click Next for the conclusion.",
+                setup: () => {
+                    unlock('ctrl-q1');
+                    unlock('ctrl-q2');
+                    unlock('ctrl-dist');
+                    unlock('ctrl-reset');
+                },
+                check: () => true
+            },
+            {
+                title: "Conclusion",
+                text: "<strong>Excellent work.</strong><br><br>You have successfully replicated Charles Coulomb's 1785 experiment. You observed that force increases with charge and decreases drastically with distance.<br><br>We have the math. Now, let's witness the violent birth of a charge in the real world.<br><br>Next, we will explore the <strong>Triboelectric Effect</strong>.",
+                setup: () => {
+                    unlock('ctrl-q1');
+                    unlock('ctrl-q2');
+                    unlock('ctrl-dist');
+                    unlock('ctrl-reset');
+                },
+                check: () => true
+            }
+        ];
+
+        function checkAdvance() {
+            if (currentChapter >= lessons.length - 1) return;
+            const btn = document.getElementById('btn-next');
+            btn.disabled = !lessons[currentChapter].check();
+        }
+
+        // ==========================================
+        // PART 2: THREE.JS SETUP
+        // ==========================================
+
+        const scene = new THREE.Scene();
+        const sidebarWidth = 420;
+        let aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+        const viewSize = 45;
+
+        const camera = new THREE.OrthographicCamera(
+            -viewSize * aspect / 2, viewSize * aspect / 2,
+            viewSize / 2, -viewSize / 2,
+            1, 1000
+        );
+        camera.position.set(30, 35, 30);
+        camera.lookAt(0, 5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('world').appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(20, 50, 20);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        scene.add(dirLight);
+
+        // Materials
+        function createTileTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#1e2126'; ctx.fillRect(0, 0, 512, 512);
+            ctx.strokeStyle = '#111316'; ctx.lineWidth = 4;
+            ctx.beginPath();
+            for (let i = 0; i <= 256; i += 64) {
+                ctx.moveTo(i, 0); ctx.lineTo(i, 512);
+                ctx.moveTo(0, i); ctx.lineTo(512, i);
+            }
+            ctx.stroke();
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(5, 5);
+            return tex;
+        }
+
+        const matFloor = new THREE.MeshStandardMaterial({ map: createTileTexture(), roughness: 0.8, metalness: 0.2 });
+        const matBase = new THREE.MeshStandardMaterial({ color: 0x2c3e50, roughness: 0.3 });
+        const matGlass = new THREE.MeshPhongMaterial({ color: 0xaec6cf, opacity: 0.1, transparent: true, shininess: 90, side: THREE.DoubleSide });
+        const matMetal = new THREE.MeshStandardMaterial({ color: 0x95a5a6, roughness: 0.2, metalness: 0.8 });
+        const matBeam = new THREE.MeshStandardMaterial({ color: 0xe67e22, roughness: 0.6 });
+        const matWire = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const matPos = new THREE.MeshStandardMaterial({ color: 0xff6b6b, emissive: 0x550000 });
+        const matNeg = new THREE.MeshStandardMaterial({ color: 0x00d2d3, emissive: 0x004444 });
+        const matNeu = new THREE.MeshStandardMaterial({ color: 0x7f8c8d });
+
+        // Scene Objects
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), matFloor);
+        floor.rotation.x = -Math.PI / 2;
+        floor.position.y = -2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        const baseMesh = new THREE.Mesh(new THREE.CylinderGeometry(16, 18, 2, 8), matBase);
+        baseMesh.position.y = -1;
+        baseMesh.receiveShadow = true;
+        scene.add(baseMesh);
+
+        // Scale
+        const scaleGroup = new THREE.Group();
+        const ringGeo = new THREE.RingGeometry(14, 15, 64);
+        ringGeo.rotateX(-Math.PI / 2);
+        const ringMesh = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.3 }));
+        scaleGroup.add(ringMesh);
+        for (let i = 0; i < 360; i += 10) {
+            const tickGeo = new THREE.BoxGeometry(0.2, 0.1, 2);
+            const tick = new THREE.Mesh(tickGeo, new THREE.MeshBasicMaterial({ color: 0xaaaaaa }));
+            tick.position.set(Math.cos(i * Math.PI / 180) * 14.5, 0.1, Math.sin(i * Math.PI / 180) * 14.5);
+            tick.lookAt(0, 0, 0);
+            scaleGroup.add(tick);
+        }
+        scaleGroup.position.y = 0.1;
+        scene.add(scaleGroup);
+
+        // Apparatus
+        const glassCase = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 25, 32, 1, true), matGlass);
+        glassCase.position.y = 12.5;
+        scene.add(glassCase);
+        const glassCap = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 1, 32), matBase);
+        glassCap.position.y = 25.5;
+        scene.add(glassCap);
+
+        const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 25), matWire);
+        wire.position.y = 12.5;
+        scene.add(wire);
+
+        // Torsion Beam
+        const torsionGroup = new THREE.Group();
+        scene.add(torsionGroup);
+
+        const beam = new THREE.Mesh(new THREE.BoxGeometry(20, 0.4, 0.4), matBeam);
+        beam.position.y = 10;
+        beam.castShadow = true;
+        torsionGroup.add(beam);
+
+        const sphereGeo = new THREE.IcosahedronGeometry(1.5, 1);
+        const sphereBeam = new THREE.Mesh(sphereGeo, matNeu);
+        sphereBeam.position.set(10, 10, 0); // Radius 10
+        sphereBeam.castShadow = true;
+        torsionGroup.add(sphereBeam);
+
+        const sphereWeight = new THREE.Mesh(new THREE.IcosahedronGeometry(1.5, 0), matMetal);
+        sphereWeight.position.set(-10, 10, 0);
+        sphereWeight.castShadow = true;
+        torsionGroup.add(sphereWeight);
+
+        // Probe
+        const probeGroup = new THREE.Group();
+        scene.add(probeGroup);
+
+        const sphereFixed = new THREE.Mesh(sphereGeo, matNeu);
+        sphereFixed.castShadow = true;
+        probeGroup.add(sphereFixed);
+
+        const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 15), matMetal);
+        handle.position.y = 8;
+        probeGroup.add(handle);
+
+        // Force Line
+        const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)]);
+        const lineMat = new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 0.5, gapSize: 0.3, scale: 1 });
+        const forceLine = new THREE.Line(lineGeo, lineMat);
+        scene.add(forceLine);
+
+        // ==========================================
+        // PART 3: PHYSICS LOOP (UPDATED)
+        // ==========================================
+
+        function updateMaterial(mesh, charge) {
+            if (Math.abs(charge) < 0.1) mesh.material = matNeu;
+            else if (charge > 0) mesh.material = matPos;
+            else mesh.material = matNeg;
+
+            if (mesh.material.emissive) {
+                const intensity = Math.min(Math.abs(charge) / 50, 1);
+                mesh.material.emissiveIntensity = 0.5 + intensity;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 1. Move Probe
+            const probeX = config.distance;
+            probeGroup.position.set(probeX, 10, 5);
+            probeGroup.lookAt(0, 10, 0);
+
+            // 2. Physics Calculation
+            // NOTE: To ensure the "Double Charge = Double Angle" works visibly,
+            // we calculate Force based on the SLIDER distance (r), not the physical twisted distance.
+            // This mimics the "Initial Force" before the beam swings away (or assumes small angle approx).
+
+            let r = config.distance;
+
+            // Safety clamp for math (force doesn't go infinity)
+            if (r < 1) r = 1;
+
+            // Coulomb Force: F = k * q1 * q2 / r^2
+            let force = (config.k * config.charge1 * config.charge2) / (r * r);
+
+            // Torque: Force x Radius (10 units). 
+            // We treat Force as always perpendicular to the arm for the sake of the lesson's linearity.
+            const torqueElec = force * 10;
+
+            // Restoring Torque from wire (Hooke's Law): T = -k * theta
+            const torqueSpring = -config.torsionK * config.angle;
+
+            // Damping
+            const torqueDamp = -config.damping * config.velocity * 50;
+
+            const netTorque = torqueElec + torqueSpring + torqueDamp;
+
+            config.velocity += netTorque * 0.001;
+            config.angle += config.velocity;
+
+            // Limits
+            if (config.angle > 2.5) config.angle = 2.5;
+            if (config.angle < -0.5) config.angle = -0.5;
+
+            // 3. Update Visuals
+            torsionGroup.rotation.y = config.angle;
+            updateMaterial(sphereFixed, config.charge1);
+            updateMaterial(sphereBeam, config.charge2);
+
+            // Visual Force Line
+            const pBeam = new THREE.Vector3(); sphereBeam.getWorldPosition(pBeam);
+            const pFixed = new THREE.Vector3(); sphereFixed.getWorldPosition(pFixed);
+
+            if (Math.abs(force) > 0.1) {
+                forceLine.visible = true;
+                const pts = forceLine.geometry.attributes.position.array;
+                pts[0] = pBeam.x; pts[1] = pBeam.y; pts[2] = pBeam.z;
+                pts[3] = pFixed.x; pts[4] = pFixed.y; pts[5] = pFixed.z;
+                forceLine.geometry.attributes.position.needsUpdate = true;
+                forceLine.computeLineDistances();
+            } else {
+                forceLine.visible = false;
+            }
+
+            // 4. Update UI
+            // UI Removed
+
+            renderer.render(scene, camera);
+            checkAdvance();
+        }
+
+        // ==========================================
+        // PART 4: CONTROLS
+        // ==========================================
+
+        const slQ1 = document.getElementById('slider-q1');
+        const slQ2 = document.getElementById('slider-q2');
+        const slDist = document.getElementById('slider-dist');
+
+        slQ1.addEventListener('input', (e) => {
+            config.charge1 = parseFloat(e.target.value);
+            document.getElementById('val-q1').innerText = config.charge1 + " µC";
+        });
+        slQ2.addEventListener('input', (e) => {
+            config.charge2 = parseFloat(e.target.value);
+            document.getElementById('val-q2').innerText = config.charge2 + " µC";
+        });
+        slDist.addEventListener('input', (e) => {
+            config.distance = parseFloat(e.target.value);
+            document.getElementById('val-dist').innerText = config.distance + " cm";
+        });
+
+        window.addEventListener('resize', () => {
+            aspect = (window.innerWidth - sidebarWidth) / window.innerHeight;
+            camera.left = -viewSize * aspect / 2;
+            camera.right = viewSize * aspect / 2;
+            camera.top = viewSize / 2;
+            camera.bottom = -viewSize / 2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth - sidebarWidth, window.innerHeight);
+        });
+
+        function resetSim() {
+            config.charge1 = 0;
+            config.charge2 = 0;
+            config.distance = 21;
+            config.angle = 0;
+            config.velocity = 0;
+
+            slQ1.value = 0; slQ1.dispatchEvent(new Event('input'));
+            slQ2.value = 0; slQ2.dispatchEvent(new Event('input'));
+            slDist.value = 21; slDist.dispatchEvent(new Event('input'));
+
+            loadLesson(0);
+        }
+
+        function loadLesson(idx) {
+            currentChapter = idx;
+            const l = lessons[idx];
+            document.querySelector('header .subtitle').innerText = `Module 1: Chapter 1 - Step ${idx + 1} of ${lessons.length}`;
+            document.getElementById('chapter-content').innerHTML =
+                `<div class="chapter-title">${l.title}</div>
+             <div class="story-text">${l.text}</div>`;
+
+            const btn = document.getElementById('btn-next');
+
+            if (currentChapter === lessons.length - 1) {
+                btn.innerHTML = "Next Chapter &rarr;";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next &rarr;";
+                btn.disabled = !l.check();
+            }
+
+            l.setup();
+        }
+
+        function nextLesson() {
+            if (currentChapter < lessons.length - 1) {
+                loadLesson(currentChapter + 1);
+            } else {
+                // Navigate to Triboelectric via React route
+                window.parent.location.href = '/lesson/triboelectric';
+            }
+        }
+
+        // Init
+        loadLesson(0);
+        animate();
+
+    </script>
+</body>
+
+</html>

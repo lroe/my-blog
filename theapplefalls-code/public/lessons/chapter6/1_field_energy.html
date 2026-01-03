@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Energy of the Field</title>
+    <!-- Load Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Load OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Load KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* Maxwell Orange */
+            --accent-hover: #e58e3c;
+            --danger: #ff7675;
+            --energy: #00cec9;
+            /* Cyan for Energy Glow */
+            --field-line: #ffdd59;
+            /* Yellow for E-Field */
+            --border: #333;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        header {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--accent);
+            padding-left: 10px;
+        }
+
+        .text-content {
+            line-height: 1.6;
+            font-size: 14px;
+            color: #ccc;
+            text-align: justify;
+            margin-bottom: 15px;
+        }
+
+        .text-content strong {
+            color: #fff;
+        }
+
+        .text-content em {
+            color: var(--accent);
+            font-style: normal;
+        }
+
+        .math-block {
+            background: #222;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            font-size: 1.1em;
+            /* KaTeX will handle sizing */
+            text-align: center;
+            margin: 20px 0;
+            color: var(--energy);
+        }
+
+        /* --- CONTROLS --- */
+        #controls {
+            background: #111;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        button {
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 12px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+            box-shadow: none;
+        }
+
+        button.action-btn {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        button.action-btn:hover {
+            background: var(--accent);
+            color: #111;
+        }
+
+        button.toggle-btn.active {
+            background: var(--accent);
+            color: #111;
+        }
+
+        #nav {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        .next-btn:hover {
+            background: #ffb875;
+        }
+
+        /* --- VIEWPORT & OVERLAYS --- */
+        main {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+        }
+
+        /* Energy Counter HUD */
+        #energy-hud {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 15px;
+            width: 220px;
+            font-family: 'Segoe UI', sans-serif;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #charge-list {
+            margin-bottom: 10px;
+        }
+
+        .hud-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .hud-val {
+            font-weight: bold;
+            color: #fff;
+            font-family: monospace;
+        }
+
+        .hud-total {
+            border-top: 1px solid #555;
+            padding-top: 8px;
+            color: var(--energy);
+            font-size: 14px;
+        }
+
+        /* Bar for Work Done */
+        .bar-bg {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: var(--energy);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 6: Electrostatic Potential Energy</div>
+        </header>
+        <div id="story-container"></div>
+        <div id="controls">
+            <div id="dynamic-controls"></div>
+        </div>
+        <div id="nav">
+            <button class="nav-btn" onclick="prevStep()">Back</button>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <div id="energy-hud">
+            <div id="charge-list"></div>
+            <div class="hud-row"><span>Work (W):</span> <span class="hud-val" id="val-work">0.0 J</span></div>
+            <div class="bar-bg">
+                <div class="bar-fill" id="bar-work"></div>
+            </div>
+            <div class="hud-row hud-total" style="margin-top:10px">
+                <span>System Energy (U):</span> <span class="hud-val" id="val-total">0.00</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- CONFIGURATION ---
+        const config = {
+            sceneIndex: 0,
+            showFieldLines: false,
+            showEnergyDensity: false,
+            animatingChargeIndex: -1,
+        };
+
+        // --- THREE.JS SETUP ---
+        const viewport = document.getElementById('viewport');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, viewport.offsetWidth / viewport.offsetHeight, 0.1, 500);
+        camera.position.set(0, 15, 30);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        viewport.appendChild(renderer.domElement);
+        const orbit = new THREE.OrbitControls(camera, renderer.domElement);
+        orbit.enableDamping = true;
+        scene.add(new THREE.AmbientLight(0x606060));
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(10, 20, 10);
+        scene.add(pointLight);
+
+        // --- OBJECTS ---
+        const grid = new THREE.GridHelper(40, 40, 0x333333, 0x111111);
+        scene.add(grid);
+
+        const chargeGeo = new THREE.SphereGeometry(0.8, 32, 32);
+        const posMat = new THREE.MeshStandardMaterial({ color: 0xff4444, emissive: 0x550000, roughness: 0.2, metalness: 0.5 });
+
+        function createCharge(x, z, visible = false) {
+            const mesh = new THREE.Mesh(chargeGeo, posMat);
+            mesh.position.set(x, 0, z);
+            mesh.visible = visible;
+            return mesh;
+        }
+
+        const arrowHelper = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 1, 0xffff00);
+        arrowHelper.visible = false;
+        scene.add(arrowHelper);
+
+        // --- ENERGY CLOUD SYSTEM ---
+        // Generate a soft glow texture procedurally
+        function createGlowTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const grd = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            grd.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grd.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+            grd.addColorStop(0.5, 'rgba(0, 206, 201, 0.4)'); // Cyan
+            grd.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, 32, 32);
+            const texture = new THREE.CanvasTexture(canvas);
+            return texture;
+        }
+
+        const particleCount = 2000; // Increase count for density
+        const cloudGeo = new THREE.PlaneGeometry(1, 1);
+        const cloudMat = new THREE.MeshBasicMaterial({
+            map: createGlowTexture(),
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.8, // Base opacity, modulation happens via scale/color
+            side: THREE.DoubleSide,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending
+        });
+
+        const energyCloud = new THREE.InstancedMesh(cloudGeo, cloudMat, particleCount);
+        energyCloud.visible = false;
+        // Allow per-instance color
+        energyCloud.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(particleCount * 3), 3);
+
+        scene.add(energyCloud);
+
+        const dummy = new THREE.Object3D();
+        const colorDummy = new THREE.Color();
+        // Distribute particles in a volume around the origin
+        const particlePositions = Array.from({ length: particleCount }, () => new THREE.Vector3(
+            (Math.random() - 0.5) * 35,
+            (Math.random() - 0.5) * 15,
+            (Math.random() - 0.5) * 35
+        ));
+
+        // Electric Field Lines Group
+        const fieldLinesGroup = new THREE.Group();
+        scene.add(fieldLinesGroup);
+        const fieldLineMat = new THREE.LineBasicMaterial({ color: 0xffdd59, transparent: true, opacity: 0.5 });
+
+
+        // --- SCENE STATE MANAGEMENT ---
+        let charges = [];
+        let isAnimating = false;
+        let totalEnergy = 0;
+
+        function resetSimulation() {
+            charges.forEach(c => scene.remove(c));
+            charges = [];
+            totalEnergy = 0;
+            arrowHelper.visible = false;
+            energyCloud.visible = false;
+            fieldLinesGroup.clear();
+            config.showEnergyDensity = false;
+            config.showFieldLines = false;
+            updateHUD();
+        }
+
+        function calculateTotalEnergy() {
+            let energy = 0;
+            if (charges.length < 2) return 0;
+            for (let i = 0; i < charges.length; i++) {
+                for (let j = i + 1; j < charges.length; j++) {
+                    const dist = charges[i].position.distanceTo(charges[j].position);
+                    if (dist > 0) energy += 10 / dist;
+                }
+            }
+            return energy;
+        }
+
+        function addCharge(targetPos, animateFromInfinity = true) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            const c = createCharge(animateFromInfinity ? 40 : targetPos.x, targetPos.z, true);
+            scene.add(c);
+            charges.push(c);
+            config.animatingChargeIndex = charges.length - 1;
+
+            if (charges.length > 1) {
+                document.getElementById('energy-hud').style.opacity = 1;
+            }
+
+            if (animateFromInfinity) {
+                const startPos = c.position.clone();
+                const endPos = targetPos;
+                let progress = 0;
+                const prevTotalEnergy = calculateTotalEnergy();
+
+                function animateMove() {
+                    progress += 0.01;
+                    if (progress >= 1) {
+                        c.position.copy(endPos);
+                        isAnimating = false;
+                        arrowHelper.visible = false;
+                        config.animatingChargeIndex = -1;
+                        totalEnergy = calculateTotalEnergy();
+                        updateHUD(0, totalEnergy);
+                        updateVisuals();
+                        if (document.querySelector('.action-btn')) document.querySelector('.action-btn').disabled = false;
+                        if (document.getElementById('btn-next')) document.getElementById('btn-next').disabled = false;
+                        return;
+                    }
+
+                    c.position.lerpVectors(startPos, endPos, progress);
+
+                    let workDoneThisStep = 0;
+                    let force = new THREE.Vector3();
+                    for (let i = 0; i < charges.length - 1; i++) {
+                        const other = charges[i];
+                        const dir = new THREE.Vector3().subVectors(c.position, other.position);
+                        const dist = dir.length();
+                        dir.normalize();
+                        force.add(dir.multiplyScalar(20 / (dist * dist)));
+                        workDoneThisStep += 10 / dist;
+                    }
+
+                    arrowHelper.position.copy(c.position);
+                    arrowHelper.setDirection(force.normalize().negate());
+                    arrowHelper.setLength(Math.min(force.length() * 0.5, 5));
+                    arrowHelper.visible = true;
+
+                    updateHUD(workDoneThisStep, prevTotalEnergy);
+                    updateVisuals();
+                    requestAnimationFrame(animateMove);
+                }
+                animateMove();
+            } else {
+                isAnimating = false;
+                config.animatingChargeIndex = -1;
+                totalEnergy = calculateTotalEnergy();
+                updateHUD(0, totalEnergy);
+                updateVisuals();
+            }
+        }
+
+        function updateHUD(work = 0, total = totalEnergy) {
+            const hudWork = document.getElementById('val-work');
+            const hudTotal = document.getElementById('val-total');
+            const bar = document.getElementById('bar-work');
+            const chargeListDiv = document.getElementById('charge-list');
+
+            chargeListDiv.innerHTML = '';
+            charges.forEach((charge, i) => {
+                let status = 'FIXED';
+                if (i === config.animatingChargeIndex) {
+                    status = 'INCOMING...';
+                }
+                chargeListDiv.innerHTML += `<div class="hud-row"><span>Charge Q${i + 1}:</span> <span class="hud-val">${status}</span></div>`;
+            });
+
+            hudWork.innerText = work > 0 ? `+${work.toFixed(2)} J` : `0.00 J`;
+            hudTotal.innerText = total.toFixed(2) + " J";
+
+            const pct = Math.min((work / 10) * 100, 100);
+            bar.style.width = pct + "%";
+        }
+
+        function calculateEField(pos) {
+            const E = new THREE.Vector3();
+            charges.forEach(c => {
+                const rVec = new THREE.Vector3().subVectors(pos, c.position);
+                const r = rVec.length();
+                if (r > 0.5) {
+                    E.add(rVec.normalize().multiplyScalar(1 / (r * r)));
+                }
+            });
+            return E;
+        }
+
+        // --- FIX: Energy Cloud Logic ---
+        function updateEnergyCloud() {
+            if (!config.showEnergyDensity || charges.length === 0) {
+                energyCloud.visible = false;
+                return;
+            }
+            energyCloud.visible = true;
+
+            for (let i = 0; i < particleCount; i++) {
+                const pos = particlePositions[i];
+                const E = calculateEField(pos);
+                const magSq = E.lengthSq(); // Proportional to Energy Density
+
+                // Adjust visual scale based on energy density
+                // Higher energy = larger, brighter blob
+                const scale = Math.min(Math.sqrt(magSq) * 4, 3.0);
+
+                // Only show if field is significant enough
+                if (scale < 0.1) {
+                    dummy.scale.set(0, 0, 0);
+                } else {
+                    dummy.position.copy(pos);
+                    dummy.lookAt(camera.position); // Billboard to face camera
+                    dummy.scale.set(scale, scale, 1);
+
+                    // Color mapping: Low energy = Cyan, High energy = White
+                    const intensity = Math.min(magSq * 0.5, 1.0);
+                    colorDummy.setHSL(0.5, 1.0, 0.5 + (intensity * 0.5)); // 0.5 is Cyan hue
+                    energyCloud.setColorAt(i, colorDummy);
+                }
+
+                dummy.updateMatrix();
+                energyCloud.setMatrixAt(i, dummy.matrix);
+            }
+            energyCloud.instanceMatrix.needsUpdate = true;
+            if (energyCloud.instanceColor) energyCloud.instanceColor.needsUpdate = true;
+        }
+
+        function updateFieldLines() {
+            fieldLinesGroup.clear();
+            if (!config.showFieldLines || charges.length === 0) return;
+
+            const numLinesPerCharge = 16;
+            const stepSize = 0.5;
+            const maxSteps = 100;
+
+            charges.forEach(charge => {
+                for (let i = 0; i < numLinesPerCharge; i++) {
+                    const points = [];
+                    const startVec = new THREE.Vector3().setFromSphericalCoords(0.9, Math.PI * Math.random(), 2 * Math.PI * Math.random());
+                    let currentPos = charge.position.clone().add(startVec);
+                    points.push(currentPos.clone());
+
+                    for (let j = 0; j < maxSteps; j++) {
+                        const E = calculateEField(currentPos);
+                        if (E.length() < 0.001) break;
+                        currentPos.add(E.normalize().multiplyScalar(stepSize));
+                        points.push(currentPos.clone());
+                        if (currentPos.length() > 30) break;
+                    }
+                    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+                    const line = new THREE.Line(geometry, fieldLineMat);
+                    fieldLinesGroup.add(line);
+                }
+            });
+        }
+
+        function updateVisuals() {
+            if (config.showEnergyDensity) updateEnergyCloud();
+            if (config.showFieldLines) updateFieldLines();
+        }
+
+        // --- ANIMATION LOOP ---
+        function animateScene() {
+            requestAnimationFrame(animateScene);
+            orbit.update();
+            if (config.showEnergyDensity && !isAnimating) updateEnergyCloud();
+            renderer.render(scene, camera);
+        }
+        animateScene();
+
+
+        // --- STORY ENGINE ---
+        const steps = [
+            {
+                title: "An Empty Universe",
+                text: "Imagine a universe completely devoid of charge and energy. Its total energy is, by definition, zero.<br><br>Now, let's bring our first positive charge, <strong>Q1</strong>, from infinitely far away. Since there are no existing electric fields to push against, it takes <strong>no work</strong> to place it.",
+                controls: `<button class="action-btn" onclick="stepAction(0)">Place Charge Q1</button>`,
+                action: () => addCharge(new THREE.Vector3(-4, 0, 0), false),
+                setup: () => {
+                    resetSimulation();
+                    document.getElementById('energy-hud').style.opacity = 0;
+                }
+            },
+            {
+                title: "Work Against the Field",
+                text: "Now Q1 exists, creating an electric field around it. Let's bring in a second positive charge, <strong>Q2</strong>. To move it closer to Q1, we must do work against their mutual repulsion.<br><br>The work we do is stored in the system as <em>potential energy</em>. Watch the HUD as Q2 approaches.",
+                controls: `<button class="action-btn" onclick="stepAction(1)">Bring in Charge Q2</button>`,
+                action: () => addCharge(new THREE.Vector3(4, 0, 0), true),
+                setup: () => { if (charges.length === 0) addCharge(new THREE.Vector3(-4, 0, 0), false); }
+            },
+            {
+                title: "Energy of Configuration",
+                text: `The work done to assemble this pair becomes the potential energy $U$ of the system. This energy depends on the charges and the distance $r$ between them.
+                   <div class="math-block">$$ U = W = \\frac{k Q_1 Q_2}{r} $$</div>
+                   Now, let's add a third charge, <strong>Q3</strong>. We must do work against the fields of <em>both</em> Q1 and Q2. The total system energy will be the sum of all pairwise interactions.`,
+                controls: `<button class="action-btn" onclick="stepAction(2)">Bring in Charge Q3</button>`,
+                action: () => addCharge(new THREE.Vector3(0, 0, 5), true),
+                setup: () => { if (charges.length < 2) { addCharge(new THREE.Vector3(-4, 0, 0), false); addCharge(new THREE.Vector3(4, 0, 0), false); } }
+            },
+            {
+                title: "A Revolutionary Idea",
+                text: `So far, we've treated energy as an abstract property of the *arrangement* of charges. But James Clerk Maxwell proposed something profound: the energy is not an abstract property, but is physically stored <strong>in the electric field itself.</strong><br><br>Where the field is strong, the energy is dense. Where the field is weak, the energy is sparse.`,
+                controls: ``,
+                setup: () => { }
+            },
+            {
+                title: "Energy Density of the Field",
+                text: `Maxwell showed that the energy density $u$ (energy per unit volume) at any point in space is proportional to the square of the electric field strength $E$ at that point.
+                   <div class="math-block">$$ u = \\frac{1}{2} \\epsilon_0 E^2 $$</div>
+                   This means we have two ways to calculate the total energy:
+                   <br>1. Sum the work for each charge pair (what we did).
+                   <br>2. Integrate the energy density $u$ over all of space.
+                   <br><br>Remarkably, <strong>both methods give the exact same result.</strong>`,
+                controls: `
+                <div class="controls-grid">
+                    <button id="btn-toggle-field" class="toggle-btn" onclick="toggleFieldLines(this)">Show E-Field Lines</button>
+                    <button id="btn-toggle-density" class="toggle-btn" onclick="toggleEnergyDensity(this)">Show Energy Density</button>
+                </div>`,
+                setup: () => {
+                    if (charges.length < 3) {
+                        addCharge(new THREE.Vector3(-4, 0, 0), false);
+                        addCharge(new THREE.Vector3(4, 0, 0), false);
+                        addCharge(new THREE.Vector3(0, 0, 5), false);
+                    }
+                    updateVisuals();
+                }
+            },
+            {
+                title: "Conclusion",
+                text: "This equivalence is a cornerstone of physics. It tells us that the electric field is not just a mathematical tool for calculating forces; it is a real, physical entity that carries energy and momentum.<br><br>This concept of energy stored in fields is fundamental to understanding light (electromagnetic waves) and modern physics, including Einstein's famous equation relating mass and energy.",
+                controls: `<button onclick="loadStep(0)">Restart Experiment</button>`,
+                setup: () => {
+                    config.showFieldLines = true;
+                    config.showEnergyDensity = true;
+                    document.getElementById('btn-toggle-field')?.classList.add('active');
+                    document.getElementById('btn-toggle-density')?.classList.add('active');
+                    updateVisuals();
+                    document.getElementById('btn-next').innerText = "Next Lesson";
+                    document.getElementById('btn-next').disabled = false;
+                }
+            }
+        ];
+
+        let currentStep = 0;
+
+        function loadStep(idx) {
+            if (isAnimating) return;
+            currentStep = idx;
+            const s = steps[idx];
+
+            document.getElementById('story-container').innerHTML = `
+            <div class="chapter-title">${s.title}</div>
+            <div class="text-content">${s.text}</div>
+        `;
+            document.getElementById('dynamic-controls').innerHTML = s.controls;
+
+            renderMathInElement(document.getElementById('story-container'), {
+                delimiters: [{ left: "$$", right: "$$", display: true }]
+            });
+
+            if (s.setup) s.setup();
+
+            const btn = document.getElementById('btn-next');
+            if (currentStep === steps.length - 1) {
+                btn.innerHTML = "Next Lesson";
+                btn.disabled = false;
+            } else {
+                btn.innerHTML = "Next";
+                btn.disabled = false;
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < steps.length - 1) {
+                loadStep(currentStep + 1);
+            } else {
+                window.parent.location.href = '/lesson/chapter6/energy_density';
+            }
+        }
+
+        function prevStep() { if (currentStep > 0) loadStep(currentStep - 1); }
+
+        window.stepAction = (stepIndex) => {
+            const actionFn = steps[stepIndex].action;
+            if (actionFn) {
+                actionFn();
+                const btn = document.querySelector('button.action-btn');
+                if (btn) btn.disabled = true;
+            }
+        };
+
+        window.toggleEnergyDensity = (btn) => {
+            config.showEnergyDensity = !config.showEnergyDensity;
+            btn.classList.toggle('active', config.showEnergyDensity);
+            energyCloud.visible = config.showEnergyDensity;
+            if (config.showEnergyDensity) updateEnergyCloud();
+        };
+
+        window.toggleFieldLines = (btn) => {
+            config.showFieldLines = !config.showFieldLines;
+            btn.classList.toggle('active', config.showFieldLines);
+            fieldLinesGroup.visible = config.showFieldLines;
+            if (config.showFieldLines) updateFieldLines();
+        };
+
+        loadStep(0);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = viewport.offsetWidth / viewport.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(viewport.offsetWidth, viewport.offsetHeight);
+        });
+
+    </script>
+</body>
+
+</html>
