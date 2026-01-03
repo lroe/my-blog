@@ -602,7 +602,7 @@
             if (state.stepIndex < steps.length - 1) {
                 loadStep(state.stepIndex + 1);
             } else {
-                window.location.href = '/theapplefalls/lessons/chapter7/7_energy_storage_mystery.html';
+                window.top.location.href = '/theapplefalls/lesson/7_energy_storage_mystery';
             }
         }
         function prevStep() { if (state.stepIndex > 0) loadStep(state.stepIndex - 1); }

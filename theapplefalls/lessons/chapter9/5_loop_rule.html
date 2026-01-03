@@ -514,7 +514,7 @@
             prevBtn.disabled = currentSlide === 0;
             if (currentSlide === slides.length - 1) {
                 nextBtn.innerText = "Finish →";
-                nextBtn.onclick = () => window.location.href = '/theapplefalls/lessons/chapter9/6_junction_rule.html';
+                nextBtn.onclick = () => window.top.location.href = '/theapplefalls/lesson/6_junction_rule';
             } else {
                 nextBtn.innerText = "Next";
                 nextBtn.onclick = () => changeSlide(1);

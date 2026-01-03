@@ -633,7 +633,7 @@
             prevBtn.disabled = currentSlide === 0;
             if (currentSlide === slides.length - 1) {
                 nextBtn.innerText = "Next Lesson →";
-                nextBtn.onclick = () => window.location.href = '/theapplefalls/lessons/chapter9/7_measuring_circuits.html';
+                nextBtn.onclick = () => window.top.location.href = '/theapplefalls/lesson/7_measuring_circuits';
             } else {
                 nextBtn.innerText = "Next";
                 nextBtn.onclick = () => changeSlide(1);

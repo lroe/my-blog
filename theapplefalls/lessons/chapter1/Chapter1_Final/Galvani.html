@@ -668,7 +668,7 @@
         function nextLesson() {
             if (currentChapter === lessons.length - 1) {
                 // Navigate to Metal Induction via React route
-                window.location.href = '/theapplefalls/lessons/chapter1/Chapter1_Final/MetalInduction.html';
+                window.top.location.href = '/theapplefalls/lesson/metalinduction';
             } else {
                 if (currentChapter < lessons.length - 1) loadLesson(currentChapter + 1);
             }

@@ -270,7 +270,7 @@
             prevBtn.disabled = currentSlide === 0;
             if (currentSlide === slides.length - 1) {
                 nextBtn.innerText = "Next Lesson \u2192";
-                nextBtn.onclick = () => window.location.href = '/theapplefalls/lessons/chapter9/2_chemical_battery.html';
+                nextBtn.onclick = () => window.top.location.href = '/theapplefalls/lesson/2_chemical_battery';
             } else {
                 nextBtn.innerText = currentSlide === 0 ? "Start Experiment" : "Next";
                 nextBtn.onclick = () => changeSlide(1);

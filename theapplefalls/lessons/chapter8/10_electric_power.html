@@ -468,7 +468,7 @@
             const nextBtn = document.getElementById('nextBtn');
             if (currentSlide === slides.length - 1) {
                 nextBtn.innerText = "Next Lesson";
-                nextBtn.onclick = () => window.location.href = '/theapplefalls/lessons/chapter9/1_electric_pump.html';
+                nextBtn.onclick = () => window.top.location.href = '/theapplefalls/lesson/1_electric_pump';
             } else {
                 nextBtn.innerText = "Next";
                 nextBtn.onclick = () => changeSlide(1);

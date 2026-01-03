@@ -555,7 +555,7 @@
             prevBtn.disabled = currentSlide === 0;
             if (currentSlide === slides.length - 1) {
                 nextBtn.innerText = "Finish \u2192";
-                nextBtn.onclick = () => window.location.href = '/theapplefalls/lessons/chapter9/4_maximum_power.html';
+                nextBtn.onclick = () => window.top.location.href = '/theapplefalls/lesson/4_maximum_power';
             } else {
                 nextBtn.innerText = "Next";
                 nextBtn.onclick = () => changeSlide(1);
