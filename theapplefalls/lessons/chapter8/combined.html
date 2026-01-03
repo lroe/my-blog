@@ -1,0 +1,2437 @@
+<!-- Combined HTML File -->
+
+
+<!-- START: 1_current_convention.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Conventional Current</title>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            /* THE ORANGE */
+            --border: #333;
+            --pos-charge: #ff5e57;
+            --neg-charge: #48dbfb;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: #1a1a1a;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            font-weight: 300;
+        }
+
+        .text-content {
+            line-height: 1.7;
+            font-size: 17px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .concept-block {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .math-block {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        #controls {
+            background: #111;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #222 0%, #080808 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+        }
+
+
+        .toggle-container {
+            background: #222;
+            border-radius: 30px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            position: relative;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 8px 15px;
+            border-radius: 25px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+            border: none;
+            background: transparent;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .toggle-btn.active {
+            background: var(--accent);
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 8, Lesson 1: The Two Definitions</div>
+        </header>
+
+        <div id="story-container">
+            <div class="chapter-title">The Direction of Flow</div>
+            <div class="text-content" id="step-text">
+                <p>When you close a circuit, energy begins to move. But which way does it "flow"? This simple question
+                    has a complicated history.</p>
+                <div class="concept-block">
+                    In physics, we define <strong>Current ($I$)</strong> as the hypothetical flow of <strong>positive
+                        charge</strong>. This is known as "Conventional Current."
+                </div>
+                <p>In the mid-1700s, Benjamin Franklin imagined electricity as a fluid that moved from an area of
+                    "excess" (positive) to an area of "deficit" (negative). It was a 50/50 guess, and as we'll see, the
+                    physics of solids eventually proved him wrong—but not before his convention stuck forever.</p>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div class="control-group">
+                <label>View Mode</label>
+                <div class="toggle-container">
+                    <button id="btn-conventional" class="toggle-btn active"
+                        onclick="setMode('conventional')">Conventional</button>
+                    <button id="btn-electron" class="toggle-btn" onclick="setMode('electron')">Electron Flow</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav">
+            <a href="../chapter7/7_energy_storage_mystery.html" class="nav-btn">Back</a>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <canvas id="simCanvas"></canvas>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const viewport = document.getElementById('viewport');
+
+        let width, height;
+        let mode = 'conventional'; // 'conventional' or 'electron'
+        let charges = [];
+        let animationFrame;
+
+        function resize() {
+            width = viewport.clientWidth - 100;
+            height = viewport.clientHeight - 100;
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        class Charge {
+            constructor(posIdx) {
+                this.posIdx = posIdx; // 0 to 1
+                this.size = 5;
+            }
+
+            update(speed) {
+                this.posIdx += speed;
+                if (this.posIdx > 1) this.posIdx -= 1;
+                if (this.posIdx < 0) this.posIdx += 1;
+            }
+
+            draw(pathPoints, color) {
+                const totalPoints = pathPoints.length;
+                const idx = Math.floor(this.posIdx * (totalPoints - 1));
+                const p = pathPoints[idx];
+
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glow
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function createPath() {
+            const w = Math.min(width - 100, 500);
+            const h = Math.min(height - 100, 300);
+            const cx = width / 2;
+            const cy = height / 2;
+            const r = 30; // corner radius
+
+            // Rounded rectangle path
+            const points = [];
+            const steps = 200;
+
+            // Top edge
+            for (let i = 0; i < steps; i++) points.push({ x: cx - w / 2 + r + (i / steps) * (w - 2 * r), y: cy - h / 2 });
+            // Top right corner
+            for (let i = 0; i < 30; i++) {
+                let ang = -Math.PI / 2 + (i / 30) * (Math.PI / 2);
+                points.push({ x: cx + w / 2 - r + r * Math.cos(ang), y: cy - h / 2 + r + r * Math.sin(ang) });
+            }
+            // Right edge
+            for (let i = 0; i < steps; i++) points.push({ x: cx + w / 2, y: cy - h / 2 + r + (i / steps) * (h - 2 * r) });
+            // Bottom right corner
+            for (let i = 0; i < 30; i++) {
+                let ang = 0 + (i / 30) * (Math.PI / 2);
+                points.push({ x: cx + w / 2 - r + r * Math.cos(ang), y: cy + h / 2 - r + r * Math.sin(ang) });
+            }
+            // Bottom edge
+            for (let i = 0; i < steps; i++) points.push({ x: cx + w / 2 - r - (i / steps) * (w - 2 * r), y: cy + h / 2 });
+            // Bottom left corner
+            for (let i = 0; i < 30; i++) {
+                let ang = Math.PI / 2 + (i / 30) * (Math.PI / 2);
+                points.push({ x: cx - w / 2 + r + r * Math.cos(ang), y: cy + h / 2 - r + r * Math.sin(ang) });
+            }
+            // Left edge
+            for (let i = 0; i < steps; i++) points.push({ x: cx - w / 2, y: cy + h / 2 - r - (i / steps) * (h - 2 * r) });
+            // Top left corner
+            for (let i = 0; i < 30; i++) {
+                let ang = Math.PI + (i / 30) * (Math.PI / 2);
+                points.push({ x: cx - w / 2 + r + r * Math.cos(ang), y: cy - h / 2 + r + r * Math.sin(ang) });
+            }
+
+            return points;
+        }
+
+        function initCharges() {
+            charges = [];
+            for (let i = 0; i < 20; i++) {
+                charges.push(new Charge(i / 20));
+            }
+        }
+
+        const pathPoints = [];
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            const points = createPath();
+            const cx = width / 2;
+            const cy = height / 2;
+            const w = Math.min(width - 100, 500);
+            const h = Math.min(height - 100, 300);
+
+            // Draw Wire
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+
+            // Draw Battery Symbol
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(cx - 30, cy + h / 2 - 20, 60, 40);
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cx - 30, cy + h / 2 - 20, 60, 40);
+
+            // Battery Terminals
+            ctx.fillStyle = '#ff5e57'; // Plus
+            ctx.font = 'bold 12px Arial';
+            ctx.fillText('+', cx - 22, cy + h / 2 + 5);
+            ctx.fillStyle = '#48dbfb'; // Minus
+            ctx.fillText('-', cx + 15, cy + h / 2 + 5);
+
+            // Animate Charges
+            const speed = mode === 'conventional' ? 0.002 : -0.002;
+            const color = mode === 'conventional' ? '#ff5e57' : '#48dbfb';
+            const label = mode === 'conventional' ? '+' : '-';
+
+            charges.forEach(c => {
+                c.update(speed);
+                c.draw(points, color);
+
+                // Draw label relative to charge position
+                const totalPoints = points.length;
+                const idx = Math.floor(c.posIdx * (totalPoints - 1));
+                const p = points[idx];
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 8px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, p.x, p.y);
+            });
+
+            // Transition Arrows
+            ctx.strokeStyle = varColor('--accent');
+            ctx.lineWidth = 2;
+            // Draw a big arrow for current direction
+            drawArrow(cx, cy - h / 2 - 30, 40, 0);
+
+            animationFrame = requestAnimationFrame(draw);
+        }
+
+        function drawArrow(x, y, length, angle) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(-length / 2, 0);
+            ctx.lineTo(length / 2, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(length / 2 - 8, -5);
+            ctx.lineTo(length / 2, 0);
+            ctx.lineTo(length / 2 - 8, 5);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function varColor(name) {
+            return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        }
+
+        function setMode(newMode) {
+            mode = newMode;
+            document.getElementById('btn-conventional').classList.toggle('active', mode === 'conventional');
+            document.getElementById('btn-electron').classList.toggle('active', mode === 'electron');
+
+            const stepText = document.getElementById('step-text');
+
+            if (mode === 'conventional') {
+                stepText.innerHTML = `
+                    <p>When positive charges move in this direction, we say the current goes in this direction.</p>
+                    <div class="concept-block">
+                        This is the <strong>Standard Convention</strong>. Even though the actual carriers (electrons) are negative, we treat them as if positive charges were moving clockwise.
+                    </div>
+                    <p>It's like counting the movement of "holes" in a crowd rather than the people themselves.</p>
+                `;
+            } else {
+                stepText.innerHTML = `
+                    <p>In real metallic conductors, it's actually the <strong>Electrons</strong> that move. Because they are negatively charged, they move toward the positive terminal.</p>
+                    <div class="concept-block">
+                        Notice how they flow <strong>Counter-Clockwise</strong>. This is the opposite of the convention we just saw!
+                    </div>
+                    <p>Mathematically, a negative charge moving left is equivalent to a positive charge moving right. The "Current" ($I$) remains the same in both models.</p>
+                `;
+            }
+        }
+
+        let currentStepNum = 0;
+        const stepsData = [
+            {
+                title: "1. The Conventional View",
+                text: "<p>Imagine a fluid of positive charges flowing from the high potential (+) to low potential (-).</p><div class='concept-block'>Current ($I$) is defined as the rate of flow of charge: $I = \\frac{dQ}{dt}$.</div>"
+            },
+            {
+                title: "2. The Physical Reality",
+                text: "<p>Now switch to <strong>Electron Flow</strong>. Notice they move in the opposite direction!</p><div class='concept-block'>In a solid copper wire, the positive ions are frozen in a lattice. Only the sea of electrons can drift.</div>"
+            }
+        ];
+
+        function nextStep() {
+            currentStepNum++;
+            if (currentStepNum >= 2) {
+                window.location.href = "2_drift_velocity_snail.html";
+                return;
+            }
+            const s = stepsData[currentStepNum];
+            document.getElementById('story-container').innerHTML = `<div class="chapter-title">${s.title}</div><div class="text-content">${s.text}</div>`;
+            if (window.renderMathInElement) renderMathInElement(document.getElementById('story-container'));
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        initCharges();
+        setMode('conventional');
+        draw();
+    </script>
+</body>
+
+</html>
+<!-- END: 1_current_convention.html -->
+
+<!-- START: 2_drift_velocity_snail.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: The Snail Paradox</title>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --border: #333;
+            --electron: #48dbfb;
+            --lattice: #333;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: #1a1a1a;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            font-weight: 300;
+        }
+
+        .text-content {
+            line-height: 1.7;
+            font-size: 17px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .concept-block {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .math-block {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.1em;
+        }
+
+        #controls {
+            background: #111;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #222 0%, #080808 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            border-radius: 8px;
+            background: #050505;
+            border: 1px solid #333;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 5px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #stats {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            color: #888;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-val {
+            color: var(--accent);
+            font-size: 16px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .snail-icon {
+            font-size: 30px;
+            position: absolute;
+            bottom: 50px;
+            left: 50px;
+            transition: transform 0.1s linear;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 8, Lesson 2: The Drift Paradox</div>
+        </header>
+
+        <div id="story-container">
+            <div class="chapter-title">Chaos vs. Progress</div>
+            <div class="text-content" id="step-text">
+                <p>In a copper wire, electrons are not sitting still. At room temperature, they zip around at a
+                    staggering <strong>million meters per second</strong> ($10^6$ m/s).</p>
+                <div class="concept-block">
+                    This "Thermal Speed" is chaotic and goes in all directions. On average, the electron goes nowhere.
+                </div>
+                <p>But apply a small electric field ($E$), and a subtle change occurs. Amidst the chaos, the entire
+                    electron cloud begins to "drift."</p>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div class="control-group">
+                <label>Electric Field ($E$)</label>
+                <input type="range" id="field-slider" class="slider" min="0" max="100" value="0"
+                    oninput="updateField()">
+                <div
+                    style="display: flex; justify-content: space-between; font-size: 10px; margin-top: 5px; color: #666;">
+                    <span>OFF</span>
+                    <span>STRONG</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="nav">
+            <a href="1_current_convention.html" class="nav-btn">Back</a>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <canvas id="simCanvas"></canvas>
+
+        <div id="stats">
+            <div class="stat-item"><span class="stat-val" id="val-thermal">1,000,000</span> Thermal Speed (m/s)</div>
+            <div class="stat-item"><span class="stat-val" id="val-drift">0.00</span> Drift Velocity (cm/s)</div>
+        </div>
+
+        <div class="snail-icon" id="snail">🐌</div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const viewport = document.getElementById('viewport');
+        const snail = document.getElementById('snail');
+
+        let width, height;
+        let fieldStrength = 0;
+        let electrons = [];
+        let averageX = 0;
+
+        function resize() {
+            width = Math.min(viewport.clientWidth - 100, 700);
+            height = Math.min(viewport.clientHeight - 300, 400);
+            canvas.width = width;
+            canvas.height = height;
+            initElectrons();
+        }
+
+        class Electron {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.thermalSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            }
+
+            update() {
+                // Chaos (Thermal Motion)
+                // In reality they collide, here we just keep them moving.
+                // Every few frames, simulate a collision by randomizing direction
+                if (Math.random() < 0.05) {
+                    const ang = Math.random() * Math.PI * 2;
+                    this.vx = Math.cos(ang) * this.thermalSpeed;
+                    this.vy = Math.sin(ang) * this.thermalSpeed;
+                }
+
+                // Drift (Electric Field)
+                // F = qE, but we simplify to just v_d = mu * E
+                this.x += this.vx + (fieldStrength * 0.05);
+                this.y += this.vy;
+
+                // Wrap around
+                if (this.x > width) this.x = 0;
+                if (this.x < 0) this.x = width;
+                if (this.y > height) this.y = 0;
+                if (this.y < 0) this.y = height;
+            }
+
+            draw() {
+                ctx.fillStyle = '#48dbfb';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initElectrons() {
+            electrons = [];
+            for (let i = 0; i < 150; i++) {
+                electrons.push(new Electron());
+            }
+            averageX = 0;
+        }
+
+        function updateField() {
+            fieldStrength = document.getElementById('field-slider').value;
+            const driftVal = (fieldStrength * 0.01).toFixed(2);
+            document.getElementById('val-drift').innerText = driftVal;
+        }
+
+        let snailPos = 50;
+        function draw() {
+            ctx.fillStyle = 'rgba(5, 5, 5, 0.4)'; // Motion blur effect
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw Lattice (Visual reference)
+            ctx.strokeStyle = '#151515';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < width; x += 40) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+            }
+            for (let y = 0; y < height; y += 40) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+            }
+
+            electrons.forEach(e => {
+                e.update();
+                e.draw();
+            });
+
+            // Move the snail based on drift
+            snailPos += fieldStrength * 0.01;
+            if (snailPos > viewport.clientWidth - 100) snailPos = 50;
+            snail.style.transform = `translateX(${snailPos - 50}px)`;
+
+            requestAnimationFrame(draw);
+        }
+
+        let currentStepNum = 0;
+        const stepsData = [
+            {
+                title: "1. The Chaotic Swarm",
+                text: "<p>Look at the blue dots. Each represents a free electron in copper. They are moving at $10^6$ m/s, but because they bounce off atoms in every direction, the \"net speed\" is zero.</p><p>Slide the <strong>Electric Field</strong> to see the drift emerge.</p>"
+            },
+            {
+                title: "2. The Snail's Pace",
+                text: "<p>Notice the snail below? It represents the <strong>Drift Velocity</strong> ($v_d$). Even with a strong field, the electrons only advance at about <strong>half a centimeter per second</strong>.</p><div class='concept-block'>A typical electron takes about <strong>30 minutes</strong> to travel the length of a 10-meter wire!</div>"
+            },
+            {
+                title: "3. Why so slow?",
+                text: "<p>This seems wrong. Light turns on instantly, right? But current is like a pipe full of water—you don't wait for a specific drop to travel the whole pipe; you feel the pressure wave immediately.</p><div class='math-block'>$v_d = \\frac{I}{nAe}$</div>"
+            }
+        ];
+
+        function nextStep() {
+            currentStepNum++;
+            if (currentStepNum >= stepsData.length) {
+                window.location.href = "3_microscopic_ohms_law.html";
+                return;
+            }
+            const s = stepsData[currentStepNum];
+            document.getElementById('story-container').innerHTML = `<div class="chapter-title">${s.title}</div><div class="text-content">${s.text}</div>`;
+            if (window.renderMathInElement) renderMathInElement(document.getElementById('story-container'));
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        updateField();
+        draw();
+    </script>
+</body>
+
+</html>
+<!-- END: 2_drift_velocity_snail.html -->
+
+<!-- START: 3_microscopic_ohms_law.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: Microscopic Ohm's Law</title>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --border: #333;
+            --electron: #48dbfb;
+            --lattice: #ff5e57;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: #1a1a1a;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            font-weight: 300;
+        }
+
+        .text-content {
+            line-height: 1.7;
+            font-size: 17px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .concept-block {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .math-block {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.2;
+            border: 1px solid #222;
+        }
+
+        #controls {
+            background: #111;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 150px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #222 0%, #080808 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            border-radius: 12px;
+            background: #050505;
+            border: 1px solid #333;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 5px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #stats {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 25px;
+            color: #888;
+            font-size: 13px;
+            font-family: 'Consolas', monospace;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: 1px solid #222;
+        }
+
+        .stat-val {
+            color: var(--accent);
+            font-size: 20px;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 8, Lesson 3: The Physics of Resistance</div>
+        </header>
+
+        <div id="story-container"></div>
+
+        <div id="controls">
+            <div id="dynamic-controls"></div>
+        </div>
+
+        <div id="nav">
+            <a href="2_drift_velocity_snail.html" class="nav-btn">Back</a>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <canvas id="simCanvas"></canvas>
+
+        <div id="stats">
+            <div class="stat-item"><span class="stat-val" id="val-sigma">1.0X</span> Conductivity ($\sigma$)</div>
+            <div class="stat-item"><span class="stat-val" id="val-i" style="color: #48dbfb">LOW</span> Current ($I$)
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const viewport = document.getElementById('viewport');
+        const statsRow = document.getElementById('stats');
+
+        let width, height;
+        let n = 20;
+        let tau = 50;
+        let electrons = [];
+        let latticePoints = [];
+
+        function resize() {
+            width = Math.min(viewport.clientWidth - 100, 700);
+            height = Math.min(viewport.clientHeight - 350, 450);
+            canvas.width = width;
+            canvas.height = height;
+            initLattice();
+            initElectrons();
+        }
+
+        function initLattice() {
+            latticePoints = [];
+            const spacing = 60;
+            for (let x = spacing / 2; x < width; x += spacing) {
+                for (let y = spacing / 2; y < height; y += spacing) {
+                    latticePoints.push({ x, y });
+                }
+            }
+        }
+
+        class Electron {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = 4 + Math.random() * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.collisionTimer = Math.random() * tau;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.collisionTimer--;
+
+                if (this.collisionTimer <= 0) {
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 8;
+                    this.collisionTimer = tau * (0.5 + Math.random());
+
+                    setTimeout(() => {
+                        this.vx = 4 + Math.random() * 2;
+                        this.vy = (Math.random() - 0.5) * 2;
+                    }, 100);
+                }
+
+                if (this.x > width) this.x = 0;
+                if (this.x < 0) this.x = width;
+                if (this.y > height) this.y = 0;
+                if (this.y < 0) this.y = height;
+            }
+
+            draw() {
+                ctx.fillStyle = 'var(--electron)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = 'rgba(72, 219, 251, 0.2)';
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - this.vx * 3, this.y - this.vy * 3);
+                ctx.stroke();
+            }
+        }
+
+        function initElectrons() {
+            electrons = [];
+            for (let i = 0; i < n; i++) {
+                electrons.push(new Electron());
+            }
+        }
+
+        function updateParams() {
+            const nSlider = document.getElementById('n-slider');
+            const tauSlider = document.getElementById('tau-slider');
+            if (nSlider) n = parseInt(nSlider.value);
+            if (tauSlider) tau = parseInt(tauSlider.value);
+
+            initElectrons();
+
+            const sigma = (n * tau / 1000).toFixed(1);
+            const sigmaVal = document.getElementById('val-sigma');
+            if (sigmaVal) sigmaVal.innerText = sigma + "X";
+
+            const iVal = document.getElementById('val-i');
+            if (iVal) {
+                if (sigma < 0.5) { iVal.innerText = "MINIMAL"; iVal.style.color = "#ff5e57"; }
+                else if (sigma < 1.5) { iVal.innerText = "MODERATE"; iVal.style.color = "#ff9f43"; }
+                else { iVal.innerText = "HIGH"; iVal.style.color = "#48dbfb"; }
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, width, height);
+
+            latticePoints.forEach(p => {
+                ctx.fillStyle = '#1a1a1a';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#222';
+                ctx.stroke();
+            });
+
+            electrons.forEach(e => {
+                e.update();
+                e.draw();
+            });
+
+            requestAnimationFrame(draw);
+        }
+
+        let currentStepNum = 0;
+        const stepsData = [
+            {
+                title: "1. The Driving Force",
+                text: "<p>Let's derive Ohm's Law from the ground up. An electron of charge $e$ in an electric field $E$ feels a force:</p><div class='math-block'>$F = eE$</div><p>This force creates an acceleration $a = F/m$. Using Newton's Second Law:</p><div class='math-block'>$a = \\frac{eE}{m}$</div>",
+                setup: () => { statsRow.style.opacity = '0'; }
+            },
+            {
+                title: "2. Mean Free Time",
+                text: "<p>The electron accelerates, but not forever. It hits an atom after an average time $\\tau$. The <strong>Drift Velocity</strong> is simply the speed it picks up during that time:</p><div class='math-block'>$v_d = a \\cdot \\tau = \\frac{eE\\tau}{m}$</div><p>This explains why $\\tau$ is so critical—the longer an electron flies between bumps, the faster it goes!</p>",
+                setup: () => { }
+            },
+            {
+                title: "3. From Velocity to Current",
+                text: "<p>If we have $n$ electrons per cubic meter, the total charge passing through a wire cross-section $A$ every second is the Current ($I$):</p><div class='math-block'>$I = (n \\cdot v_d \\cdot A) \\cdot e$</div><p>Substituting our $v_d$ formula into this gives:</p><div class='math-block'>$I = n \\left( \\frac{eE\\tau}{m} \\right) Ae = \\left( \\frac{ne^2\\tau}{m} \\right) AE$</div>",
+                setup: () => { }
+            },
+            {
+                title: "4. Conductivity Revealed",
+                text: "<p>We define the quantity in the parentheses as the <strong>Conductivity ($\sigma$)</strong>. This is the material's innate ability to carry current.</p><div class='math-block'>$$\\sigma = \\frac{ne^2\\tau}{m}$$</div><p>Use the sliders to see how density ($n$) and collision time ($\\tau$) scale the conductivity in real-time!</p>",
+                setup: () => {
+                    statsRow.style.opacity = '1';
+                    document.getElementById('dynamic-controls').innerHTML = `
+                        <div class="control-group">
+                            <label>Electron Density ($n$)</label>
+                            <input type="range" id="n-slider" class="slider" min="5" max="50" value="20" oninput="updateParams()">
+                        </div>
+                        <div class="control-group">
+                            <label>Mean Free Time ($\tau$)</label>
+                            <input type="range" id="tau-slider" class="slider" min="10" max="200" value="50" oninput="updateParams()">
+                        </div>
+                    `;
+                }
+            }
+        ];
+
+        function nextStep() {
+            currentStepNum++;
+            if (currentStepNum >= stepsData.length) {
+                window.location.href = "4_geometry_of_resistance.html";
+                return;
+            }
+            loadStep(currentStepNum);
+        }
+
+        function loadStep(idx) {
+            const s = stepsData[idx];
+            document.getElementById('story-container').innerHTML = `<div class="chapter-title">${s.title}</div><div class="text-content">${s.text}</div>`;
+
+            if (window.renderMathInElement) {
+                renderMathInElement(document.getElementById('story-container'), {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false }
+                    ]
+                });
+            }
+            s.setup();
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        loadStep(0);
+        draw();
+    </script>
+</body>
+
+</html>
+<!-- END: 3_microscopic_ohms_law.html -->
+
+<!-- START: 4_geometry_of_resistance.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: The Geometry of Resistance</title>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --border: #333;
+            --wire: #444;
+            --electron: #48dbfb;
+            --plus: #ff5e57;
+            --active-glow: rgba(255, 159, 67, 0.3);
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: #1a1a1a;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            font-weight: 300;
+        }
+
+        .text-content {
+            line-height: 1.7;
+            font-size: 17px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .concept-block {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .math-block {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.2em;
+            border: 1px solid #222;
+        }
+
+        #controls {
+            background: #111;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 120px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #222 0%, #080808 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        canvas {
+            border-radius: 12px;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 5px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            cursor: pointer;
+            border-radius: 50%;
+        }
+
+        #stats {
+            width: 100%;
+            max-width: 650px;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 40px;
+            color: #888;
+            font-size: 13px;
+            font-family: 'Consolas', monospace;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            min-width: 140px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-val {
+            color: var(--accent);
+            font-size: 24px;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            text-shadow: 0 0 10px var(--active-glow);
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 8, Lesson 4: The Geometry of Resistance</div>
+        </header>
+
+        <div id="story-container"></div>
+
+        <div id="controls">
+            <div id="dynamic-controls"></div>
+        </div>
+
+        <div id="nav">
+            <a href="3_microscopic_ohms_law.html" class="nav-btn">Back</a>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <canvas id="simCanvas"></canvas>
+
+        <div id="stats">
+            <div class="stat-item"><span class="stat-val" id="val-r">?</span> Resistance ($R$)</div>
+            <div class="stat-item"><span class="stat-val" id="val-i" style="color: #48dbfb">?</span> Current ($I$)</div>
+            <div class="stat-item"><span class="stat-val" id="val-rho" style="color: #ccc">?</span> $\rho$ ($\Omega
+                \cdot m$)</div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        const viewport = document.getElementById('viewport');
+        const statsRow = document.getElementById('stats');
+
+        let width, height;
+        let L = 300;
+        let A = 60;
+        let rho = 0.5;
+        let V = 10;
+        let particles = [];
+        let atoms = [];
+
+        function resize() {
+            width = viewport.clientWidth - 100;
+            height = viewport.clientHeight - 300;
+            canvas.width = width;
+            canvas.height = height;
+            initAtoms();
+            initParticles();
+        }
+
+        function initAtoms() {
+            atoms = [];
+            const spacing = 40;
+            const x0 = (width / 2) - (L / 2);
+            const y0 = (height / 2) - (A / 2);
+            for (let x = x0 + 20; x < x0 + L - 10; x += spacing) {
+                for (let y = y0 + 10; y < y0 + A - 5; y += spacing) {
+                    atoms.push({ x: x + (Math.random() - 0.5) * 10, y: y + (Math.random() - 0.5) * 10 });
+                }
+            }
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = (width / 2) - (L / 2);
+                this.y = (height / 2) - (A / 2) + Math.random() * A;
+                this.vx = 2 + Math.random() * 2;
+                this.vy = 0;
+            }
+            update(speedCoeff) {
+                this.x += this.vx * speedCoeff;
+                this.y += this.vy * speedCoeff;
+
+                // Simulate collisions with lattice
+                if (Math.random() < 0.05 * rho) {
+                    this.vx *= 0.5;
+                    this.vy = (Math.random() - 0.5) * 4;
+                } else if (this.vx < 2) {
+                    this.vx += 0.1; // Accelerate back to base speed
+                    this.vy *= 0.9;
+                }
+
+                if (this.x > (width / 2) + (L / 2)) {
+                    this.reset();
+                }
+                // Horizontal bounds
+                if (this.y < (height / 2) - (A / 2)) this.y = (height / 2) - (A / 2);
+                if (this.y > (height / 2) + (A / 2)) this.y = (height / 2) + (A / 2);
+            }
+            draw() {
+                ctx.fillStyle = 'var(--electron)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+                // Glow
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = 'var(--electron)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(Math.floor(A * 1.5), 200);
+            for (let i = 0; i < count; i++) {
+                let p = new Particle();
+                p.x = (width / 2) - (L / 2) + Math.random() * L;
+                particles.push(p);
+            }
+        }
+
+        function updateParams() {
+            const ls = document.getElementById('l-slider');
+            const as = document.getElementById('a-slider');
+            const rs = document.getElementById('rho-slider');
+
+            if (ls) L = parseInt(ls.value);
+            if (as) A = parseInt(as.value);
+            if (rs) rho = parseFloat(rs.value);
+
+            const R_val = (rho * (L / 100) / (A / 50)).toFixed(2);
+            const I_val = (V / R_val).toFixed(2);
+
+            if (document.getElementById('val-r')) document.getElementById('val-r').innerText = R_val + " Ω";
+            if (document.getElementById('val-i')) document.getElementById('val-i').innerText = I_val + " A";
+            if (document.getElementById('val-rho')) document.getElementById('val-rho').innerText = rho.toFixed(2);
+
+            initAtoms();
+            initParticles();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            const R_val = (rho * (L / 100) / (A / 50));
+            const I_val = V / R_val;
+            const speedCoeff = Math.min(I_val * 0.2, 5);
+
+            const x0 = (width / 2) - (L / 2);
+            const y0 = (height / 2) - (A / 2);
+
+            // Draw Pipe Body (Isometric/3D shaded cylinder)
+            // End caps
+            ctx.fillStyle = '#222';
+            ctx.beginPath();
+            ctx.ellipse(x0, y0 + A / 2, A / 10, A / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Main shaft
+            let grad = ctx.createLinearGradient(x0, y0, x0, y0 + A);
+            grad.addColorStop(0, '#222');
+            grad.addColorStop(0.3, '#555');
+            grad.addColorStop(0.5, '#777');
+            grad.addColorStop(0.7, '#555');
+            grad.addColorStop(1, '#222');
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(x0, y0, L, A);
+
+            // Lattice Atoms Visualization (Subtle)
+            ctx.fillStyle = 'rgba(255, 94, 87, 0.1)';
+            atoms.forEach(a => {
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Particles
+            particles.forEach(p => {
+                p.update(speedCoeff);
+                p.draw();
+            });
+
+            // Front cap highlight
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(x0 + L, y0 + A / 2, A / 10, A / 2, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            requestAnimationFrame(draw);
+        }
+
+        let currentStepNum = 0;
+        const stepsData = [
+            {
+                title: "1. The Length Penalty",
+                text: `<p>Imagine a pipe full of water. If you make the pipe <strong>longer ($L$)</strong>, the resistance goes up. Why?</p>
+                       <div class="concept-block">
+                           Every millimeter of wire is another opportunity for an electron to hit an atom. The longer the path, the harder it is to push the charges through.
+                       </div>
+                       <p>Try making the wire extremely long. Notice how the particles move slower as the recorded Resistance ($R$) climbs.</p>`,
+                setup: () => {
+                    statsRow.style.opacity = '1';
+                    document.getElementById('dynamic-controls').innerHTML = `
+                        <div class="control-group">
+                            <label>Wire Length ($L$)</label>
+                            <input type="range" id="l-slider" class="slider" min="100" max="500" value="300" oninput="updateParams()">
+                        </div>
+                    `;
+                    updateParams();
+                }
+            },
+            {
+                title: "2. The Area Bonus (Parallels)",
+                text: `<p>Now consider the width of the pipe—the <strong>Cross-sectional Area ($A$)</strong>. Making the wire wider is like adding more lanes to a highway.</p>
+                       <div class="concept-block">
+                           Even if individual electrons are slow, a wider wire allows <strong>more</strong> electrons to travel in parallel. More "lanes" means more charge per second (Current).
+                       </div>
+                       <p>Wider cross-section = Lower Resistance.</p>`,
+                setup: () => {
+                    document.getElementById('dynamic-controls').innerHTML = `
+                        <div class="control-group">
+                            <label>Cross-Section Area ($A$)</label>
+                            <input type="range" id="a-slider" class="slider" min="20" max="150" value="60" oninput="updateParams()">
+                        </div>
+                    `;
+                    updateParams();
+                }
+            },
+            {
+                title: "3. The Material Constant ($\\rho$)",
+                text: `<p>Finally, we must account for the material itself. We call this <strong>Resistivity ($\\rho$)</strong>. Copper has a very low $\\rho$; glass is nearly infinite.</p>
+                       <div class="math-block">$$R = \\rho \\frac{L}{A}$$</div>
+                       <p>This simple geometric law explains the engineering behind every power line and microchip on the planet.</p>`,
+                setup: () => {
+                    document.getElementById('dynamic-controls').innerHTML = `
+                        <div class="control-group" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div>
+                                <label>Length ($L$)</label>
+                                <input type="range" id="l-slider" class="slider" min="100" max="500" value="300" oninput="updateParams()">
+                            </div>
+                            <div>
+                                <label>Area ($A$)</label>
+                                <input type="range" id="a-slider" class="slider" min="20" max="150" value="60" oninput="updateParams()">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label>Material Resistivity ($\\rho$)</label>
+                            <input type="range" id="rho-slider" class="slider" min="0.1" max="2.0" step="0.1" value="0.5" oninput="updateParams()">
+                        </div>
+                    `;
+                    updateParams();
+                }
+            }
+        ];
+
+        function nextStep() {
+            currentStepNum++;
+            if (currentStepNum >= stepsData.length) {
+                window.location.href = "5_materials_spectrum.html";
+                return;
+            }
+            loadStep(currentStepNum);
+        }
+
+        function loadStep(idx) {
+            const s = stepsData[idx];
+            document.getElementById('story-container').innerHTML = `<div class="chapter-title">${s.title}</div><div class="text-content">${s.text}</div>`;
+            if (window.renderMathInElement) {
+                renderMathInElement(document.getElementById('story-container'), {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "$", right: "$", display: false }
+                    ]
+                });
+            }
+            s.setup();
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        loadStep(0);
+        draw();
+    </script>
+</body>
+
+</html>
+<!-- END: 4_geometry_of_resistance.html -->
+
+<!-- START: 5_materials_spectrum.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Maxwell's Notebook: The Materials Spectrum</title>
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);"></script>
+
+    <style>
+        :root {
+            --bg: #151515;
+            --panel: #1e1e1e;
+            --text: #dcdcdc;
+            --accent: #ff9f43;
+            --border: #333;
+            --electron: #48dbfb;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 420px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            background: #1a1a1a;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #story-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .chapter-title {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+            font-weight: 300;
+        }
+
+        .text-content {
+            line-height: 1.7;
+            font-size: 17px;
+            color: #ccc;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .concept-block {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+
+        .math-block {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.2em;
+            border: 1px solid #222;
+        }
+
+        #controls {
+            background: #111;
+            padding: 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .material-btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .material-btn:hover {
+            border-color: var(--accent);
+            background: rgba(255, 159, 67, 0.1);
+        }
+
+        .material-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+            font-weight: bold;
+        }
+
+        #nav {
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            background: #000;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-btn {
+            flex: 1;
+            border: none;
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 14px;
+            font-weight: bold;
+            transition: 0.2s;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 4px;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: #111;
+            border-color: var(--accent);
+        }
+
+        .next-btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+        }
+
+        main {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #222 0%, #080808 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #spectrum-container {
+            width: 80%;
+            height: 60px;
+            background: #222;
+            border-radius: 30px;
+            position: relative;
+            margin-bottom: 50px;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+
+        #marker {
+            position: absolute;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            transition: left 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 15px var(--accent);
+            z-index: 5;
+        }
+
+        .spectrum-labels {
+            width: 80%;
+            display: flex;
+            justify-content: space-between;
+            color: #666;
+            font-size: 11px;
+            font-family: monospace;
+            margin-top: -40px;
+        }
+
+        #wire-view {
+            width: 450px;
+            height: 120px;
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--electron);
+            border-radius: 50%;
+        }
+
+        #info-card {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 40px;
+            border: 1px solid #333;
+            min-width: 350px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .rho-val {
+            color: var(--accent);
+            font-size: 32px;
+            font-weight: bold;
+            font-family: monospace;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .type-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #888;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .param-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+
+        .param-title {
+            display: block;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .param-val {
+            color: #fff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <aside>
+        <header>
+            <h1>Maxwell's Notebook</h1>
+            <div class="subtitle">Chapter 8, Lesson 5: The Materials Spectrum</div>
+        </header>
+
+        <div id="story-container">
+            <div class="chapter-title">The Range of Nature</div>
+            <div id="dynamic-text" class="text-content">
+                <p>Nature offers a range of resistivities so vast it is hard to comprehend. From the best conductors to
+                    the best insulators, the difference is a factor of $10^{22}$.</p>
+                <div class="concept-block">
+                    Recall our first-principles formula:<br>
+                    $\sigma = \frac{ne^2\tau}{m}$
+                </div>
+                <p>The secret to this massive spectrum lies almost entirely in $n$—the density of free charge carriers.
+                </p>
+            </div>
+        </div>
+
+        <div id="controls">
+            <button class="material-btn" onclick="selectMaterial('silver')">Silver <span>Conductor</span></button>
+            <button class="material-btn" onclick="selectMaterial('copper')">Copper <span>Conductor</span></button>
+            <button class="material-btn" onclick="selectMaterial('germanium')">Germanium
+                <span>Semiconductor</span></button>
+            <button class="material-btn" onclick="selectMaterial('saltwater')">Saltwater <span>Ionic</span></button>
+            <button class="material-btn" onclick="selectMaterial('glass')">Glass <span>Insulator</span></button>
+            <button class="material-btn" onclick="selectMaterial('teflon')">Teflon <span>Perfect</span></button>
+        </div>
+
+        <div id="nav">
+            <a href="4_geometry_of_resistance.html" class="nav-btn">Back</a>
+            <button class="nav-btn next-btn" id="btn-next" onclick="nextStep()">Next</button>
+        </div>
+    </aside>
+
+    <main id="viewport">
+        <div class="spectrum-labels">
+            <span>Ideal Conductor</span>
+            <span>Semiconductors</span>
+            <span>Ideal Insulator</span>
+        </div>
+        <div id="spectrum-container">
+            <div id="marker"></div>
+        </div>
+
+        <div id="wire-view"></div>
+
+        <div id="info-card">
+            <span class="type-label" id="mat-type">Conductor</span>
+            <div class="rho-val" id="mat-rho"></div>
+
+            <div class="param-grid">
+                <div class="param-box">
+                    <span class="param-title">Density ($n$)</span>
+                    <span class="param-val" id="val-n">Extreme</span>
+                </div>
+                <div class="param-box">
+                    <span class="param-title">Mean Time ($\tau$)</span>
+                    <span class="param-val" id="val-tau">High</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const materials = {
+            silver: {
+                name: "Silver",
+                rho: "1.59 \\times 10^{-8}",
+                type: "Conductor",
+                logPos: 5,
+                flow: 10,
+                count: 100,
+                n: "Extreme (~$10^{28}$)",
+                tau: "High",
+                desc: "In Silver, almost every atom donates an electron to the 'sea.' The density $n$ is as high as physically possible."
+            },
+            copper: {
+                name: "Copper",
+                rho: "1.68 \\times 10^{-8}",
+                type: "Conductor",
+                logPos: 10,
+                flow: 9.5,
+                count: 90,
+                n: "Extreme (~$10^{28}$)",
+                tau: "High",
+                desc: "Copper is marginally less conductive than silver, but its abundance makes it the world leader for wiring."
+            },
+            germanium: {
+                name: "Germanium",
+                rho: "0.47",
+                type: "Semiconductor",
+                logPos: 45,
+                flow: 3,
+                count: 10,
+                n: "Moderate (~$10^{19}$)",
+                tau: "Medium",
+                desc: "Semiconductors have far fewer free electrons ($n$) than metals. However, we can 'cheat' and increase $n$ by adding heat or light!"
+            },
+            saltwater: {
+                name: "Saltwater",
+                rho: "10^{-1} \\text{ to } 10^{1}",
+                type: "Ionic Liquid",
+                logPos: 55,
+                flow: 2,
+                count: 20,
+                n: "Low (Ionized)",
+                tau: "Low (Viscous)",
+                desc: "In liquids, it's not just electrons moving, but heavy ions. Because ions are bulky, the collision time $\\tau$ is much shorter."
+            },
+            glass: {
+                name: "Glass",
+                rho: "10^{10} \\text{ to } 10^{14}",
+                type: "Insulator",
+                logPos: 85,
+                flow: 0.2,
+                count: 2,
+                n: "Negligible",
+                tau: "N/A",
+                desc: "In Glass, electrons are 'bound' to their atoms. They cannot flow because $n \\approx 0$. No carriers means no current."
+            },
+            teflon: {
+                name: "Teflon",
+                rho: "10^{23}",
+                type: "Perfect Insulator",
+                logPos: 98,
+                flow: 0,
+                count: 0,
+                n: "Zero",
+                tau: "N/A",
+                desc: "Teflon is one of the best insulators known. Its electrons are so tightly held that even extreme fields can't move them."
+            }
+        };
+
+        const marker = document.getElementById('marker');
+        const wireView = document.getElementById('wire-view');
+        const matRho = document.getElementById('mat-rho');
+        const matType = document.getElementById('mat-type');
+        const valN = document.getElementById('val-n');
+        const valTau = document.getElementById('val-tau');
+        const dynamicText = document.getElementById('dynamic-text');
+
+        let particles = [];
+
+        function selectMaterial(key) {
+            const mat = materials[key];
+
+            // UI Updates
+            document.querySelectorAll('.material-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase().includes(key));
+            });
+
+            marker.style.left = mat.logPos + '%';
+            matType.innerText = mat.type;
+            valN.innerText = mat.n.replace(/ \((.*)\)/, ''); // Simple text for box
+            valTau.innerText = mat.tau;
+
+            dynamicText.innerHTML = `
+                <p><strong>${mat.name}:</strong> ${mat.desc}</p>
+                <div class="concept-block">
+                    Conductivity $\\sigma$ is proportional to $n$. A change in $n$ of $10^{20}$ explains why Glass stops electricity while Copper invites it.
+                </div>
+            `;
+
+            // LaTeX Rendering
+            matRho.innerHTML = `$${mat.rho}$`;
+            if (window.renderMathInElement) {
+                renderMathInElement(matRho, { delimiters: [{ left: "$", right: "$", display: false }] });
+                renderMathInElement(dynamicText, { delimiters: [{ left: "$", right: "$", display: false }] });
+                renderMathInElement(valN, { delimiters: [{ left: "$", right: "$", display: false }] });
+            }
+
+            // Update Simulation
+            updateSim(mat);
+        }
+
+        function updateSim(mat) {
+            wireView.innerHTML = '';
+            particles = [];
+            for (let i = 0; i < mat.count; i++) {
+                let p = document.createElement('div');
+                p.className = 'particle';
+                p.style.top = Math.random() * 90 + '%';
+                p.style.left = Math.random() * 100 + '%';
+                wireView.appendChild(p);
+                particles.push({
+                    el: p,
+                    x: Math.random() * 450,
+                    v: mat.flow
+                });
+            }
+        }
+
+        function animate() {
+            particles.forEach(p => {
+                if (p.v > 0) {
+                    p.x += p.v;
+                    if (p.x > 450) p.x = 0;
+                    p.el.style.transform = `translateX(${p.x}px)`;
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+
+        function nextStep() {
+            window.location.href = "6_the_birth_of_ohms_law.html";
+        }
+
+        window.onload = () => {
+            selectMaterial('silver');
+            animate();
+        };
+    </script>
+</body>
+
+</html>
+<!-- END: 5_materials_spectrum.html -->

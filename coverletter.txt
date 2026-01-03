@@ -1,0 +1,20 @@
+
+Dear Hiring Team,
+
+I am a recent Computer Science graduate from the College of Engineering Trivandrum and a builder who enjoys taking ideas from zero to one. I like working in early stage and ambiguous environments where the best way to learn is to build something real and iterate based on how people actually use it.
+
+Over the past few years, I have built multiple AI driven products end to end. I am comfortable owning the full lifecycle of a product, from shaping the idea and designing the system to writing the code and refining the experience through real world usage. I care deeply about clarity, simplicity, and building tools that genuinely help people think or work better.
+
+One project I built is Pitchine, an AI powered pitch practice and investor simulation tool. It allows founders to practice pitching out loud to an AI simulated boardroom, receive follow up questions, and get structured feedback. I used the product myself while preparing for investor conversations and improved it based on my own friction, which shaped how I think about user empathy and product quality.
+
+More recently, I have been building theapplefalls, a web based 3D simulation platform for learning electronics and robotics. The goal is to replace expensive physical labs with interactive digital twins that encourage experimentation and system level understanding. This project reflects my long term interest in learning tools, simulation, and first principles thinking.
+
+Technically, I work primarily with Python and JavaScript and have experience across frontend, backend, and AI systems, including React, Three.js, REST APIs, databases, and LLM based workflows. Beyond specific tools, I value good judgment, clear communication, and steady improvement through practice.
+
+I am excited by teams that care about craft, autonomy, and building for real users. I would love the opportunity to contribute my skills and curiosity while continuing to grow as a builder.
+
+Thank you for taking the time to read this.
+
+Warm regards,
+Jeevan Kumar
+India
