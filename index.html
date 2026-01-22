@@ -55,12 +55,25 @@
     </div>
   </header>
 
-  <div class="container">
+  <div class="container" id="posts-container">
+    <article class="post">
+      <h2><a href="ai/docVLM.html" target="_blank">Designing a Dialogue-Aware Medical AI</a></h2>
+      <span class="post-date">January 22, 2026</span>
+      <div class="post-content">
+        <p>Most current AI models detect diseases by looking at an image like an x-Ray or skin lesion and making a
+          prediction. However in the real world, doctors dont just look at a patient. They ask questions like "Does it
+          Itch", "How long you had it" etc...</p>
+        <a href="ai/docVLM.html" target="_blank" class="read-more">Read more →</a>
+      </div>
+    </article>
+
     <article class="post">
       <h2><a href="billgates.html" target="_blank">The Story of Bill Gates and the Power of Being Ready </a></h2>
       <span class="post-date">January 20, 2026</span>
       <div class="post-content">
-        <p>For most of us, life follows a very specific script: study hard, get into college, grind LeetCode, perform in interviews, and get a job. The system is established, and honestly, only a few people ever pivot from this.</p>
+        <p>For most of us, life follows a very specific script: study hard, get into college, grind LeetCode, perform in
+          interviews, and get a job. The system is established, and honestly, only a few people ever pivot from this.
+        </p>
         <img src="https://i.pinimg.com/736x/f3/af/c9/f3afc96faeab83be15936c29bb4dd08d.jpg" alt="Bill Gates">
         <a href="billgates.html" target="_blank" class="read-more">Read more →</a>
       </div>
@@ -70,7 +83,8 @@
       <h2><a href="casestudy.html" target="_blank">Case Studies On How People Built Their Craft</a></h2>
       <span class="post-date">January 19, 2026</span>
       <div class="post-content">
-        <p>My definition of "made it" is this: "became famous through their own craft + earned money + contributed to society.</p>
+        <p>My definition of "made it" is this: "became famous through their own craft + earned money + contributed to
+          society.</p>
         <a href="casestudy.html" target="_blank" class="read-more">Read more →</a>
       </div>
     </article>
@@ -84,7 +98,6 @@
         <a href="healthcare.html" target="_blank" class="read-more">Read more →</a>
       </div>
     </article>
-
 
 
 
@@ -275,6 +288,12 @@
 
   </div>
 
+  <div class="pagination">
+    <button id="prev-page" class="page-btn" disabled>← Previous</button>
+    <div id="page-numbers"></div>
+    <button id="next-page" class="page-btn">Next →</button>
+  </div>
+
   <footer>
     <p>Blog by Jeevan</p>
   </footer>
@@ -284,6 +303,7 @@
   </div>
 
   <script>
+    // Image overlay functionality
     document.querySelectorAll('.post-content img, .post-images img').forEach(img => {
       img.addEventListener('click', () => {
         const overlay = document.getElementById('image-overlay');
@@ -296,6 +316,59 @@
     document.getElementById('image-overlay').addEventListener('click', () => {
       document.getElementById('image-overlay').classList.remove('active');
     });
+
+    // Pagination functionality
+    const postsPerPage = 5;
+    let currentPage = 1;
+    const container = document.getElementById('posts-container');
+    const posts = Array.from(container.querySelectorAll('.post'));
+    const totalPages = Math.ceil(posts.length / postsPerPage);
+
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    const pageNumbers = document.getElementById('page-numbers');
+
+    function showPage(page) {
+      currentPage = page;
+      const start = (page - 1) * postsPerPage;
+      const end = start + postsPerPage;
+
+      posts.forEach((post, index) => {
+        if (index >= start && index < end) {
+          post.style.display = 'block';
+        } else {
+          post.style.display = 'none';
+        }
+      });
+
+      prevBtn.disabled = page === 1;
+      nextBtn.disabled = page === totalPages;
+
+      updatePageNumbers();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updatePageNumbers() {
+      pageNumbers.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'page-num' + (i === currentPage ? ' active' : '');
+        btn.addEventListener('click', () => showPage(i));
+        pageNumbers.appendChild(btn);
+      }
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) showPage(currentPage - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) showPage(currentPage + 1);
+    });
+
+    // Initialize
+    showPage(1);
   </script>
 
 </body>
