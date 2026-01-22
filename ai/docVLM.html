@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building Medical AI with Synthetic Dialogues — Jeevan Kumar</title>
+  <meta property="og:image" content="https://i.pinimg.com/736x/f3/af/c9/f3afc96faeab83be15936c29bb4dd08d.jpg">
+  <!-- Added ../ to point to root directory -->
+  <link rel="icon" href="../cool.png" type="image/x-icon">
+  <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+
+  <header>
+    <div class="header-content">
+      <!-- Added ../ to point to root directory -->
+      <img src="../jeevan.jpeg" alt="Jeevan Kumar" class="profile-image">
+      <h1>Jeevan Kumar</h1>
+      <p class="tagline">"I have noticed that worrying is like praying for what you don't want to happen." - Robert
+        Downey Jr</p>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Added ../ to point to root directory -->
+    <a href="../index.html" class="read-more" style="margin-bottom: 20px;">← Back to Blog</a>
+
+    <article class="post">
+      <h2>Designing a Dialogue-Aware Medical AI</h2>
+      <span class="post-date">January 22, 2026</span>
+
+      <div class="post-content">
+        <p>Most current AI models detect diseases by looking at an image like an x-Ray or skin lesion and making a prediction.</p>
+
+        <p>However in the real world , doctors dont just look at a patient. They ask questions like "Does it Itch", "How long you had it" etc...</p>
+
+        <p>Patient details are crucial inputs that purely visual AI models ignore.</p>
+
+        <p>So a better approach would be to create a dataset containing an image along with some patient- doctor conversation dialogues and finetuning a VLM model on it.</p>
+
+        <p>A VLM is a model that accepts images and text and provides a text output.</p>
+
+        <p>First we need a dastaset. Instead of paying thousands of doctors and patients to manually record their conversations , which is both expensive and has a lot privacy problems, we can just generate the data synthetically.</p>
+
+        <p>The authors of this paper created two agents, a doctor agent and a patient agent. both are VLMS to simulate the conversations.</p>
+
+        <p>the Agent 1 is the doctor VLM . It looks at the image , and asks follow up questions. Its goal is to gather enogh informations to make a proper diagnosis</p>
+
+        <p>The agent 2 is the patientVLM. It knows the ground truth of the disease and symptomps associated with. Its goal is to answer the Doc Agent's questions , based on the symptomp profile</p>
+
+        <h3>Lets see the system desgin for creation this dataset</h3>
+
+        <p>As input , both agents get a medical image of a skin lesion as input. The system collects the symptom profile of that disease and gives this data as context to the patientVLM.</p>
+
+        <p>and the conversations happen like this :</p>
+
+        <ul>
+            <li><strong>DocVLM</strong> asks: "Is the lesion painful?"</li>
+            <li><strong>PatientVLM</strong> checks its profile and answers: "Yes, it hurts when touched."</li>
+            <li><strong>DocVLM</strong> asks: "Has it grown recently?"</li>
+            <li><strong>PatientVLM</strong> answers: "Yes, rapidly."</li>
+        </ul>
+
+        <p>So the outcome is that this generates a history of conversations paired witht hat image.</p>
+
+        <p>So now we have a massive dataset of medical images + dialogues.</p>
+
+        <p>And now they take this doctor VLM and finetune it with the new dataset.</p>
+
+        <p>The model learns that <strong>visual features</strong> (what it sees) + <strong>dialogue context</strong> (what the patient says) = <strong>Better Diagnosis</strong>.</p>
+
+        <h3>When the system is deployed for a real human patient:</h3>
+
+        <ol>
+            <li>The human uploads an image.</li>
+            <li>The <strong>DocVLM</strong> (now trained) analyzes the image.</li>
+            <li>Instead of guessing immediately, it asks the human: "I see some redness. Does it feel warm to the touch?"</li>
+            <li>The human answers.</li>
+            <li>The AI combines the image and the answer to give a final diagnosis.</li>
+        </ol>
+
+        <h3>Lets design this in real life:</h3>
+        
+        <p>1) first we need to collect a dataset containing various images of diseases + the diseasename.we can use publicily available dataset like say <strong>SkinCon</strong>.</p>
+
+        <p>2- An image alone doesn't tell you if a rash is "itchy" or "painful."</p>
+
+        <p>- So we need to map the syptomps associated with it we can make an ai too lookup textbooks/databases to map every disease to its common symptoms.</p>
+            
+        <p>So If the image is "Melanoma," the cheat sheet includes: asymmetry, irregular borders, recent growth, bleeding.)</p>
+
+        <p>Now that we have curated the initial dataset, we need to make two agents.</p>
+
+        <p>We can use VLM like gpt-4V or or any open source models like LLAVA (which is a vlm trained on medical data) and give them specific system instructions to act like the agents.</p>
+
+        <p>So for the doctor agent, we give a system prompt like this : "You are a dermatologist. Look at the image. Ask a question to help distinguish between possible diseases. Focus on visual details or physical sensations (like pain or itch)." along with the image.</p>
+
+        <p>Now to create the the patient agent, we give it the image + this sysem prompt :"You are a patient. You are experiencing the symptoms listed here: [List]. Do NOT reveal the name of your disease. Answer the doctor's questions truthfully based on these symptoms and the image provided."" We input the symtomps on the prompt itself.</p>
+
+        <p>and we let the conversation happen and colelct the data and train the doctor agent on this.</p>
+
+        <ul>
+            <li><strong>Data Efficiency:</strong> Real medical conversations are hard to get (HIPAA laws, privacy).</li>
+            <li><strong>Mimics Reality:</strong> It forces the AI to reason like a human doctor (Hypothesis Confirmation) rather than just being an image classifier</li>
+            <li><strong>Better Accuracy:</strong> The paper shows that this "dialogue-supervised" model significantly outperforms models that only look at images.</li>
+        </ul>
+
+        <p>Link to paper: <a href="https://www.arxiv.org/abs/2601.10945">https://www.arxiv.org/abs/2601.10945</a></p>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+        <p style="font-size: 0.9em; color: #666; font-style: italic;">Note: I co-wrote this with Chatgpt and Gemini 3 Pro.</p>
+      </div>
+    </article>
+  </div>
+
+  <footer>
+    <p>Blog by Jeevan</p>
+    <p>Contact: <a href="mailto:bettercalljeevan@gmail.com">bettercalljeevan@gmail.com</a></p>
+  </footer>
+
+  <div id="image-overlay">
+    <img src="" alt="Fullscreen preview">
+  </div>
+
+  <!-- Added ../ to point to root directory -->
+  <script src="../script.js"></script>
+</body>
+
+</html>
