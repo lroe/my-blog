@@ -1,0 +1,4 @@
+Quantum Dynamics was founded in 2015 by Dr. Elena Vance and Marcus Thorne.
+The company is headquartered in San Francisco, California.
+In 2018, they partnered with TechGiant Corp to build the NeoCore processor.
+The NeoCore processor features a revolutionary 2nm architecture.

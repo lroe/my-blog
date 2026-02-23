@@ -1,0 +1,5 @@
+Knowledge Graph Builder is a project by Antigravity.
+Google Deepmind created Antigravity.
+Antigravity uses Vite and React.
+Vite is a fast build tool.
+React is a UI library.
