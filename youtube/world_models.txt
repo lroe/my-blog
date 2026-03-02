@@ -1,0 +1,33 @@
+-baseball intro
+- yan lee cun & fei fei lee are shifting into world models
+- discovered in 2018 but now, the future is heading towards that
+- drawbacks of llm : sees the world through text only, so dosent model the world properly
+- it dosent really know what the word hug means because it never went to the world and experienced it by itself. it only knows a text representation of hug.
+- now  u might say i know the word sex but i havent done it.
+
+-the cat pushesh cap - we feel like catching it- we modelled the world and ran the sim on mind
+-the vae compresses the input image into a small vector so that it leanrs concepts like "there is a red car in the bottom left"
+-My current state is $z = [0.5, -1.2, ...]$. In my experience, this vector usually means 'sharp left turn ahead
+-Memory layer (current scene, current thought,current action) and finds predicts the future
+There is a peak of probability on the left and a peak on the right. I should prepare for one of those, but definitely not the middle."
+
+
+-- it has two functions, predict the thought which is sent to the controller, and predict the list of future scenario to train itself to understand phsysics (ITS NOT SEND TO THE CONTROLLER)...
+
+-The Controller (C) is the final piece. In this paper, the authors did something very unusual: they made the Controller as small and "dumb" as possible.
+
+
+Critical Perspective: The "Disconnected" Brain
+This is the most controversial part of the paper's architecture.
+
+The Model's Claim: V and M are trained first (unsupervised), and C is trained last.
+
+The Risk: What if the VAE (Vision) decides that "Green Grass" is very important to reconstruct, but it completely ignores the "Grey Road" because the grass takes up more pixels?
+
+If the World Model doesn't "see" or "predict" the road correctly, the Controller can never learn to drive, no matter how much you evolve it. The Controller is "trapped" by whatever the World Model decides is important. In biological brains, our goals actually change how we perceive the world (e.g., when you're hungry, you notice food signs more). This AI can't do that; its "eyes" are fixed.
+
+
+
+
+----i have heard about things like x but havent done it , yet i still know....because i live the real world. i have experiences in real world...
+

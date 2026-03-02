@@ -1,0 +1,35 @@
+Watch this clip for a second. [Shows Ronaldo Head-hitting the footbal by jumping scene]
+Ronaldo saw the football coming and immediately knew where to jump so as to hit the ball from the head.
+He did not use physics equations to calculate the exact location to jump. Instead, years practice allowed his mind to build a model of the world, the gravity and all to make a deision 
+as to where to jump to hit the ball. 
+
+This concept is known world model. 
+Every top tier researchers like Yan Le Cunn, Fei Fei Lee are moving from working on llms to this concept of world models. 
+
+before speaking about world model, let me talk about a limitation of LLMs. 
+LLm knows what the word 'hug' represents. it knows hug is  a physical gesture of holding someone closely in one's arms, typically to express affection, love, comfort, or friendship. . since it dosent experience the 3d world like we do, It understands “hug” only through text, not through lived experience..but it only knows a text representation of hug.Algorithmically speaking, the word 'hug' is converted into a vector and is placed closer to words like 'love','comfort','friendship'.
+
+
+Now lets come back to world model.
+
+Look at this picture. 
+
+If you see a scenario like this in real life, your mind will immediatele feel the need to place your hand under the table to catch the cup. In your mind you subconscioly modelled a simulation of the cup hitting on the floor and breaking it and you know it s bad and hence to prevent it you feel the need to place your hand under the table.
+
+This ability to see something , and simulate the future so as to make a decision, is what we are looking to do with world modelling.
+
+In 2018 , a paper was released that laid the foundation of world model. I will tell you how it works.
+
+A world model is basically a combinations of three neural networks.
+
+A vision Model + Memory Model + Controller Model.
+
+The role of vision model is to look at an image and compress it into a single vector that represents whats happening in that image. A image, with 64*64 pixel, could be compressed into a vector of say 8 numbers or something. This vector is  as a latent representation of that image. So it is known as latent vector. 
+Once the model is learned, using jsut this vector, we will be able to reconstruct the original image.
+
+This is something that is actually used in youtube and all you know.. video files are largle files so when we play a video, we recieve a compressed version which is uncompressed after reaching our laptop.
+
+now the important thing of latent vector is that, since it is small, it is forced to study the important patterns that it needs to recognize to understand the image. for example, if we are building a world model for self-driving cars, the latent vector pritozies concepts like" there is a red car in the bottom left"  rather than trying to observe the shape of the cliud. (this learning happens automatically during training, as it tries to find the best pattern to so as to drive the care without crashing)...
+
+so this is the first model. the input is an image, and the output is a  latent vector.
+ 
