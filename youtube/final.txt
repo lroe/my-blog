@@ -1,0 +1,73 @@
+Watch this clip for a second. [Show Ronaldo head-hitting the football by jumping scene]
+Ronaldo saw the football coming and immediately knew where to jump to hit the ball with his head. He didn't use physics equations to calculate the exact location. Instead, years of practice allowed his mind to build a model of the world—accounting for gravity and everything else—to make a decision on where to jump.
+This concept is known as a "world model." Every top-tier researcher, like Yann LeCun and Fei-Fei Li, is shifting from working on LLMs to this idea of world models.
+Before diving into world models, let's talk about a key limitation of LLMs.
+An LLM knows what the word "hug" represents. It understands that a hug is a physical gesture of holding someone closely in one's arms, typically to express affection, love, comfort, or friendship. But since it doesn't experience the 3D world like we do, it only grasps "hug" through text, not through lived experience. It knows only a textual representation of a hug. Algorithmically speaking, the word "hug" is converted into a vector and placed closer to words like "love," "comfort," and "friendship."
+Now, let's come back to world models.
+Look at this picture. [Show image of a cup tipping off a table]
+If you saw a scenario like this in real life, your mind would immediately feel the need to place your hand under the table to catch the cup. Subconsciously, you've modeled a simulation in your mind: the cup hitting the floor and breaking, which is bad. To prevent it, you act.
+This ability—to see something and simulate the future to make a decision—is what we're aiming for with world modeling.
+In 2018, a groundbreaking paper was released that laid the foundation for world models. I'll explain how it works.
+A world model is essentially a combination of three neural networks:
+
+Vision Model
+Memory Model
+Controller Model
+
+The Vision Model (VAE)
+The role of the vision model is to look at an image and compress it into a single vector that represents what's happening in that image. For example, an image with 64x64 pixels could be compressed into a vector of just 8 numbers. This vector is a "latent representation" of the image, so it's called a latent vector.
+Once the model is trained, you can reconstruct the original image using just this vector. This compression technique is actually used in platforms like YouTube—video files are large, so you receive a compressed version that's uncompressed on your device.
+The key thing about the latent vector is that, because it's small, the model is forced to focus on the important patterns needed to understand the image. For instance, if we're building a world model for self-driving cars, the latent vector prioritizes concepts like "there's a red car in the bottom left" rather than the shape of a cloud. (This learning happens automatically during training, as the model finds the best patterns to avoid crashes.)
+This vision model is known as a VAE (Variational Autoencoder). It has two parts:
+
+Encoder: Takes an image (e.g., 64x64x3) and squeezes it down into a latent vector called z. In the original paper, it was only 32 or 64 dimensions.
+Decoder: Takes that tiny vector z and tries to reconstruct the original image.
+
+By forcing the network to squeeze the image into a tiny vector and then recreate it, the network learns what actually matters. It stops focusing on individual pixels and starts "understanding" concepts like "there's a red car in the bottom left" or "the track curves to the right."
+The Memory + Prediction Layer (MDN-RNN)
+Our first modal allows us to "see". But if we see a snapshot of a ball in the sky, we cannot tell if it is falling or rising.
+
+For that we need memory.
+
+So in this paper they used a  rnn to implement this memory. 
+
+The model will take as input the current vision, which is represented in the latent vector form and the current action that our AI just took.. and it uses these informations to update the previous memory to incorporate these new informations.
+
+
+
+The runn model, will use these information to then compute the next frame. it predicts this next frame by output a latent vector z. this latent vector can be converted to an image using our first vision model.
+
+Actually rnn dosent predict just one future.. it predicts all the most possible scenarious. 
+
+for example if ai is driving car, and it sees two turns...the rnn model gives say  90 % probablity of going to path a, and 10% probablity of going to path b.
+
+as this rnn model gives a mixture of possbility of future scenarious..this type of rnn is known as mixture density network.
+
+so this combination of rnn and mdn allows it to bild a phyusics engine in its head to predict the future.
+
+Suppose you're playing Doom. You see a monster, and it hides behind a pillar. Now you don't see the monster. If you just used the VAE, you'd forget about it—but the memory layer remembers that there's a monster hiding there.
+
+
+The Controller Model
+The controller is the decision-making component. If the other parts handle "seeing" and "dreaming," the controller handles "acting."
+
+Vision (V): Compresses high-dimensional sensory input (like pixels) into a small latent vector z.
+Memory (M): Predicts the next latent vector based on historical data (the "predictive" or "dreaming" part).
+Controller (C): Maps the outputs of V and M to a specific action.
+
+Training the controller is the coolest part. It's a neural network with the fewest parameters.
+Normally, you'd train it by feeding in the outputs of V and M, having it randomly choose an action, and rewarding or penalizing it based on whether it reaches the goal. For example, in a self-driving car simulation: If it chooses to swerve left and avoids a crash, it gets a reward; if it crashes, it's penalized.
+But in our case, since the memory layer can predict the next frame based on the action the controller chooses, we can simulate outcomes without real-world trials.
+Up to this point, we've talked about how the agent sees and remembers. But normally, an agent has to play the actual game millions of times to get good. This is slow and computationally expensive.
+The authors asked: "If the agent has a world model that can predict the future, why not just let it practice inside its own head?"
+Concept: The "Hallucinated" Environment
+In the VizDoom experiment, they stop using the actual game engine entirely. Instead, they create a loop where the agent only interacts with its own M (Memory) and V (Vision) models.
+The "Dream" Loop (Step-by-Step):
+
+The Start: The agent is given a starting "thought" (a random z_0).
+The Action: The Controller (C) looks at that thought and decides to move (a_t).
+The Hallucination: Instead of sending that move to the game, it sends it to the MDN-RNN (M).
+The Next Frame: The RNN "imagines" what the next vision (z_{t+1}) and the next reward (e.g., survival) will be, based on its internal probability math.
+The Repeat: The agent takes that "imagined" frame and decides its next move.
+
+This way, the agent trains in a simulated dream world, getting better without needing the real environment!
