@@ -33,3 +33,58 @@ now the important thing of latent vector is that, since it is small, it is force
 
 so this is the first model. the input is an image, and the output is a  latent vector.
  
+
+ This vision model is known as a VAE. It has two parts, an encoder and decoder. the encoder takes an immage 64*64*3 and squeezes it down into a latent vector called z. In the original paper, it had only 32 or 64 dim.
+
+The decoder..it takes that tiny vector z, and then tries to reconstruct the original image.
+
+
+By forcing the network to squeeze the image into a tiny vector and then recreate it, the network is forced to learn what actually matters. It stops caring about individual pixels and starts "understanding" concepts like "there is a red car in the bottom left" or "the track curves to the right."
+
+Now the second model, is the memory + prediction layer. 
+
+Our first model allowed us to see. If we see a snapshot of a ball in the air, we cant determine if its falling or rising..for that, we need memory.
+
+So we use a model called Recurrent Neural Netowkrs. It takes as input the current vision( latent vector zt), and the action our AI agent just took (at)...It then updates its memory(ht) to predict what the next vision (zt+1) would look like.
+
+
+Now there is one special property of this model.
+
+you see, most neural network trys to predict a single outcome which is usually the average. But the world is random.
+
+if the car reaches a fork in the road, it might go left or right. if a model, predicts the "average",it will predict the car goes straight into the wall.
+
+So our model dosent predict one z. it predicts a probablity distrubtion which is known as "Mixture of Gaussians". It says that ."There is a 50% chance the next frame looks like $A$, and a 50% chance it looks like $B$.".
+
+So for this reason, our memory layer is called MDN-RNN which stands for Mixture Density Netwrok-Recurrent Neural Network.
+
+By combining the RNN and the MDN, the agent basically builds a physics engine in its head. It learns how the environment reacts to its actions without ever being told the rules of the game. It just observes: "When I turn the wheel left ($a_t$), the vision ($z$) usually shifts to the right in the next frame."
+
+
+
+Now suppose your playing Doom. You see a monster, and that monster now hides under a pillar. Now you dont see the monster. If you just used the VAE...you wont be seeing any monster..but this memory layer, enabled to to understand that there is a monster hiding there.
+
+Standard RNN: Predicts the pedestrian stays on the sidewalk because that’s the "average" behavior.
+
+MDN-RNN: Predicts a 95% chance they stay on the sidewalk and a 5% chance they jump into the road.
+
+By predicting the distribution rather than just the average, the agent’s internal "World Model" can account for rare but high-stakes events.
+
+
+
+Vision (V): Compresses high-dimensional sensory input (like pixels) into a small latent vector $z$.Memory (M): Predicts the next latent vector based on historical data (the "predictive" or "dreaming" part).Controller (C): Maps the outputs of V and M to a specific action.
+
+
+the Controller is the decision-making component. If the other parts of the system handle "seeing" and "dreaming," the Controller handles "acting."
+
+
+Now training the controller is the collest part.
+
+this is also a neural network with lowest amount of parameters. 
+
+Normally this is trained by, getting the output of the V & M layers, and it randomly chooses and output and if it reaches the ideal goal state, (rewrite this to an example)..it will be given a reward, or penalized.
+
+But in our case, since the Memory layer can predict the next frame, based on the action the controller choses, the framee will be pred
+
+
+Up to this point, we've talked about how the agent sees and remembers. But normally, an agent has to play the actual game millions of times to get good. This is slow and computationally "expensive."The authors asked: "If the agent has a World Model that can predict the future, why not just let it practice inside its own head?"Concept 5: The "Hallucinated" EnvironmentIn the VizDoom experiment, they stop using the actual game engine entirely. Instead, they create a loop where the agent only interacts with its own M (Memory) and V (Vision) models.The "Dream" Loop (Bit-by-Bit):The Start: The agent is given a starting "thought" (a random $z_0$).The Action: The Controller (C) looks at that thought and decides to move ($a_t$).The Hallucination: Instead of sending that move to the game, it sends it to the MDN-RNN (M).The Next Frame: The RNN "imagines" what the next vision ($z_{t+1}$) and the next reward (survival) will be, based on its internal probability math.The Repeat: The agent takes that "imagined" frame and decides its next move.
