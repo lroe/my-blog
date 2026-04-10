@@ -368,13 +368,52 @@ a {
   color: var(--text-muted);
 }
 
-.update-row .update-text a {
-  color: var(--accent);
-  transition: color var(--transition);
-}
-
 .update-row .update-text a:hover {
   color: var(--accent-light);
+}
+
+/* =========================================================
+   QUOTE SECTION
+   ========================================================= */
+.quote-section {
+  margin: 4rem 0 5rem;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.rdj-quote {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 4vw, 1.75rem);
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.5;
+  position: relative;
+  display: inline-block;
+  max-width: 90%;
+}
+
+.rdj-quote::before {
+  content: '“';
+  position: absolute;
+  top: -1.5rem;
+  left: -2rem;
+  font-size: 5rem;
+  color: var(--accent);
+  opacity: 0.15;
+  font-family: serif;
+}
+
+.rdj-quote cite {
+  display: block;
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--accent);
+  margin-top: 1.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
 /* =========================================================
