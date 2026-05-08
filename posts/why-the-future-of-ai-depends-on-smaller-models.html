@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why the Future of AI Depends on Smaller Models — Jeevan Kumar</title>
+    <link rel="icon" href="../assets/cool.png" type="image/x-icon">
+    <link rel="stylesheet" href="../css/style.css">
+    <meta property="og:title" content="Why the Future of AI Depends on Smaller Models — Jeevan Kumar">
+    <meta property="og:description" content="![Pasted Image](../assets/upload_1778221510.png)
+Imagine a drone searching for survivors in a natural disaster zone. 
+
+It can’t rely on the internet,
+..">
+    <meta property="og:image" content="https://www.jeevan.life/assets/cool.png">
+    <meta property="og:url" content="https://www.jeevan.life/posts/why-the-future-of-ai-depends-on-smaller-models.html">
+    <meta property="og:type" content="article">
+    <meta name="twitter:image" content="https://www.jeevan.life/assets/cool.png">
+    <meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body>
+
+    <header>
+        <div class="header-content">
+            <h1>Jeevan Kumar</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <a href="../index.html" class="read-more" style="margin-bottom: 20px;">← Back to Blog</a>
+
+        <article class="post">
+            <h2>Why the Future of AI Depends on Smaller Models</h2>
+            <span class="post-date">May 2026</span>
+
+            <div class="post-content">
+                <p><img src="../assets/upload_1778221510.png" alt="Pasted Image">
+Imagine a drone searching for survivors in a natural disaster zone. </p>
+<p>It can’t rely on the internet,
+because connectivity may be unstable or completely unavailable.</p>
+<p>So the AI has to run directly
+on the device itself.</p>
+<p>But there’s a problem. Modern large language models require huge amounts of memory and
+compute, often needing powerful GPUs or even entire data centers to run.</p>
+<p>So the question becomes, how do we make these models efficient enough to run on everyday
+PCs, or even edge devices like drones?</p>
+<p>We do this through a process called &quot;quantization&quot;</p>
+<p>Before talking about it,lets refresh how numbers are represented on computers.</p>
+<p>We know computers only understand 0s and 1s. On or Off. So every number needs to be
+converted into base 2.</p>
+<p>For example :</p>
+<p>Decimal 13 → Binary 1101
+Because:
+1×2³ + 1×2² + 0×2¹ + 1×2⁰ = 13</p>
+<p>Once computers could store raw bits, we needed a standard way to interpret them.</p>
+<p>Programming languages introduced data types like int8, int16, and int32, each defining how
+many bits are used and how they represent numbers.</p>
+<p>int8 is just a way of saying:</p>
+<p>“this value is an integer stored using exactly 8 bits”</p>
+<p>Range
+1 bit is used for the sign
+7 bits for the value
+-128 to 127</p>
+<p>Now we have a data type to store integers.</p>
+<p>We need to define a datatype to store decimals.</p>
+<p>If we look at a decimal number in base 10, we can represent it as a multiplication of powers of
+10.</p>
+<p>123.45 = 1×10² + 2×10¹ + 3×10⁰ + 4×10⁻¹ + 5×10⁻²</p>
+<p>we can do the same thing, but with powers of 2.</p>
+<p>This gave us binary fractions.</p>
+<p>Example:</p>
+<p>decimal binary
+0.5 → 0.1 (because 1 × 2⁻¹)
+0.25 → 0.01 (because 1 × 2⁻²)</p>
+<p>So now ne need a way to define a data type to represent a decimal system.</p>
+<p>We could define a data type by saying, we will store five digits in total, and we will place the
+decimal point here.</p>
+<p>so we can store something like this number
+123.45
+but in this case we can only store numbers between
+-999.99 and 999.99</p>
+<p>We can&#39;t store
+1,000,000 or
+0.000001 
+We simply run out of space</p>
+<p>Engineers needed a system that could handle both
+very big numbers
+very small numbers
+without needing tons of bits.</p>
+<p>So they borrowed scientific notation:</p>
+<p>1.0 × 10⁶
+1.0 × 10⁻⁶</p>
+<p>It has the same number of digits but a different exponent</p>
+<p>Take a single number, say 5.5
+In decimal scientific notation, we write it like this</p>
+<p>5.5 = 5.5 × 10⁰</p>
+<p>In binary:</p>
+<p>5.5 = 101.1</p>
+<p>Now normalize it:</p>
+<p>101.1 = 1.011 × 2²</p>
+<p>Now these two represent the same value:</p>
+<p>5.5 = 1.011 × 2²</p>
+<p>so we represent each number in the form <strong>mantissa × base^exponent</strong></p>
+<p>Once we store numbers like this, we’re no longer saying:</p>
+<p>“this is where the point lives”</p>
+<p>Instead, we’re saying:</p>
+<p>“here are the digits”
+“here’s how much to scale them”</p>
+<p>And that scaling is what moves the point.</p>
+<p>Take this binary number:</p>
+<p>1.011 × 2²</p>
+<p>If we expand it, we get:
+101.1</p>
+<p>Now change only the exponent:
+1.011 × 2⁻¹
+and we get:
+0.1011</p>
+<p>Even though both these numbers has the same amount of digits, the scale has changed.</p>
+<p>Which means… the point has moved.</p>
+<p>And that’s the entire reason behind the name.</p>
+<p>Earlier systems tried to keep the point fixed, like:</p>
+<p>xxxxx.yy
+But that locks us into a narrow range.</p>
+<p>This new system broke that restriction.
+The point is no longer tied to a position in memory,
+it shifts based on the exponent</p>
+<p>it floats...
+and thats how it got the name floating point.
+.....okay so now we can represent decimal numbers in floating point representation.</p>
+<p>how many bits do we actually use to store it?
+That’s where data types come in.</p>
+<p>Think of it like this.</p>
+<p>Floating point is the idea</p>
+<p>Data types are the containers</p>
+<p>Different containers may have different sizes and different precision.</p>
+<p>lets look at two such containers.</p>
+<h2>1. float (32-bit floating point)</h2>
+<p>This is the smaller container.</p>
+<p>It splits 32 bits into three parts:
+• 1 bit → sign
+• 8 bits → exponent
+• 23 bits → mantissa</p>
+<p>This means:
+• less precision (fewer digits you can trust)
+• smaller range</p>
+<p>But it’s faster and uses less memory.</p>
+<h2></h2>
+<ol start="2">
+<li>double (64-bit floating point)</li>
+</ol>
+<p>This is the bigger container.</p>
+<p>• 1 bit → sign
+• 11 bits → exponent
+• 52 bits → mantissa</p>
+<p>Now we get:
+• much higher precision
+• much larger range</p>
+<p>But it costs more memory.</p>
+<p>Lets see how 0.1 decimal number is stored using float32.</p>
+<p>if we try to store and then print the number, we will get this : 0.1000000.01490116119384765625
+Lets see why it happens.</p>
+<h1>1 The Conversion (Infinite Loop)</h1>
+<p>0.1 in binary is a rational number .... it repeats forever 0.0001100110011. . ..</p>
+<p>To store this in Single Precision (float32), the computer normalizes it to scientific notation:
+1.10011001100110011001100. . . ×2^−4</p>
+<p>The IEEE 754 standard gives us exactly 23 bits for that fractional part (the mantissa).</p>
+<h1>2 The Truncation (The &quot;Storage&quot; Act)</h1>
+<p>The computer can&#39;t store &quot;forever.&quot; It has to chop the tail off at bit 23.</p>
+<p>Infinite binary: 1.10011001100110011001100 1100</p>
+<p>Stored binary: 1.10011001100110011001101 (Note: the last bit is rounded up because the
+next bit was a 1).</p>
+<h1>3. Reconstructing the Number</h1>
+<p>Now, here is where the 0.10000000149... comes from.</p>
+<p> When we ask the computer to tell us what is stored in that memory slot, it performs the following calculation:</p>
+<p>Take the mantissa:
+1 × 2⁻¹ + 1 × 2⁻² + 0 × 2⁻³ + 0 × 2⁻⁴ ... (continuing out to 23 bits).</p>
+<p>Multiply by the exponent (2⁻⁴).</p>
+<p>The result of that specific sum is exactly:
+0.10000000140111142</p>
+<h3>Why didn&#39;t it store 0.1?</h3>
+<p>Because in base-2, 0.1 does not exist. </p>
+<p>It is impossible to represent 0.1 with bits, just like it is
+impossible to represent 1 (0.. . .) with a finite number of decimal digits.</p>
+<p>The number we got (0.1000000014. . .) is the binary value of 0.1 converted back to decimal.</p>
+<p>It&#39;s the closest the hardware can possibly get to our &quot;0.1&quot; using 32 bits.</p>
+<p>Now lets come back to large language models.</p>
+<p>Lets consider a 7b parameter LLM.</p>
+<p>We know that there are 7b weights present in this having values between 1 and -1 .</p>
+<p>Standard LLMs (like GPT-3 or Llama) were traditionally trained using Float32 (Single
+Precision).</p>
+<p>Let’s do the math for a 7 Billion Parameter model (a relatively &quot;small&quot; modern LLM).</p>
+<p>Parameters: 7 000 000 000
+Size per parameter: 4 bytes (32 bits)
+Total Memory: 7 000 000 000 × 4 bytes.
+That is roughly 28 GB of VRAM just to load the model.</p>
+<h1>The Problem</h1>
+<p>Oour average consumer drone or laptop doesn&#39;t have 28 GB of dedicated video memory. 
+Most high-end gaming laptops have 8 GB or 16 GB.</p>
+<p>If we want that drone to &quot;think&quot; using a 7B model, we have to find a way to shrink those 28 GB
+without making the AI &quot;stupid.&quot;</p>
+<p>If 32 bits is &quot;Full Precision,&quot; the most obvious move is to just cut the bits in half. This gives us
+16-bit floating point numbers.</p>
+<h1>The Math of the Shrink</h1>
+<p>By moving from Float32 to Float16 (FP16), we immediately cut the memory requirement in half.
+7B Model in FP32: ~28 GB
+7B Model in FP16: ~14 GB</p>
+<p>14 GB is much better! It fits on a high-end consumer GPU. But how do we lose 16 bits without
+the model forgetting everything it learned?</p>
+<h1>The Trade-off: Precision vs. Range</h1>
+<p>In FP16, we rearrange the bits like this:</p>
+<p>1 bit for the sign.
+5 bits for the exponent (the &quot;scale&quot;).
+10 bits for the mantissa (the &quot;precision&quot;).</p>
+<p>The Catch: Because we only have 10 bits for the mantissa (compared to 23 bits in Float32), we
+lose a lot of &quot;fine detail.&quot; Imagine trying to measure a distance:</p>
+<p>Float32 can tell you the distance is exactly 1.234567 meters.
+Float16 might only be able to tell you it&#39;s 1.23 meters.</p>
+<h1>Brain Floating Point (BF16)</h1>
+<p>Google engineers realized that for AI, the range (how big or small a number can get) is actually
+more important than the precision (how many decimals there are).</p>
+<p>They created BFloat16.
+ It still uses 16 bits, but it keeps 8 bits for the exponent, the exact
+same as Float32. </p>
+<p>It just chops the mantissa down to 7 bits.</p>
+<p>Analogy: It’s like a telescope that can still see across the entire universe (same range), but
+the image is a bit blurrier (less precision).</p>
+<h1>Why this works for LLMs</h1>
+<p>LLMs are surprisingly resilient. We don&#39;t need to know a weight is exactly 0.000458392 .
+Knowing it&#39;s roughly 0.00046 is often enough for the &quot;brain&quot; to function correctly.</p>
+<p>Now our 7B model is 14 GB. Still a bit too heavy for a small drone or a basic phone.</p>
+<h1>From Floating Point to &quot;Fixed&quot; Integers (INT8)</h1>
+<p>In the industry, when people say &quot;Quantization,&quot; they usually mean ** Integer Quantization**. </p>
+<h1>Concept: The &quot;Rounding&quot; Strategy</h1>
+<p>Instead of storing weights as complex decimals (like 0.1234 ), we map them onto a much
+simpler scale of integers. </p>
+<p>The most common target is INT8 (8-bit integers).</p>
+<p>Remember what we said about INT8? It can only store whole numbers from -128 to 127.</p>
+<h1>How it works: Scaling and Zero-Points</h1>
+<p>Imagine all the weights in one layer of our AI model range from -1.0 to +1.0.</p>
+<p>We can’t just &quot;convert&quot; them because 0.5 doesn&#39;t exist in INT8. Instead, we stretch them.</p>
+<p>1)Find the Range: We determine the minimum and maximum weights (for example, -1.0 to 1.0).</p>
+<ol start="2">
+<li><p>Scale:  Multiply every value so the maximum absolute value fits within the 8-bit integer range (127).
+1.0 × 127 = 127
+0.5 × 127 ≈ 64
+-1.0 × 127 = -127</p>
+</li>
+<li><p>Store: Instead of storing each value as a 32-bit float, we store the scaled value (for example, 64) as a single 8-bit integer.</p>
+</li>
+</ol>
+<h1>The Result: Massively Smaller</h1>
+<p>By switching to INT8:</p>
+<p>7B Model in FP16: 14 GB
+7B Model in INT8: 7 GB</p>
+<p>Suddenly, our 7-billion parameter model fits into the RAM of a standard modern smartphone or
+a high-end drone!</p>
+<h3>The &quot;Cost&quot;: Quantization Error</h3>
+<p>Every time we round 63.5 to 64 , we lose a tiny bit of information. </p>
+<p>This is called Quantization Error.</p>
+<p> If we do this poorly, the AI starts &quot;hallucinating&quot; or losing its ability to speak coherently
+because its &quot;volume knobs&quot; (weights) are all slightly out of tune.</p>
+<p>We’ve reached the limit of &quot;reasonable&quot; math.</p>
+<p> To get that 7B model onto even smaller devices
+—or to make it run lightning-fast on a laptop—we have to go smaller than 8 bits. </p>
+<p>We go to 4-bit quantization.</p>
+<h3>The 4-Bit Magic (GPTQ, GGUF, and AWQ)</h3>
+<p>If 8-bit was a &quot;diet,&quot; 4-bit is &quot;ultra-light backpacking.&quot;</p>
+<h1>The Math of 4 Bits</h1>
+<p>A 4-bit number (a <strong>nibble</strong>) can only represent 2^4 values. 
+That is exactly 16 possible numbers (usually -8 to 7).</p>
+<p>Think about that: We are taking those incredibly precise decimals (like 0.10000000149... ) and
+forcing them to choose between only 16 possible options.</p>
+<h1>The Payoff:</h1>
+<p>7B Model in INT8: 7 GB
+7B Model in 4-bit: ~3.5 GB to 4 GB</p>
+<p>Now, the model fits on almost any modern device. But how does it stay smart when it only has
+16 &quot;levels&quot; for its weights?</p>
+<h1>The &quot;Secret Sauce&quot;: Grouping and Outliers</h1>
+<p>Engineers realized that weights in a model aren&#39;t distributed evenly. </p>
+<p>Most of them are near zero, but a few &quot;outlier&quot; weights are incredibly important. </p>
+<p>If you mess up those few important weights,
+the whole model breaks.</p>
+<p><strong>1)Block-wise Quantization:</strong> Instead of one scale for the whole model, we split the weights
+into small groups (e.g., blocks of 32 or 128). Each block gets its own &quot;scale&quot; factor to keep the numbers as accurate as possible within that small range.</p>
+<p>** 2)Post-Training Quantization (PTQ):** We use techniques like GPTQ. We &quot;calibrate&quot; the
+model by showing it a small amount of data. The algorithm then adjusts the 4-bit values to
+minimize the error in the model&#39;s actual output, rather than just rounding the numbers
+blindly</p>
+<h1>The &quot;GGUF&quot; Revolution</h1>
+<p>If you’ve ever downloaded a model from Hugging Face to run locally, you’ve likely seen the
+GGUF format. This is the gold standard for &quot;running AI on everyday gear.&quot;</p>
+<p>It uses k-quants, which is a hybrid approach. It might use 4 bits for most weights, but 6 bits
+for the most &quot;critical&quot; layers.</p>
+<p>It allows the CPU and RAM to do the heavy lifting if you don&#39;t have a powerful GPU.</p>
+<h3>The &quot;So What?&quot; for the Drone</h3>
+<p>Back to our disaster-zone drone.</p>
+<p>Because of 4-bit quantization, that drone isn&#39;t carrying a 28 GB &quot;brain&quot; it can&#39;t power. It’s
+carrying a 3.8 GB file.</p>
+<p>It uses less battery because it moves less data from memory to the chip.
+It reacts faster because 4-bit math is incredibly efficient for modern processors to crunch</p>
+<p>If we’re chopping off 90% of the data used to represent a weight, shouldn&#39;t the AI become a
+total &quot;smooth-brain&quot;?</p>
+<p>The short answer: Surprisingly, no. But there is a catch.</p>
+<h1>Why it doesn&#39;t get &quot;Dumb&quot; (The Resilience of AI)</h1>
+<h3>1. The &quot;Big Model&quot; Advantage</h3>
+<p>There is a famous rule in AI: <strong>A large model quantized to 4 bits is almost always smarter
+than a small model at full precision.</strong> * </p>
+<p>A 30B model at 4 bits (roughly 15 GB) will destroy a
+7B model at 16 bits (also 14 GB) in almost every test.</p>
+<p>It turns out that having more &quot;neurons&quot; is more important than having high-precision
+&quot;volume knobs.&quot;</p>
+<h3>2. The Resilience of Neural Networks</h3>
+<p>Think of a neural network like a massive democratic vote.</p>
+<p> To decide if an image is a &quot;cat,&quot; thousands of weights contribute a tiny bit to the answer.
+ If one weight is slightly off (because we rounded 0.1001 to 0.1 ), the other 999 weights &quot;vote&quot; correctly and drown out the error. </p>
+<p>The intelligence is stored in the patterns and connections, not in the 10th decimal place of a single
+number.</p>
+<h3>3. The &quot;Sweet Spot&quot; (4-bit)</h3>
+<p>Research (and benchmarks like Perplexity) shows a very interesting curve:</p>
+<p>**16-bit to 8-bit: **Virtually zero loss in &quot;IQ.&quot;</p>
+<p>**8-bit to 4-bit: ** A tiny drop (maybe 1–3%), usually imperceptible to a human.</p>
+<p>**Below 4-bit (3-bit or 2-bit): **The Cliff. This is where the model starts to &quot;fall apart.&quot; Logic
+loops happen, it loses its ability to follow complex instructions, and it starts repeating itself.</p>
+<h3>The Future: 1.58-bit (The BitNet Revolution)</h3>
+<p>We used to think 4-bit was the limit, but recently, researchers (Microsoft/BitNet) found a way to
+train models from scratch using only 1.58 bits. In these models, every weight can only be one
+of three values:</p>
+<p><strong>-1, 0, or 1</strong></p>
+<p>log₂(3) ≈ 1.58, which is why it’s called 1.58-bit.</p>
+<p>They aren&#39;t just rounding an old model; they are teaching the AI to think in &quot;tri-state&quot; logic from
+day one. </p>
+<p>These models are incredibly fast and use almost no energy, yet they perform nearly as
+well as the &quot;high precision&quot; giants.</p>
+<h1>Wrap-up: Back to the Drone</h1>
+<p>So, does our drone get &quot;dumb&quot;? If we use 4-bit quantization with a modern technique like
+GPTQ or GGUF, the drone stays just as capable of finding survivors as it would be if it were tethered to a massive supercomputer.</p>
+<p>Quantization isn&#39;t just a compression trick; it&#39;s the reason AI is moving out of the cloud and into
+our pockets, our laptops, and our drones.</p>
+
+            </div>
+        </article>
+    </div>
+
+    <footer>
+        <p>Blog by Jeevan</p>
+        <p>Contact: <a href="mailto:bettercalljeevan@gmail.com">bettercalljeevan@gmail.com</a></p>
+    </footer>
+
+    <div id="image-overlay">
+        <img src="" alt="Fullscreen preview">
+    </div>
+
+    <script src="../js/script.js"></script>
+</body>
+
+</html>

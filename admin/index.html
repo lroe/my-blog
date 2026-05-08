@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Admin — Jeevan Kumar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --bg: #161513;
+            --bg-card: #1c1b19;
+            --sidebar-bg: #11100f;
+            --text: #e3e1de;
+            --text-muted: #979087;
+            --accent: #c19233;
+            --accent-light: #d4ad5f;
+            --border: #33312e;
+            --font-serif: 'Lora', serif;
+            --font-sans: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-family: var(--font-serif);
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--accent);
+        }
+
+        .btn-new {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .article-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .article-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .article-item:hover {
+            background: rgba(193, 146, 51, 0.05);
+            border-color: rgba(193, 146, 51, 0.2);
+        }
+
+        .article-item.active {
+            background: rgba(193, 146, 51, 0.1);
+            border-color: var(--accent);
+        }
+
+        .article-item h3 {
+            font-size: 0.9rem;
+            margin: 0 0 4px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .article-item p {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Main Content */
+        .main-editor {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            margin-top: 0;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 2rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0d0c0b;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.2s;
+            font-family: var(--font-serif);
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(193, 146, 51, 0.1);
+        }
+
+        textarea {
+            height: 500px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            background: #0d0c0b;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 4px;
+            border-right: 1px solid var(--border);
+            padding-right: 8px;
+            margin-right: 4px;
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+
+        .btn-tool {
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            min-width: 32px;
+        }
+
+        .btn-tool:hover {
+            color: var(--accent);
+            background: rgba(193, 146, 51, 0.1);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 30px;
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button.primary:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px);
+        }
+
+        button.secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 28px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); display: block; }
+        .error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); display: block; }
+
+        input[type="file"] { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>Articles</h2>
+        <button class="btn-new" onclick="resetForm()" title="New Article">+</button>
+    </div>
+    <div class="article-list" id="article-list">
+        <!-- Articles populated here -->
+    </div>
+</div>
+
+<div class="main-editor">
+    <div class="container">
+        <h1 id="editor-title">New Article</h1>
+        
+        <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="title" placeholder="Article Title" oninput="updateSlug()">
+        </div>
+
+        <div class="grid">
+            <div class="form-group">
+                <label>URL Slug</label>
+                <input type="text" id="slug" placeholder="url-slug">
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="text" id="date" placeholder="May 2026">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Content</label>
+            <div class="toolbar">
+                <div class="toolbar-group">
+                    <button class="btn-tool" onclick="insertFormat('# ', '')" title="Heading 1">H1</button>
+                    <button class="btn-tool" onclick="insertFormat('## ', '')" title="Heading 2">H2</button>
+                    <button class="btn-tool" onclick="insertFormat('### ', '')" title="Heading 3">H3</button>
+                    <button class="btn-tool" onclick="insertFormat('#### ', '')" title="Heading 4">H4</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="btn-tool" onclick="insertFormat('**', '**')" title="Bold"><b>B</b></button>
+                    <button class="btn-tool" onclick="insertFormat('*', '*')" title="Italic"><i>I</i></button>
+                    <button class="btn-tool" onclick="insertFormat('`', '`')" title="Code">{}</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="btn-tool" onclick="insertFormat('\n- ', '')" title="Bullet List">•</button>
+                    <button class="btn-tool" onclick="insertFormat('\n1. ', '')" title="Numbered List">1.</button>
+                    <button class="btn-tool" onclick="insertFormat('\n> ', '')" title="Quote">"</button>
+                </div>
+                <div class="toolbar-group">
+                    <button class="btn-tool" onclick="insertFormat('[', '](url)')" title="Link">🔗</button>
+                    <button class="btn-tool" onclick="document.getElementById('file-input').click()" title="Image">🖼️</button>
+                    <button class="btn-tool" onclick="insertFormat('\n---\n', '')" title="Horizontal Rule">—</button>
+                </div>
+                <input type="file" id="file-input" accept="image/*" onchange="uploadImage(this)">
+            </div>
+            <textarea id="content" placeholder="Start writing..."></textarea>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div class="actions">
+            <button class="secondary" onclick="previewInNewWindow()">Preview</button>
+            <button class="primary" onclick="submitArticle()" id="btn-submit">Publish Article</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentSlug = null;
+
+    async function loadArticles() {
+        try {
+            const response = await fetch('/list-articles');
+            const articles = await response.json();
+            const list = document.getElementById('article-list');
+            list.innerHTML = articles.map(a => `
+                <div class="article-item ${a.slug === currentSlug ? 'active' : ''}" onclick="editArticle('${a.slug}')">
+                    <h3>${a.title}</h3>
+                    <p>${a.date} | /${a.slug}</p>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Failed to load articles', err);
+        }
+    }
+
+    async function editArticle(slug) {
+        currentSlug = slug;
+        try {
+            const response = await fetch(`/get-article?slug=${slug}`);
+            const data = await response.json();
+            
+            document.getElementById('title').value = data.title;
+            document.getElementById('slug').value = data.slug;
+            document.getElementById('date').value = data.date;
+            document.getElementById('content').value = data.markdown;
+            
+            document.getElementById('editor-title').innerText = 'Edit Article';
+            document.getElementById('btn-submit').innerText = 'Update Article';
+            
+            loadArticles();
+        } catch (err) {
+            alert('Failed to fetch article details');
+        }
+    }
+
+    function resetForm() {
+        currentSlug = null;
+        document.getElementById('title').value = '';
+        document.getElementById('slug').value = '';
+        document.getElementById('content').value = '';
+        document.getElementById('editor-title').innerText = 'New Article';
+        document.getElementById('btn-submit').innerText = 'Publish Article';
+        
+        const now = new Date();
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        document.getElementById('date').value = months[now.getMonth()] + " " + now.getFullYear();
+        
+        loadArticles();
+    }
+
+    function updateSlug() {
+        if (currentSlug) return; // Don't auto-update slug if editing existing
+        const title = document.getElementById('title').value;
+        const slug = title.toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-');
+        document.getElementById('slug').value = slug;
+    }
+
+    function insertFormat(prefix, suffix) {
+        const textarea = document.getElementById('content');
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const scrollTop = textarea.scrollTop; // Save scroll position
+        
+        const text = textarea.value;
+        const selected = text.substring(start, end);
+        const before = text.substring(0, start);
+        const after = text.substring(end);
+        
+        textarea.value = before + prefix + selected + suffix + after;
+        
+        // Restore focus and selection
+        textarea.focus();
+        textarea.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+        
+        // Restore scroll position
+        textarea.scrollTop = scrollTop;
+    }
+
+    // Paste handler for images
+    document.getElementById('content').addEventListener('paste', async (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let index in items) {
+            const item = items[index];
+            if (item.kind === 'file' && item.type.includes('image')) {
+                const blob = item.getAsFile();
+                const formData = new FormData();
+                formData.append('image', blob);
+                formData.append('filename', 'pasted_image.png');
+
+                showStatus('Uploading pasted image...', 'success');
+
+                try {
+                    const response = await fetch('/upload', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (response.ok) {
+                        insertFormat(`![Pasted Image](${result.url})`, '');
+                        hideStatus();
+                    }
+                } catch (err) {
+                    showStatus('Paste Upload Error: ' + err.message, 'error');
+                }
+            }
+        }
+    });
+
+    async function uploadImage(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('filename', file.name);
+
+        showStatus('Uploading image...', 'success');
+
+        try {
+            const response = await fetch('/upload', { method: 'POST', body: formData });
+            const result = await response.json();
+            if (response.ok) {
+                insertFormat(`![${file.name}](${result.url})`, '');
+                hideStatus();
+            } else { throw new Error('Upload failed'); }
+        } catch (err) { showStatus('Upload Error: ' + err.message, 'error'); }
+    }
+
+    async function previewInNewWindow() {
+        const title = document.getElementById('title').value;
+        const date = document.getElementById('date').value;
+        const markdown = document.getElementById('content').value;
+        const htmlContent = marked.parse(markdown);
+
+        const response = await fetch('/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, date, htmlContent })
+        });
+
+        const html = await response.text();
+        const previewWindow = window.open('', '_blank');
+        previewWindow.document.write(html);
+        previewWindow.document.close();
+    }
+
+    async function submitArticle() {
+        const title = document.getElementById('title').value;
+        const slug = document.getElementById('slug').value;
+        const date = document.getElementById('date').value;
+        const markdown = document.getElementById('content').value;
+        const htmlContent = marked.parse(markdown);
+
+        if (!title || !slug || !markdown) {
+            alert('Please fill in Title, Slug, and Content');
+            return;
+        }
+
+        showStatus('Saving...', 'success');
+
+        try {
+            const response = await fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, slug, date, htmlContent, markdown })
+            });
+
+            if (response.ok) {
+                showStatus('Success! Article saved.', 'success');
+                loadArticles();
+            } else {
+                const result = await response.json();
+                throw new Error(result.error || 'Failed to save');
+            }
+        } catch (err) {
+            showStatus('Error: ' + err.message, 'error');
+        }
+    }
+
+    function showStatus(text, type) {
+        const s = document.getElementById('status');
+        s.innerText = text;
+        s.className = 'status ' + type;
+    }
+
+    function hideStatus() {
+        document.getElementById('status').style.display = 'none';
+    }
+
+    // Initial load
+    loadArticles();
+    resetForm();
+</script>
+
+</body>
+</html>

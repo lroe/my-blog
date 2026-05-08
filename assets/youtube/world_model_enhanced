@@ -1,0 +1,17 @@
+Watch this clip for a second. [Shows Ronaldo heading the football after jumping.]
+
+Ronaldo saw the football coming and immediately knew where to jump in order to hit the ball with his head. He did not use physics equations to calculate the exact spot to jump. Instead, years of practice allowed his mind to build a model of the world, including gravity and motion, and make a decision about where to jump to hit the ball.
+
+This concept is known as a world model.
+Many top tier researchers like Yann LeCun and Fei-Fei Li are moving from working on LLMs toward this concept of world models. 
+
+
+In fact, they have started companies with millions of dollars in funding that are working on this concept, as they believe world models are key to building AGI.
+
+So what is really a world Model?
+
+
+Before speaking about world models, let me talk about a limitation of LLMs.
+
+An LLM knows what the word “hug” represents. It knows that a hug is a physical gesture of holding someone closely in one’s arms, typically to express affection, love, comfort, or friendship.(I dont have to narrate it out loud, just show image) Since it doesn’t experience the 3D world like we do, it understands “hug” only through text, not through lived experience. It only knows a text representation of a hug. Algorithmically speaking, the word “hug” is converted into a vector and placed closer to words like “love,” “comfort,” and “friendship.”
+
