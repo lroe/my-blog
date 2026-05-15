@@ -27,6 +27,7 @@ Idleness gives unresolved thoughts unlimited room to grow.
 
 This same idea appears in the Greek myth of Sisyphus, the man cursed to push a boulder up a hill for eternity, only for it to roll back down again.
 
+![Pasted Image](../assets/upload_1778822575.png)
 At first glance, the punishment seems meaningless.
 Yet philosopher Albert Camus argued that Sisyphus becomes free the moment he accepts the struggle itself.
 
