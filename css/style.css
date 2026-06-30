@@ -305,20 +305,50 @@ a {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 0.75rem;
 }
 
 .post-list-item {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 1.25rem;
-  padding: 0.45rem 0;
-  border-bottom: 1px solid transparent;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
   transition: background-color var(--transition);
 }
 
 .post-list-item:last-child {
   border-bottom: none;
+}
+
+.post-thumbnail {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background-color: var(--bg-card);
+}
+
+.post-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--transition);
+}
+
+.post-list-item:hover .post-thumbnail img {
+  transform: scale(1.08);
+}
+
+.post-item-content {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .post-list-item a {
