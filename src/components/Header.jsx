@@ -43,10 +43,12 @@ export default function Header({ currentTab, setTab, onOpenSearch, onOpenCMS, si
           <Search size={18} />
         </button>
 
-        <button className="cms-pill-btn" onClick={onOpenCMS} title="Open CMS Editor">
-          <Edit3 size={13} />
-          CMS
-        </button>
+        {(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+          <button className="cms-pill-btn" onClick={onOpenCMS} title="Open CMS Editor">
+            <Edit3 size={13} />
+            CMS
+          </button>
+        )}
       </nav>
     </header>
   );

@@ -125,12 +125,14 @@ export default function App() {
         setTab={handleTabChange}
       />
 
-      <CMSModal
-        isOpen={isCMSOpen}
-        onClose={() => setIsCMSOpen(false)}
-        data={data}
-        refreshContent={fetchContent}
-      />
+      {(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+        <CMSModal
+          isOpen={isCMSOpen}
+          onClose={() => setIsCMSOpen(false)}
+          data={data}
+          refreshContent={fetchContent}
+        />
+      )}
     </div>
   );
 }
