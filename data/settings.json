@@ -1,12 +1,24 @@
 {
   "siteTitle": "jeevan",
-  "heroHeading": "Essays about AI, software, learning, and building things from scratch.",
+  "heroHeading": "Essays about Technology, Movies & other interesting things <3",
   "aboutTitle": "About",
-  "aboutBio": "Hi, I'm Jeevan.\n\nI build software.\n\nI make videos explaining difficult ideas.\n\nSometimes I write.",
+  "aboutBio": "Hi, I'm Jeevan.\n\nI like books,coffee & movies.",
   "socialLinks": [
-    { "name": "YouTube", "url": "https://youtube.com" },
-    { "name": "Substack", "url": "https://substack.com" },
-    { "name": "GitHub", "url": "https://github.com/lroe" },
-    { "name": "Email", "url": "mailto:jeevan@example.com" }
+    {
+      "name": "YouTube",
+      "url": "https://www.youtube.com/@thejeevankumar"
+    },
+    {
+      "name": "Substack",
+      "url": "https://substack.com/@thejeevankumar"
+    },
+    {
+      "name": "GitHub",
+      "url": "https://github.com/lroe"
+    },
+    {
+      "name": "Email",
+      "url": "mailto:bettercalljeevan@gmail.com"
+    }
   ]
 }
