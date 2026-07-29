@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Open Blog CMS
+Comment=Launch local Blog CMS in Chrome
+Exec=/home/jeevankumar/Music/MyMansion/open-cms.sh
+Icon=text-editor
+Terminal=true
+Categories=Utility;Development;

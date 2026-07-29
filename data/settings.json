@@ -1,0 +1,12 @@
+{
+  "siteTitle": "jeevan",
+  "heroHeading": "Essays about AI, software, learning, and building things from scratch.",
+  "aboutTitle": "About",
+  "aboutBio": "Hi, I'm Jeevan.\n\nI build software.\n\nI make videos explaining difficult ideas.\n\nSometimes I write.",
+  "socialLinks": [
+    { "name": "GitHub", "url": "https://github.com/lroe" },
+    { "name": "YouTube", "url": "https://youtube.com" },
+    { "name": "X (Twitter)", "url": "https://x.com" },
+    { "name": "Email", "url": "mailto:jeevan@example.com" }
+  ]
+}

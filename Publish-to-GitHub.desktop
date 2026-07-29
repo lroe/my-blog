@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Publish Blog to GitHub
+Comment=Build and upload blog changes to GitHub
+Exec=gnome-terminal -- /home/jeevankumar/Music/MyMansion/publish.sh
+Icon=system-run
+Terminal=false
+Categories=Utility;Development;

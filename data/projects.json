@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1",
+    "title": "Guidee",
+    "description": "AI powered immersive education platform.",
+    "icon": "cube",
+    "link": "#"
+  },
+  {
+    "id": "2",
+    "title": "YouTube",
+    "description": "Video essays about AI, software, and building.",
+    "icon": "play",
+    "link": "#"
+  },
+  {
+    "id": "3",
+    "title": "Research Notes",
+    "description": "Ongoing experiments and random thoughts.",
+    "icon": "document",
+    "link": "#"
+  }
+]
