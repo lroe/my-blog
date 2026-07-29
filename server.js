@@ -49,8 +49,7 @@ app.get('/api/content', (req, res) => {
     const settings = readJson('settings.json') || {};
     const essays = readJson('essays.json') || [];
     const notes = readJson('notes.json') || [];
-    const projects = readJson('projects.json') || [];
-    res.json({ settings, essays, notes, projects });
+    res.json({ settings, essays, notes });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -129,38 +128,6 @@ app.delete('/api/notes/:id', (req, res) => {
   }
 });
 
-// Projects CRUD
-app.post('/api/projects', (req, res) => {
-  try {
-    let projects = readJson('projects.json') || [];
-    const proj = req.body;
-    if (!proj.id) {
-      proj.id = Date.now().toString();
-    }
-    const index = projects.findIndex((p) => p.id === proj.id);
-    if (index >= 0) {
-      projects[index] = proj;
-    } else {
-      projects.push(proj);
-    }
-    writeJson('projects.json', projects);
-    res.json({ success: true, project: proj });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.delete('/api/projects/:id', (req, res) => {
-  try {
-    let projects = readJson('projects.json') || [];
-    projects = projects.filter((p) => p.id !== req.params.id);
-    writeJson('projects.json', projects);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Image Upload Endpoint
 app.post('/api/upload', upload.single('image'), (req, res) => {
   try {
@@ -175,7 +142,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
 // Publish Endpoint (Builds & Pushes to GitHub)
 app.post('/api/publish', (req, res) => {
   const commitMsg = req.body.message || 'Update blog content via CMS';
-  const command = `npm run build && git add . && git commit -m "${commitMsg}" || true && git push origin main`;
+  const command = `npm run build && git add . && git commit -m "${commitMsg}" || true && git push origin main && git push origin main:master --force`;
   
   exec(command, { cwd: __dirname }, (error, stdout, stderr) => {
     if (error) {

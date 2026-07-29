@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Plus, Edit2, Trash2, Upload, Check, CloudUpload, Image as ImageIcon } from 'lucide-react';
+import { X, Plus, Edit2, Trash2, CloudUpload, Image as ImageIcon } from 'lucide-react';
 
 export default function CMSModal({
   isOpen,
@@ -7,15 +7,14 @@ export default function CMSModal({
   data,
   refreshContent
 }) {
-  const [activeTab, setActiveTab] = useState('essays'); // essays | notes | projects | settings
-  const [editingItem, setEditingItem] = useState(null); // null or object being edited
+  const [activeTab, setActiveTab] = useState('essays'); // essays | notes | settings
+  const [editingItem, setEditingItem] = useState(null);
   const [publishing, setPublishing] = useState(false);
   const [publishStatus, setPublishStatus] = useState('');
-  const [uploadingImage, setUploadingImage] = useState(false);
 
   if (!isOpen) return null;
 
-  const { settings, essays, notes, projects } = data;
+  const { settings, essays, notes } = data;
 
   // Save Settings
   const handleSaveSettings = async (e) => {
@@ -27,9 +26,9 @@ export default function CMSModal({
       aboutTitle: formData.get('aboutTitle'),
       aboutBio: formData.get('aboutBio'),
       socialLinks: [
-        { name: 'GitHub', url: formData.get('githubUrl') },
         { name: 'YouTube', url: formData.get('youtubeUrl') },
-        { name: 'X (Twitter)', url: formData.get('xUrl') },
+        { name: 'Substack', url: formData.get('substackUrl') },
+        { name: 'GitHub', url: formData.get('githubUrl') },
         { name: 'Email', url: formData.get('emailUrl') }
       ]
     };
@@ -131,44 +130,6 @@ export default function CMSModal({
     }
   };
 
-  // Save Project
-  const handleSaveProject = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const proj = {
-      id: editingItem?.id || '',
-      title: formData.get('title'),
-      description: formData.get('description'),
-      icon: formData.get('icon'),
-      link: formData.get('link')
-    };
-
-    try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(proj)
-      });
-      if (res.ok) {
-        setEditingItem(null);
-        refreshContent();
-      }
-    } catch (err) {
-      alert('Error saving project: ' + err.message);
-    }
-  };
-
-  // Delete Project
-  const handleDeleteProject = async (id) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
-    try {
-      await fetch(`/api/projects/${id}`, { method: 'DELETE' });
-      refreshContent();
-    } catch (err) {
-      alert('Error deleting project: ' + err.message);
-    }
-  };
-
   // Upload Image Handler
   const handleImageUpload = async (e, textareaId) => {
     const file = e.target.files[0];
@@ -177,7 +138,6 @@ export default function CMSModal({
     const formData = new FormData();
     formData.append('image', file);
 
-    setUploadingImage(true);
     try {
       const res = await fetch('/api/upload', {
         method: 'POST',
@@ -194,8 +154,6 @@ export default function CMSModal({
       }
     } catch (err) {
       alert('Image upload failed: ' + err.message);
-    } finally {
-      setUploadingImage(false);
     }
   };
 
@@ -246,15 +204,6 @@ export default function CMSModal({
               }}
             >
               Notes ({notes.length})
-            </button>
-            <button
-              className={`cms-tab-btn ${activeTab === 'projects' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('projects');
-                setEditingItem(null);
-              }}
-            >
-              Projects ({projects.length})
             </button>
             <button
               className={`cms-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
@@ -564,108 +513,6 @@ export default function CMSModal({
             </div>
           )}
 
-          {/* PROJECTS TAB */}
-          {activeTab === 'projects' && (
-            <div>
-              {editingItem !== null ? (
-                <form onSubmit={handleSaveProject}>
-                  <h3>{editingItem.id ? 'Edit Project' : 'Create New Project'}</h3>
-                  <div className="form-group" style={{ marginTop: '1rem' }}>
-                    <label className="form-label">Project Title</label>
-                    <input
-                      name="title"
-                      className="form-input"
-                      defaultValue={editingItem.title || ''}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Description</label>
-                    <input
-                      name="description"
-                      className="form-input"
-                      defaultValue={editingItem.description || ''}
-                      required
-                    />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">Icon (cube, play, document)</label>
-                      <input
-                        name="icon"
-                        className="form-input"
-                        defaultValue={editingItem.icon || 'cube'}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Link URL</label>
-                      <input
-                        name="link"
-                        className="form-input"
-                        defaultValue={editingItem.link || '#'}
-                      />
-                    </div>
-                  </div>
-                  <div className="cms-action-bar">
-                    <button
-                      type="button"
-                      className="cms-tab-btn"
-                      onClick={() => setEditingItem(null)}
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn-primary">
-                      Save Project
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3>Manage Projects</h3>
-                    <button
-                      className="btn-primary"
-                      onClick={() => setEditingItem({})}
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
-                    >
-                      <Plus size={16} /> New Project
-                    </button>
-                  </div>
-
-                  <table className="cms-table">
-                    <thead>
-                      <tr>
-                        <th>Title</th>
-                        <th>Description</th>
-                        <th>Icon</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {projects.map((proj) => (
-                        <tr key={proj.id}>
-                          <td>{proj.title}</td>
-                          <td>{proj.description}</td>
-                          <td>{proj.icon}</td>
-                          <td>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button onClick={() => setEditingItem(proj)}>
-                                <Edit2 size={16} style={{ color: 'var(--accent-blue)' }} />
-                              </button>
-                              <button onClick={() => handleDeleteProject(proj.id)}>
-                                <Trash2 size={16} style={{ color: '#ef4444' }} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* SETTINGS TAB */}
           {activeTab === 'settings' && (
             <form onSubmit={handleSaveSettings}>
@@ -712,27 +559,27 @@ export default function CMSModal({
               <h4 style={{ margin: '1.5rem 0 1rem 0', color: 'var(--text-secondary)' }}>Social Links (Elsewhere)</h4>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group">
-                  <label className="form-label">GitHub URL</label>
-                  <input
-                    name="githubUrl"
-                    className="form-input"
-                    defaultValue={settings.socialLinks?.[0]?.url || 'https://github.com/lroe'}
-                  />
-                </div>
-                <div className="form-group">
                   <label className="form-label">YouTube URL</label>
                   <input
                     name="youtubeUrl"
                     className="form-input"
-                    defaultValue={settings.socialLinks?.[1]?.url || 'https://youtube.com'}
+                    defaultValue={settings.socialLinks?.[0]?.url || 'https://youtube.com'}
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">X (Twitter) URL</label>
+                  <label className="form-label">Substack URL</label>
                   <input
-                    name="xUrl"
+                    name="substackUrl"
                     className="form-input"
-                    defaultValue={settings.socialLinks?.[2]?.url || 'https://x.com'}
+                    defaultValue={settings.socialLinks?.[1]?.url || 'https://substack.com'}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">GitHub URL</label>
+                  <input
+                    name="githubUrl"
+                    className="form-input"
+                    defaultValue={settings.socialLinks?.[2]?.url || 'https://github.com/lroe'}
                   />
                 </div>
                 <div className="form-group">

@@ -29,12 +29,6 @@ export default function Header({ currentTab, setTab, onOpenSearch, onOpenCMS, si
           Notes
         </button>
         <button
-          className={`nav-link ${currentTab === 'projects' ? 'active' : ''}`}
-          onClick={() => setTab('projects')}
-        >
-          Projects
-        </button>
-        <button
           className={`nav-link ${currentTab === 'about' ? 'active' : ''}`}
           onClick={() => setTab('about')}
         >

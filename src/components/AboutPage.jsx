@@ -2,9 +2,9 @@ import React from 'react';
 
 export default function AboutPage({ settings }) {
   const socialLinks = settings.socialLinks || [
-    { name: 'GitHub', url: 'https://github.com/lroe' },
     { name: 'YouTube', url: 'https://youtube.com' },
-    { name: 'X (Twitter)', url: 'https://x.com' },
+    { name: 'Substack', url: 'https://substack.com' },
+    { name: 'GitHub', url: 'https://github.com/lroe' },
     { name: 'Email', url: 'mailto:jeevan@example.com' }
   ];
 

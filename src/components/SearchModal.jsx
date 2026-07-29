@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 
-export default function SearchModal({ isOpen, onClose, essays, notes, projects, onSelectEssay, setTab }) {
+export default function SearchModal({ isOpen, onClose, essays, notes, onSelectEssay, setTab }) {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
@@ -28,14 +28,6 @@ export default function SearchModal({ isOpen, onClose, essays, notes, projects, 
     ? notes.filter((n) => n.content.toLowerCase().includes(q))
     : [];
 
-  const matchedProjects = q
-    ? projects.filter(
-        (p) =>
-          p.title.toLowerCase().includes(q) ||
-          p.description.toLowerCase().includes(q)
-      )
-    : [];
-
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="search-modal" onClick={(e) => e.stopPropagation()}>
@@ -44,7 +36,7 @@ export default function SearchModal({ isOpen, onClose, essays, notes, projects, 
           <input
             type="text"
             className="search-input"
-            placeholder="Search essays, notes, projects..."
+            placeholder="Search essays and notes..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
@@ -106,29 +98,9 @@ export default function SearchModal({ isOpen, onClose, essays, notes, projects, 
             </div>
           )}
 
-          {matchedProjects.length > 0 && (
-            <div>
-              <div className="search-group-header">Projects</div>
-              {matchedProjects.map((proj) => (
-                <div
-                  key={proj.id}
-                  className="search-result-item"
-                  onClick={() => {
-                    setTab('projects');
-                    onClose();
-                  }}
-                >
-                  <span className="search-res-title">{proj.title}</span>
-                  <span className="search-res-sub">{proj.description}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
           {q &&
             matchedEssays.length === 0 &&
-            matchedNotes.length === 0 &&
-            matchedProjects.length === 0 && (
+            matchedNotes.length === 0 && (
               <div
                 style={{
                   padding: '2rem',

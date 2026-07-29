@@ -6,7 +6,6 @@ import RecentNotes from './components/RecentNotes';
 import EssayDetail from './components/EssayDetail';
 import EssaysPage from './components/EssaysPage';
 import NotesPage from './components/NotesPage';
-import ProjectsPage from './components/ProjectsPage';
 import AboutPage from './components/AboutPage';
 import SearchModal from './components/SearchModal';
 import CMSModal from './components/CMSModal';
@@ -15,7 +14,6 @@ import CMSModal from './components/CMSModal';
 import defaultSettings from '../data/settings.json';
 import defaultEssays from '../data/essays.json';
 import defaultNotes from '../data/notes.json';
-import defaultProjects from '../data/projects.json';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('home');
@@ -26,8 +24,7 @@ export default function App() {
   const [data, setData] = useState({
     settings: defaultSettings,
     essays: defaultEssays,
-    notes: defaultNotes,
-    projects: defaultProjects
+    notes: defaultNotes
   });
 
   const fetchContent = async () => {
@@ -114,10 +111,6 @@ export default function App() {
           <NotesPage notes={data.notes} />
         )}
 
-        {currentTab === 'projects' && (
-          <ProjectsPage projects={data.projects} />
-        )}
-
         {currentTab === 'about' && (
           <AboutPage settings={data.settings} />
         )}
@@ -128,7 +121,6 @@ export default function App() {
         onClose={() => setIsSearchOpen(false)}
         essays={data.essays}
         notes={data.notes}
-        projects={data.projects}
         onSelectEssay={handleSelectEssay}
         setTab={handleTabChange}
       />

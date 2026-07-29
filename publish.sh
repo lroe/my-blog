@@ -1,5 +1,5 @@
 #!/bin/bash
-# Publish Blog to GitHub Script
+# Publish Blog to GitHub Script (Pushes to both main and master)
 
 PROJECT_DIR="/home/jeevankumar/Music/MyMansion"
 
@@ -16,10 +16,11 @@ echo "2. Adding changes to Git..."
 git add .
 
 echo "3. Committing updates..."
-git commit -m "Publish update: $(date)"
+git commit -m "Publish update: $(date)" || true
 
-echo "4. Pushing to GitHub (origin main)..."
+echo "4. Pushing to GitHub (main & master)..."
 git push origin main
+git push origin main:master --force
 
 if [ $? -eq 0 ]; then
     echo "-------------------------------------"
