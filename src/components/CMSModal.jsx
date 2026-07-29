@@ -16,25 +16,19 @@ export default function CMSModal({
   const [essayTitle, setEssayTitle] = useState('');
   const [essayContent, setEssayContent] = useState('');
   const [essayExcerpt, setEssayExcerpt] = useState('');
-  const [essayReadTime, setEssayReadTime] = useState('1 min read');
   const [noteContent, setNoteContent] = useState('');
 
   if (!isOpen) return null;
 
   const { settings, essays, notes } = data;
 
-  // Auto calculate read time from word count
+  // Auto calculate read time in intervals of 5 minutes (e.g. 5 min read, 10 min read, 15 min read)
   const calculateReadTime = (text) => {
-    if (!text || !text.trim()) return '1 min read';
+    if (!text || !text.trim()) return '5 min read';
     const words = text.trim().split(/\s+/).filter(Boolean).length;
-    const minutes = Math.max(1, Math.ceil(words / 200));
-    return `${minutes} min read`;
-  };
-
-  const handleEssayContentChange = (e) => {
-    const val = e.target.value;
-    setEssayContent(val);
-    setEssayReadTime(calculateReadTime(val));
+    const rawMins = Math.ceil(words / 200);
+    const roundedMins = Math.max(5, Math.ceil(rawMins / 5) * 5);
+    return `${roundedMins} min read`;
   };
 
   const startEditingEssay = (essay) => {
@@ -42,7 +36,6 @@ export default function CMSModal({
     setEssayTitle(essay.title || '');
     setEssayContent(essay.content || '');
     setEssayExcerpt(essay.excerpt || '');
-    setEssayReadTime(essay.readTime || calculateReadTime(essay.content));
   };
 
   const startEditingNote = (note) => {
@@ -339,27 +332,15 @@ export default function CMSModal({
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">Calculated Read Time (Auto)</label>
+                  <div className="form-group">
+                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span>Published</span>
                       <input
-                        name="readTime"
-                        className="form-input"
-                        value={essayReadTime}
-                        readOnly
-                        style={{ opacity: 0.8 }}
+                        type="checkbox"
+                        name="published"
+                        defaultChecked={editingItem.published !== false}
                       />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span>Published</span>
-                        <input
-                          type="checkbox"
-                          name="published"
-                          defaultChecked={editingItem.published !== false}
-                        />
-                      </label>
-                    </div>
+                    </label>
                   </div>
 
                   <div className="form-group">
@@ -392,9 +373,12 @@ export default function CMSModal({
                       className="form-textarea"
                       rows={10}
                       value={essayContent}
-                      onChange={handleEssayContentChange}
+                      onChange={(e) => setEssayContent(e.target.value)}
                       required
                     />
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                      Calculated Read Time: {calculateReadTime(essayContent)}
+                    </div>
                   </div>
 
                   <div className="cms-action-bar">
