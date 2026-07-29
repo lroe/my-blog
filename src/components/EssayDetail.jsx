@@ -5,7 +5,6 @@ import { marked } from 'marked';
 export default function EssayDetail({ essay, onBack, onSelectEssay }) {
   if (!essay) return null;
 
-  // Simple HTML rendering for content (supporting markdown formatting)
   const renderedContent = marked.parse(essay.content || '');
 
   return (
@@ -24,18 +23,8 @@ export default function EssayDetail({ essay, onBack, onSelectEssay }) {
         dangerouslySetInnerHTML={{ __html: renderedContent }}
       />
 
-      <div className="essay-detail-footer">
-        <div className="footer-left-links">
-          {essay.footnotes ? (
-            <span className="footer-link">Footnotes ({essay.footnotes})</span>
-          ) : null}
-          <span className="footer-link">References</span>
-          <span className="footer-link">
-            Discussion ({essay.discussionCount || 0})
-          </span>
-        </div>
-
-        {essay.nextSlug && (
+      {essay.nextSlug && (
+        <div className="essay-detail-footer" style={{ justifyContent: 'flex-end' }}>
           <button
             className="footer-link"
             style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
@@ -43,8 +32,8 @@ export default function EssayDetail({ essay, onBack, onSelectEssay }) {
           >
             <span>Next <ArrowRight size={14} style={{ display: 'inline', margin: '0 2px' }} /> {essay.nextTitle}</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

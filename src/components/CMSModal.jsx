@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Plus, Edit2, Trash2, CloudUpload, Image as ImageIcon } from 'lucide-react';
 
 export default function CMSModal({
@@ -37,7 +37,6 @@ export default function CMSModal({
     setEssayReadTime(calculateReadTime(val));
   };
 
-  // Load editing item into form state when selected
   const startEditingEssay = (essay) => {
     setEditingItem(essay);
     setEssayTitle(essay.title || '');
@@ -110,8 +109,6 @@ export default function CMSModal({
       readTime: calculateReadTime(essayContent),
       excerpt: essayExcerpt,
       content: essayContent,
-      footnotes: parseInt(formData.get('footnotes')) || 0,
-      discussionCount: parseInt(formData.get('discussionCount')) || 0,
       nextSlug: formData.get('nextSlug') || '',
       nextTitle: formData.get('nextTitle') || '',
       published: formData.get('published') === 'on'
@@ -398,27 +395,6 @@ export default function CMSModal({
                       onChange={handleEssayContentChange}
                       required
                     />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">Footnotes Count</label>
-                      <input
-                        type="number"
-                        name="footnotes"
-                        className="form-input"
-                        defaultValue={editingItem.footnotes || 0}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Discussion Count</label>
-                      <input
-                        type="number"
-                        name="discussionCount"
-                        className="form-input"
-                        defaultValue={editingItem.discussionCount || 0}
-                      />
-                    </div>
                   </div>
 
                   <div className="cms-action-bar">
