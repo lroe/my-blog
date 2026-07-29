@@ -139,10 +139,10 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   }
 });
 
-// Publish Endpoint (Builds & Pushes to GitHub)
+// Publish Endpoint (Builds, copies dist to root, and Pushes to GitHub)
 app.post('/api/publish', (req, res) => {
   const commitMsg = req.body.message || 'Update blog content via CMS';
-  const command = `npm run build && git add . && git commit -m "${commitMsg}" || true && git push origin main && git push origin main:master --force`;
+  const command = `npm run build && cp -r dist/* . && git add . && git commit -m "${commitMsg}" || true && git push origin main && git push origin main:master --force`;
   
   exec(command, { cwd: __dirname }, (error, stdout, stderr) => {
     if (error) {

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Publish Blog to GitHub Script (Pushes to both main and master)
+# Publish Blog to GitHub Script
 
 PROJECT_DIR="/home/jeevankumar/Music/MyMansion"
 
@@ -12,13 +12,16 @@ cd "$PROJECT_DIR" || exit 1
 echo "1. Building static production site..."
 npm run build
 
-echo "2. Adding changes to Git..."
+echo "2. Deploying built static assets to root..."
+cp -r dist/* .
+
+echo "3. Adding changes to Git..."
 git add .
 
-echo "3. Committing updates..."
+echo "4. Committing updates..."
 git commit -m "Publish update: $(date)" || true
 
-echo "4. Pushing to GitHub (main & master)..."
+echo "5. Pushing to GitHub (main & master)..."
 git push origin main
 git push origin main:master --force
 
