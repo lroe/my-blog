@@ -1,4 +1,5 @@
 import React from 'react';
+import { marked } from 'marked';
 
 export default function NotesPage({ notes }) {
   return (
@@ -10,7 +11,10 @@ export default function NotesPage({ notes }) {
         {notes.map((note) => (
           <div key={note.id} className="note-page-group">
             <div className="note-page-date">{note.date}</div>
-            <div className="note-page-text">{note.content}</div>
+            <div
+              className="note-page-text"
+              dangerouslySetInnerHTML={{ __html: marked.parse(note.content || '') }}
+            />
           </div>
         ))}
       </div>

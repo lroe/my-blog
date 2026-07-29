@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { marked } from 'marked';
 
 export default function RecentNotes({ notes, setTab }) {
   const recentNotes = notes.slice(0, 5);
@@ -12,7 +13,9 @@ export default function RecentNotes({ notes, setTab }) {
           <div key={note.id} className="note-item">
             <div className="note-bullet-content">
               <span className="note-bullet-dot">•</span>
-              <span>{note.content}</span>
+              <div
+                dangerouslySetInnerHTML={{ __html: marked.parseInline(note.content || '') }}
+              />
             </div>
             <span className="note-date">{note.shortDate || note.date}</span>
           </div>

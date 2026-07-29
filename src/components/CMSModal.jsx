@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus, Edit2, Trash2, CloudUpload, Image as ImageIcon } from 'lucide-react';
 
 export default function CMSModal({
@@ -12,9 +12,55 @@ export default function CMSModal({
   const [publishing, setPublishing] = useState(false);
   const [publishStatus, setPublishStatus] = useState('');
 
+  // Draft states to prevent data loss
+  const [essayTitle, setEssayTitle] = useState('');
+  const [essayContent, setEssayContent] = useState('');
+  const [essayExcerpt, setEssayExcerpt] = useState('');
+  const [essayReadTime, setEssayReadTime] = useState('1 min read');
+  const [noteContent, setNoteContent] = useState('');
+
   if (!isOpen) return null;
 
   const { settings, essays, notes } = data;
+
+  // Auto calculate read time from word count
+  const calculateReadTime = (text) => {
+    if (!text || !text.trim()) return '1 min read';
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    const minutes = Math.max(1, Math.ceil(words / 200));
+    return `${minutes} min read`;
+  };
+
+  const handleEssayContentChange = (e) => {
+    const val = e.target.value;
+    setEssayContent(val);
+    setEssayReadTime(calculateReadTime(val));
+  };
+
+  // Load editing item into form state when selected
+  const startEditingEssay = (essay) => {
+    setEditingItem(essay);
+    setEssayTitle(essay.title || '');
+    setEssayContent(essay.content || '');
+    setEssayExcerpt(essay.excerpt || '');
+    setEssayReadTime(essay.readTime || calculateReadTime(essay.content));
+  };
+
+  const startEditingNote = (note) => {
+    setEditingItem(note);
+    setNoteContent(note.content || '');
+  };
+
+  const handleSafeClose = () => {
+    if (editingItem && (essayContent || noteContent)) {
+      if (confirm('You have unsaved changes in the editor. Are you sure you want to close?')) {
+        setEditingItem(null);
+        onClose();
+      }
+    } else {
+      onClose();
+    }
+  };
 
   // Save Settings
   const handleSaveSettings = async (e) => {
@@ -52,14 +98,18 @@ export default function CMSModal({
   const handleSaveEssay = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
     const essay = {
       id: editingItem?.id || '',
-      title: formData.get('title'),
-      slug: formData.get('slug') || formData.get('title').toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      date: formData.get('date') || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      readTime: formData.get('readTime') || '5 min read',
-      excerpt: formData.get('excerpt'),
-      content: formData.get('content'),
+      title: essayTitle,
+      slug: formData.get('slug') || essayTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      date: formData.get('date') || formattedDate,
+      readTime: calculateReadTime(essayContent),
+      excerpt: essayExcerpt,
+      content: essayContent,
       footnotes: parseInt(formData.get('footnotes')) || 0,
       discussionCount: parseInt(formData.get('discussionCount')) || 0,
       nextSlug: formData.get('nextSlug') || '',
@@ -75,6 +125,9 @@ export default function CMSModal({
       });
       if (res.ok) {
         setEditingItem(null);
+        setEssayTitle('');
+        setEssayContent('');
+        setEssayExcerpt('');
         refreshContent();
       }
     } catch (err) {
@@ -97,11 +150,16 @@ export default function CMSModal({
   const handleSaveNote = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const formattedShortDate = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
     const note = {
       id: editingItem?.id || '',
-      date: formData.get('date') || new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-      shortDate: formData.get('shortDate') || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      content: formData.get('content')
+      date: formData.get('date') || formattedDate,
+      shortDate: formData.get('shortDate') || formattedShortDate,
+      content: noteContent
     };
 
     try {
@@ -112,6 +170,7 @@ export default function CMSModal({
       });
       if (res.ok) {
         setEditingItem(null);
+        setNoteContent('');
         refreshContent();
       }
     } catch (err) {
@@ -131,7 +190,7 @@ export default function CMSModal({
   };
 
   // Upload Image Handler
-  const handleImageUpload = async (e, textareaId) => {
+  const handleImageUpload = async (e, setContentFn, contentVal) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -146,11 +205,8 @@ export default function CMSModal({
       const data = await res.json();
       if (data.url) {
         const imageMarkdown = `\n![${file.name}](${data.url})\n`;
-        const textarea = document.getElementById(textareaId);
-        if (textarea) {
-          textarea.value += imageMarkdown;
-        }
-        alert('Image uploaded successfully! Added to editor content.');
+        setContentFn(contentVal + imageMarkdown);
+        alert('Image uploaded successfully and added to content!');
       }
     } catch (err) {
       alert('Image upload failed: ' + err.message);
@@ -182,7 +238,7 @@ export default function CMSModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
       <div className="cms-modal" onClick={(e) => e.stopPropagation()}>
         {/* Header Bar */}
         <div className="cms-header">
@@ -226,7 +282,7 @@ export default function CMSModal({
               {publishing ? 'Publishing...' : 'Publish to GitHub'}
             </button>
 
-            <button onClick={onClose} style={{ color: 'var(--text-muted)' }}>
+            <button onClick={handleSafeClose} style={{ color: 'var(--text-muted)' }} title="Close Editor">
               <X size={20} />
             </button>
           </div>
@@ -260,7 +316,8 @@ export default function CMSModal({
                     <input
                       name="title"
                       className="form-input"
-                      defaultValue={editingItem.title || ''}
+                      value={essayTitle}
+                      onChange={(e) => setEssayTitle(e.target.value)}
                       required
                     />
                   </div>
@@ -276,7 +333,7 @@ export default function CMSModal({
                       />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Date (e.g. July 24, 2026)</label>
+                      <label className="form-label">Date (Auto-Published)</label>
                       <input
                         name="date"
                         className="form-input"
@@ -287,11 +344,13 @@ export default function CMSModal({
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group">
-                      <label className="form-label">Read Time</label>
+                      <label className="form-label">Calculated Read Time (Auto)</label>
                       <input
                         name="readTime"
                         className="form-input"
-                        defaultValue={editingItem.readTime || '10 min read'}
+                        value={essayReadTime}
+                        readOnly
+                        style={{ opacity: 0.8 }}
                       />
                     </div>
                     <div className="form-group">
@@ -312,7 +371,8 @@ export default function CMSModal({
                       name="excerpt"
                       className="form-textarea"
                       rows={2}
-                      defaultValue={editingItem.excerpt || ''}
+                      value={essayExcerpt}
+                      onChange={(e) => setEssayExcerpt(e.target.value)}
                     />
                   </div>
 
@@ -326,16 +386,16 @@ export default function CMSModal({
                           type="file"
                           accept="image/*"
                           style={{ display: 'none' }}
-                          onChange={(e) => handleImageUpload(e, 'essay-content-textarea')}
+                          onChange={(e) => handleImageUpload(e, setEssayContent, essayContent)}
                         />
                       </label>
                     </div>
                     <textarea
-                      id="essay-content-textarea"
                       name="content"
                       className="form-textarea"
                       rows={10}
-                      defaultValue={editingItem.content || ''}
+                      value={essayContent}
+                      onChange={handleEssayContentChange}
                       required
                     />
                   </div>
@@ -380,7 +440,7 @@ export default function CMSModal({
                     <h3>Manage Essays</h3>
                     <button
                       className="btn-primary"
-                      onClick={() => setEditingItem({})}
+                      onClick={() => startEditingEssay({})}
                       style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                     >
                       <Plus size={16} /> New Essay
@@ -404,7 +464,7 @@ export default function CMSModal({
                           <td>{essay.published !== false ? 'Published' : 'Draft'}</td>
                           <td>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button onClick={() => setEditingItem(essay)}>
+                              <button onClick={() => startEditingEssay(essay)}>
                                 <Edit2 size={16} style={{ color: 'var(--accent-blue)' }} />
                               </button>
                               <button onClick={() => handleDeleteEssay(essay.id)}>
@@ -428,18 +488,31 @@ export default function CMSModal({
                 <form onSubmit={handleSaveNote}>
                   <h3>{editingItem.id ? 'Edit Note' : 'Create New Note'}</h3>
                   <div className="form-group" style={{ marginTop: '1rem' }}>
-                    <label className="form-label">Note Content</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label className="form-label">Note Content</label>
+                      <label style={{ cursor: 'pointer', fontSize: '0.8rem', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <ImageIcon size={14} />
+                        Insert Picture
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleImageUpload(e, setNoteContent, noteContent)}
+                        />
+                      </label>
+                    </div>
                     <textarea
                       name="content"
                       className="form-textarea"
-                      rows={4}
-                      defaultValue={editingItem.content || ''}
+                      rows={5}
+                      value={noteContent}
+                      onChange={(e) => setNoteContent(e.target.value)}
                       required
                     />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div className="form-group">
-                      <label className="form-label">Date (Full)</label>
+                      <label className="form-label">Date (Auto-Published)</label>
                       <input
                         name="date"
                         className="form-input"
@@ -447,7 +520,7 @@ export default function CMSModal({
                       />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Short Date (e.g. Jul 29)</label>
+                      <label className="form-label">Short Date (Auto)</label>
                       <input
                         name="shortDate"
                         className="form-input"
@@ -474,7 +547,7 @@ export default function CMSModal({
                     <h3>Manage Notes</h3>
                     <button
                       className="btn-primary"
-                      onClick={() => setEditingItem({})}
+                      onClick={() => startEditingNote({})}
                       style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                     >
                       <Plus size={16} /> New Note
@@ -496,7 +569,7 @@ export default function CMSModal({
                           <td>{note.shortDate || note.date}</td>
                           <td>
                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button onClick={() => setEditingItem(note)}>
+                              <button onClick={() => startEditingNote(note)}>
                                 <Edit2 size={16} style={{ color: 'var(--accent-blue)' }} />
                               </button>
                               <button onClick={() => handleDeleteNote(note.id)}>
