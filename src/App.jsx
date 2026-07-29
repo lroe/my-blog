@@ -16,8 +16,15 @@ import defaultEssays from '../data/essays.json';
 import defaultNotes from '../data/notes.json';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState('home');
-  const [activeEssaySlug, setActiveEssaySlug] = useState(null);
+  const [currentTab, setCurrentTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('essay')) return 'essay-detail';
+    return 'home';
+  });
+  const [activeEssaySlug, setActiveEssaySlug] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('essay') || null;
+  });
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCMSOpen, setIsCMSOpen] = useState(false);
 
@@ -52,9 +59,27 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (currentTab === 'home') {
+      document.title = 'Jeevan Kumar';
+    } else if (currentTab === 'essays') {
+      document.title = 'Essays';
+    } else if (currentTab === 'essay-detail') {
+      const currentEssay = data.essays.find((e) => e.slug === activeEssaySlug);
+      if (currentEssay) {
+        document.title = currentEssay.title;
+      }
+    } else if (currentTab === 'notes') {
+      document.title = 'Notes';
+    } else if (currentTab === 'about') {
+      document.title = 'About';
+    } else {
+      document.title = 'Jeevan Kumar';
+    }
+  }, [currentTab, activeEssaySlug, data.essays]);
+
   const handleSelectEssay = (slug) => {
-    setActiveEssaySlug(slug);
-    setCurrentTab('essay-detail');
+    window.open(`/?essay=${slug}`, '_blank');
   };
 
   const handleTabChange = (tab) => {

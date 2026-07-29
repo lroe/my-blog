@@ -28,7 +28,7 @@ export default function ProjectsPage({ projects }) {
           <a
             key={proj.id}
             href={proj.link || '#'}
-            target={proj.link?.startsWith('http') ? '_blank' : '_self'}
+            target="_blank"
             rel="noreferrer"
             className="project-card"
           >

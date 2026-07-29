@@ -5,7 +5,11 @@ import { marked } from 'marked';
 export default function EssayDetail({ essay, onBack, onSelectEssay }) {
   if (!essay) return null;
 
-  const renderedContent = marked.parse(essay.content || '');
+  const renderer = new marked.Renderer();
+  renderer.link = function (link) {
+    return `<a target="_blank" rel="noopener noreferrer" href="${link.href}" title="${link.title || ''}">${link.text}</a>`;
+  };
+  const renderedContent = marked.parse(essay.content || '', { renderer });
 
   return (
     <div style={{ maxWidth: '680px' }}>
