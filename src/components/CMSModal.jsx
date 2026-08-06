@@ -257,6 +257,41 @@ export default function CMSModal({
     }
   };
 
+  const handlePaste = async (e, setContentFn, contentVal) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (!file) continue;
+
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        setContentFn(contentVal + '\n![Uploading image...]()\n');
+
+        try {
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          });
+          const data = await res.json();
+          if (data.url) {
+            const imageMarkdown = `\n![Pasted Image](${data.url})\n`;
+            setContentFn(prev => prev.replace('\n![Uploading image...]()\n', imageMarkdown));
+          }
+        } catch (err) {
+          alert('Image paste failed: ' + err.message);
+          setContentFn(prev => prev.replace('\n![Uploading image...]()\n', ''));
+        }
+        break;
+      }
+    }
+  };
+
   // Publish to GitHub
   const handlePublishToGitHub = async () => {
     setPublishing(true);
@@ -437,6 +472,7 @@ export default function CMSModal({
                       rows={10}
                       value={essayContent}
                       onChange={(e) => setEssayContent(e.target.value)}
+                      onPaste={(e) => handlePaste(e, setEssayContent, essayContent)}
                       required
                     />
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
@@ -530,6 +566,7 @@ export default function CMSModal({
                       rows={5}
                       value={noteContent}
                       onChange={(e) => setNoteContent(e.target.value)}
+                      onPaste={(e) => handlePaste(e, setNoteContent, noteContent)}
                       required
                     />
                   </div>
@@ -634,6 +671,7 @@ export default function CMSModal({
                       rows={8}
                       value={diaryContent}
                       onChange={(e) => setDiaryContent(e.target.value)}
+                      onPaste={(e) => handlePaste(e, setDiaryContent, diaryContent)}
                       required
                       placeholder="Write your private thoughts here..."
                     />

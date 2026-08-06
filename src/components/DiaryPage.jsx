@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CryptoJS from 'crypto-js';
+import { marked } from 'marked';
 
 export default function DiaryPage({ diaryEntries }) {
   const [password, setPassword] = useState('');
@@ -66,16 +67,26 @@ export default function DiaryPage({ diaryEntries }) {
         <p style={{ color: 'var(--text-muted)' }}>No diary entries yet.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {decryptedEntries.map(entry => (
-            <div key={entry.id} style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                {entry.date}
+          {decryptedEntries.map(entry => {
+            const renderer = new marked.Renderer();
+            renderer.link = function (link) {
+              return `<a target="_blank" rel="noopener noreferrer" href="${link.href}" title="${link.title || ''}">${link.text}</a>`;
+            };
+            const renderedContent = marked.parse(entry.content || '', { renderer });
+
+            return (
+              <div key={entry.id} style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
+                  {entry.date}
+                </div>
+                <div 
+                  className="essay-body"
+                  style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}
+                  dangerouslySetInnerHTML={{ __html: renderedContent }}
+                />
               </div>
-              <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
-                {entry.content}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
