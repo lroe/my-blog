@@ -9,16 +9,19 @@ import NotesPage from './components/NotesPage';
 import AboutPage from './components/AboutPage';
 import SearchModal from './components/SearchModal';
 import CMSModal from './components/CMSModal';
+import DiaryPage from './components/DiaryPage';
 
 // Static fallback data imports
 import defaultSettings from '../data/settings.json';
 import defaultEssays from '../data/essays.json';
 import defaultNotes from '../data/notes.json';
+import defaultDiary from '../data/diary.json';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('essay')) return 'essay-detail';
+    if (window.location.pathname === '/diary') return 'diary';
     return 'home';
   });
   const [activeEssaySlug, setActiveEssaySlug] = useState(() => {
@@ -31,7 +34,8 @@ export default function App() {
   const [data, setData] = useState({
     settings: defaultSettings,
     essays: defaultEssays,
-    notes: defaultNotes
+    notes: defaultNotes,
+    diary: defaultDiary || []
   });
 
   const fetchContent = async () => {
@@ -138,6 +142,10 @@ export default function App() {
 
         {currentTab === 'about' && (
           <AboutPage settings={data.settings} />
+        )}
+
+        {currentTab === 'diary' && (
+          <DiaryPage diaryEntries={data.diary || []} />
         )}
       </main>
 

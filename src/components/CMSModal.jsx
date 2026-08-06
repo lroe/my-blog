@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Plus, Edit2, Trash2, CloudUpload, Image as ImageIcon } from 'lucide-react';
+import { X, Plus, Edit2, Trash2, CloudUpload, Image as ImageIcon, Lock } from 'lucide-react';
+import CryptoJS from 'crypto-js';
 
 export default function CMSModal({
   isOpen,
@@ -17,10 +18,12 @@ export default function CMSModal({
   const [essayContent, setEssayContent] = useState('');
   const [essayExcerpt, setEssayExcerpt] = useState('');
   const [noteContent, setNoteContent] = useState('');
+  const [diaryContent, setDiaryContent] = useState('');
+  const [diaryPassword, setDiaryPassword] = useState('muhehehe');
 
   if (!isOpen) return null;
 
-  const { settings, essays, notes } = data;
+  const { settings, essays, notes, diary = [] } = data;
 
   // Auto calculate read time in intervals of 5 minutes (e.g. 5 min read, 10 min read, 15 min read)
   const calculateReadTime = (text) => {
@@ -43,8 +46,13 @@ export default function CMSModal({
     setNoteContent(note.content || '');
   };
 
+  const startEditingDiary = () => {
+    setEditingItem({});
+    setDiaryContent('');
+  };
+
   const handleSafeClose = () => {
-    if (editingItem && (essayContent || noteContent)) {
+    if (editingItem && (essayContent || noteContent || diaryContent)) {
       if (confirm('You have unsaved changes in the editor. Are you sure you want to close?')) {
         setEditingItem(null);
         onClose();
@@ -179,6 +187,52 @@ export default function CMSModal({
     }
   };
 
+  // Save Diary Entry
+  const handleSaveDiary = async (e) => {
+    e.preventDefault();
+    if (!diaryPassword) return alert('Password required to encrypt diary.');
+    
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + ' ' + now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+    const rawData = {
+      content: diaryContent,
+      date: formattedDate
+    };
+    
+    const encryptedPayload = CryptoJS.AES.encrypt(JSON.stringify(rawData), diaryPassword).toString();
+
+    const entry = {
+      id: editingItem?.id || '',
+      payload: encryptedPayload
+    };
+
+    try {
+      const res = await fetch('/api/diary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      if (res.ok) {
+        setEditingItem(null);
+        setDiaryContent('');
+        refreshContent();
+      }
+    } catch (err) {
+      alert('Error saving diary: ' + err.message);
+    }
+  };
+
+  const handleDeleteDiary = async (id) => {
+    if (!confirm('Are you sure you want to delete this diary entry?')) return;
+    try {
+      await fetch(`/api/diary/${id}`, { method: 'DELETE' });
+      refreshContent();
+    } catch (err) {
+      alert('Error deleting diary entry: ' + err.message);
+    }
+  };
+
   // Upload Image Handler
   const handleImageUpload = async (e, setContentFn, contentVal) => {
     const file = e.target.files[0];
@@ -250,6 +304,15 @@ export default function CMSModal({
               }}
             >
               Notes ({notes.length})
+            </button>
+            <button
+              className={`cms-tab-btn ${activeTab === 'diary' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('diary');
+                setEditingItem(null);
+              }}
+            >
+              Diary <Lock size={12} style={{marginLeft:'4px', display:'inline-block'}}/>
             </button>
             <button
               className={`cms-tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
@@ -533,6 +596,101 @@ export default function CMSModal({
                                 <Edit2 size={16} style={{ color: 'var(--accent-blue)' }} />
                               </button>
                               <button onClick={() => handleDeleteNote(note.id)}>
+                                <Trash2 size={16} style={{ color: '#ef4444' }} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* DIARY TAB */}
+          {activeTab === 'diary' && (
+            <div>
+              {editingItem !== null ? (
+                <form onSubmit={handleSaveDiary}>
+                  <h3>Create New Diary Entry</h3>
+                  <div className="form-group" style={{ marginTop: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <label className="form-label">Diary Content (Encrypted)</label>
+                      <label style={{ cursor: 'pointer', fontSize: '0.8rem', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <ImageIcon size={14} />
+                        Insert Picture
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleImageUpload(e, setDiaryContent, diaryContent)}
+                        />
+                      </label>
+                    </div>
+                    <textarea
+                      className="form-textarea"
+                      rows={8}
+                      value={diaryContent}
+                      onChange={(e) => setDiaryContent(e.target.value)}
+                      required
+                      placeholder="Write your private thoughts here..."
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Encryption Password</label>
+                    <input
+                      type="password"
+                      className="form-input"
+                      value={diaryPassword}
+                      onChange={(e) => setDiaryPassword(e.target.value)}
+                      required
+                    />
+                    <small style={{color:'var(--text-muted)'}}>Used to encrypt the diary content before saving.</small>
+                  </div>
+                  <div className="cms-action-bar">
+                    <button
+                      type="button"
+                      className="cms-tab-btn"
+                      onClick={() => setEditingItem(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn-primary" style={{display:'flex', gap:'0.4rem', alignItems:'center'}}>
+                      <Lock size={16}/> Save Encrypted
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3>Manage Diary</h3>
+                    <button
+                      className="btn-primary"
+                      onClick={() => startEditingDiary()}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                    >
+                      <Plus size={16} /> New Entry
+                    </button>
+                  </div>
+
+                  <table className="cms-table">
+                    <thead>
+                      <tr>
+                        <th>ID (Timestamp)</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {diary.map((entry) => (
+                        <tr key={entry.id}>
+                          <td>{entry.id}</td>
+                          <td><Lock size={14} style={{verticalAlign:'middle'}}/> Encrypted</td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button onClick={() => handleDeleteDiary(entry.id)}>
                                 <Trash2 size={16} style={{ color: '#ef4444' }} />
                               </button>
                             </div>

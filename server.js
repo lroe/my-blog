@@ -49,7 +49,8 @@ app.get('/api/content', (req, res) => {
     const settings = readJson('settings.json') || {};
     const essays = readJson('essays.json') || [];
     const notes = readJson('notes.json') || [];
-    res.json({ settings, essays, notes });
+    const diary = readJson('diary.json') || [];
+    res.json({ settings, essays, notes, diary });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -122,6 +123,38 @@ app.delete('/api/notes/:id', (req, res) => {
     let notes = readJson('notes.json') || [];
     notes = notes.filter((n) => n.id !== req.params.id);
     writeJson('notes.json', notes);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Diary CRUD
+app.post('/api/diary', (req, res) => {
+  try {
+    let diary = readJson('diary.json') || [];
+    const entry = req.body;
+    if (!entry.id) {
+      entry.id = Date.now().toString();
+    }
+    const index = diary.findIndex((d) => d.id === entry.id);
+    if (index >= 0) {
+      diary[index] = entry;
+    } else {
+      diary.unshift(entry);
+    }
+    writeJson('diary.json', diary);
+    res.json({ success: true, entry });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/diary/:id', (req, res) => {
+  try {
+    let diary = readJson('diary.json') || [];
+    diary = diary.filter((d) => d.id !== req.params.id);
+    writeJson('diary.json', diary);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
