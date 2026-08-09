@@ -1,5 +1,17 @@
 [
   {
+    "id": "1786246229943",
+    "title": "How Gemma 4 Could Give DeepSeek Eyes",
+    "slug": "how-gemma-4-could-give-deepseek-eyes",
+    "date": "August 9, 2026",
+    "readTime": "5 min read",
+    "excerpt": "",
+    "content": "Open source language models like DeepSeek have billions of neurons, yet they can't process images directly.\n\nIn order for them to process images, they have to use a component (called a visual encoder) to translate the pixels into a form that is suitable for them to understand, then use this new form to understand what the image is about.\n\nThis implies:\n\n New Component Needed : We need a separate neural network to process the images.\n\nTime Lag : we need to wait till the image processing stuff is finished to give it to the actual brain to reason.\n\nTraining Pipeline : we have to train both the image processing model and the main AI model.\n\nConsumer Hardware unfriendly : we have to fit both the image model and the LLM model, which takes up processing.\n\nWhat if we could make an architecture change that allows the main LLM to process images without needing any other separate visual processing component? In fact, Gemma 4 does exactly this. This is a model released by Google that allows it to process images directly. And recently, they open sourced the technical details.\n\nNow open source labs can use this to build a better version of models like DeepSeek that have innate multi modal processing capabilities. This is a huge win for open source.",
+    "nextSlug": "",
+    "nextTitle": "",
+    "published": true
+  },
+  {
     "id": "1786195436272",
     "title": "Make It Bad. Make It Anyway.",
     "slug": "make-it-bad-make-it-anyway-",
